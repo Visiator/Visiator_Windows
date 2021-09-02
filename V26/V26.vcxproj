@@ -128,6 +128,7 @@
     <ClCompile Include="APPLICATION_ATTRIBUTES.cpp" />
     <ClCompile Include="DESKTOP.cpp" />
     <ClCompile Include="GUI.cpp" />
+    <ClCompile Include="GUI_Element.cpp" />
     <ClCompile Include="GUI_low_level.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tools.cpp" />
@@ -136,6 +137,7 @@
     <ClInclude Include="APPLICATION_ATTRIBUTES.h" />
     <ClInclude Include="DESKTOP.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="GUI_Element.h" />
     <ClInclude Include="GUI_low_level.h" />
     <ClInclude Include="tools.h" />
   </ItemGroup>

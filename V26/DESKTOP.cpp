@@ -14,7 +14,9 @@ extern DESKTOP *desktop;
 LRESULT CALLBACK MainWinProcDesktop(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 
 void DESKTOP::init_gui() {
-
+	GUI_Element *q;
+	q = gui->add_element( GUI_Element_Type_panel , 50, 10, 80, 30, 0 );
+	q->color = 0xff00ff;
 }
 
 void DESKTOP::calc_start_size(int &x, int &y, int &w, int &h) {
@@ -130,7 +132,7 @@ void DESKTOP::RUN() {
 
 
 DESKTOP::DESKTOP() {
-
+	gui = new GUI();
 }
 
 
@@ -342,7 +344,7 @@ LRESULT DESKTOP::WM_ERASEBKGND_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 LRESULT DESKTOP::WM_PAINT_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
-	//gui->Paint(low_level);
+	gui->Paint(low_level);
 
 	low_level->Paint();
 	return 0;

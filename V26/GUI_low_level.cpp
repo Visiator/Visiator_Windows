@@ -1,5 +1,7 @@
-#include "GUI_low_level.h"
 
+#include "stdint.h"
+
+#include "GUI_low_level.h"
 #include "tools.h"
 
 extern bool GLOBAL_STOP;
@@ -57,6 +59,19 @@ void GUI_low_level::change_size(HWND hw, int w_, int h_) {
 	bmInfo->bmiHeader.biWidth = window_w;
 
 
+}
+
+void GUI_low_level::rectangle(int x, int y, int w, int h, uint32_t color) {
+	unsigned int *q;
+	if (buf == nullptr) return;
+	if (x < 0 || y < 0 || w < 0 || h < 0 || x + w >= window_w || y + h >= window_h) return;
+	for (int yy = y; yy < h; yy++) {
+		q = &buf[yy*window_w + x];
+		for (int xx = x; xx < w; xx++) {
+			*q = color;
+			q++;
+		}
+	}
 }
 
 void GUI_low_level::fill_color(unsigned int col) {

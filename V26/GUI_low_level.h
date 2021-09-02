@@ -9,6 +9,7 @@
 #include <stdio.h>
 #undef _WINSOCKAPI_
 
+#include "stdint.h"
 
 class GUI_low_level
 {
@@ -36,6 +37,8 @@ public:
 	void unlock_WRITE();
 
 	void fill_color(unsigned int col);
+
+	void rectangle(int x, int y, int w, int h, uint32_t color);
 
 	void change_size(HWND hw, int w_, int h_);
 	void Paint();
