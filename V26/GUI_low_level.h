@@ -41,6 +41,7 @@ public:
 	void rectangle(int x, int y, int w, int h, uint32_t color);
 
 	void change_size(HWND hw, int w_, int h_);
+	void invalidate();
 	void Paint();
 
 	GUI_low_level(HWND hw_);

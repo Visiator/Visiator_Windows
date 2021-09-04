@@ -36,6 +36,9 @@
     <ClCompile Include="GUI_Element.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TEXTURA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -56,5 +59,16 @@
     <ClInclude Include="GUI_Element.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TEXTURA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="V26.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -1,11 +1,25 @@
 
 #include "GUI.h"
 
-GUI::GUI() {
+extern bool GLOBAL_STOP;
 
+GUI::GUI(HWND hw_) {
+	hw = hw_;
+	if (low_level == nullptr) {
+		low_level = new GUI_low_level(hw_);
+	}
 }
 
-void GUI::Paint(GUI_low_level *low_level) {
+void GUI::change_size(HWND hw_, int w_, int h_) {
+	if (low_level == nullptr) return;
+	low_level->change_size(hw_, w_, h_);
+}
+
+void GUI::invalidate() {
+	low_level->invalidate();
+}
+
+void GUI::Paint() {
 	//const_iterator it, end;
 	std::list <GUI_Element>::iterator it, end;
 
@@ -16,10 +30,159 @@ void GUI::Paint(GUI_low_level *low_level) {
 		(*it).Paint(low_level);
 	}
 
+	low_level->Paint();
 }
 
-GUI_Element *GUI::add_element(int type_, int x_, int y_, int w_, int h_, int BMP_id) {
+GUI_Element *GUI::add_element(int type_, int x_, int y_, int w_, int h_, uint32_t color_) {
 
-	elements.emplace_back(type_, x_, y_, w_, h_, BMP_id);
+	elements.emplace_back(type_, x_, y_, w_, h_, color_);
 	return &(elements.back());
 }
+
+GUI_Element *GUI::get_active_Element_mouse_over(int mx, int my) {
+
+	std::list <GUI_Element>::iterator it, end;
+
+	for (it = elements.begin(), end = elements.end(); it != end; ++it)
+	{
+		// do nothing, for loop terminates if "it" points to "myElem"
+		// or if we don't find your element.
+		//it->mouse_move(mx, my);
+		bool visible;
+		visible = true;
+
+		if (it->is_visible == false || (it->parent != nullptr && it->parent->is_visible == false)) {
+			visible = false;
+		};
+		if (it->is_active && visible == true
+			&& it->x <= mx
+			&& it->x + it->w > mx
+			&& it->y <= my
+			&& it->y + it->h > my) {
+
+			return &*it;
+		}
+		
+	}
+
+	return nullptr;
+}
+
+void GUI::left_button_mouse_up(int mx, int my) {
+
+	/*
+	GUI_Element *q;
+
+	q = nullptr;
+
+	q = get_active_Element_mouse_over(mx, my);
+	*/
+
+	std::list <GUI_Element>::iterator it, end;
+
+	for (it = elements.begin(), end = elements.end(); it != end; ++it)
+	{
+		if (it->func__mouse_unpress != nullptr) {
+			it->func__mouse_unpress(mx, my);
+		}
+
+		/*
+		// сбросим все отметки is_mouse_pressed
+
+		if (it->is_mouse_pressed == true) {
+			
+			if (it->is_mouse_pressed == true) {
+				it->set_mouse_pressed(false);
+				invalidate();
+			}
+			if (&*it == q) {
+				if (it->func__mouse_unpress != nullptr) {
+					it->func__mouse_unpress();
+				}
+				return;
+			}
+			
+		}
+		*/
+	}
+
+	
+}
+
+
+void GUI::left_button_mouse_down(int mx, int my) {
+	
+	GUI_Element *q;
+
+	q = nullptr;
+
+	q = get_active_Element_mouse_over(mx, my);
+
+	
+	std::list <GUI_Element>::iterator it, end;
+
+
+	for (it = elements.begin(), end = elements.end(); it != end; ++it)
+	{
+		// сбросим все отметки is_mouse_pressed
+
+		
+			if (q == nullptr || &*it != q) {
+				if (it->func__mouse_unpress != nullptr) {
+					it->func__mouse_unpress(mx, my);
+				}
+			}
+			else {
+				if (it->func__mouse_press != nullptr) {
+					it->func__mouse_press(mx, my);
+				}
+			}
+		
+	}
+
+	/*if (q != nullptr && q->is_mouse_pressed == false) {
+		q->set_mouse_pressed(true);
+		invalidate();
+	}*/
+	
+}
+
+void GUI::mouse_move(int mx, int my) {
+
+	GUI_Element *q;
+
+	q = nullptr;
+
+	q = get_active_Element_mouse_over(mx, my);
+
+	std::list <GUI_Element>::iterator it, end;
+
+	for (it = elements.begin(), end = elements.end(); it != end; ++it)
+	{
+		// сбросим все отметки is_mouse_hover
+
+		if (it->is_mouse_hover == true) {
+			if (q == nullptr || &*it != q) {
+				if (it->is_mouse_hover == true) {
+					it->set_mouse_hover(false);
+					invalidate();
+				}
+			}
+			else {
+
+			}
+		}
+	}
+
+	if (q != nullptr && q->is_mouse_hover == false) {
+		q->set_mouse_hover(true);
+		invalidate();
+	}
+
+}
+
+void GUI::close_application() {
+	GLOBAL_STOP = true;
+	PostMessage(hw, WM_DESTROY, 0, 0);
+}
+

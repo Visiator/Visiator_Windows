@@ -8,12 +8,25 @@
 class GUI
 {
 public:
+	HWND hw = 0;
+	GUI_low_level *low_level = nullptr;
+	void change_size(HWND hw_, int w_, int h_);
+
 	std::list<GUI_Element> elements;
 
-	GUI_Element *add_element(int type_, int x_, int y_, int w_, int h_, int BMP_id);
+	GUI_Element *get_active_Element_mouse_over(int mx, int my);
 
-	void Paint(GUI_low_level *low_level);
+	void mouse_move(int mx, int my);
 
-	GUI();
+	void left_button_mouse_down(int mx, int my);
+	void left_button_mouse_up(int mx, int my);
+
+	GUI_Element *add_element(int type_, int x_, int y_, int w_, int h_, uint32_t color_);
+
+	void close_application();
+	void invalidate();
+	void Paint();
+
+	GUI(HWND hw_);
 };
 

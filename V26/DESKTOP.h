@@ -18,7 +18,16 @@ class DESKTOP
 public:
 
 	GUI *gui = nullptr;
-	GUI_low_level *low_level = nullptr;
+	GUI_Element *btn_close = nullptr
+		, *btn_change_to_incomming = nullptr
+		, *btn_change_to_outcomming = nullptr
+		, *btn_change_to_autorun = nullptr
+		, *panel_incoming = nullptr
+		, *panel_outgoing = nullptr
+		, *panel_autorun = nullptr
+		, *btn_outgoing_connect = nullptr
+		, *btn_save_pass = nullptr
+		, *btn_www = nullptr;
 
 
 	void RUN();
@@ -103,7 +112,9 @@ public:
 
 	void char_(int msg, int wp, int lp);
 
-
+	TRACKMOUSEEVENT tme;
+	bool mouse_track_is_set = false;
+	void set_track(HWND hw);
 
 	DESKTOP();
 	~DESKTOP();

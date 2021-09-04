@@ -13,10 +13,202 @@ extern DESKTOP *desktop;
 
 LRESULT CALLBACK MainWinProcDesktop(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 
+void mouse_press_close(int mx, int my) {
+	if (mx >= desktop->btn_close->x
+		&& mx < desktop->btn_close->x + desktop->btn_close->w
+		&& my >= desktop->btn_close->y
+		&& my < desktop->btn_close->y + desktop->btn_close->h) {
+		if (desktop->btn_close->is_mouse_pressed == false) {
+			desktop->btn_close->set_mouse_pressed(true);
+			desktop->gui->invalidate();
+		}
+	}
+}
+
+void mouse_unpress_close(int mx, int my) {
+	
+	if (mx >= desktop->btn_close->x
+		&& mx < desktop->btn_close->x + desktop->btn_close->w
+		&& my >= desktop->btn_close->y
+		&& my < desktop->btn_close->y + desktop->btn_close->h) {
+		if (desktop->btn_close->is_mouse_pressed == true) {
+			desktop->gui->close_application();
+			return;
+		}
+	}
+
+	if (desktop->btn_close->is_mouse_pressed == true) {
+		desktop->btn_close->set_mouse_pressed(false);
+		desktop->gui->invalidate();
+	}
+}
+
+void mouse_press_change_to_autorun(int mx, int my) {
+	
+	desktop->btn_change_to_autorun->is_mouse_pressed = true;
+	desktop->btn_change_to_incomming->is_mouse_pressed = false;
+	desktop->btn_change_to_outcomming->is_mouse_pressed = false;
+
+	desktop->panel_incoming->is_visible = false;
+	desktop->panel_outgoing->is_visible = false;
+	desktop->panel_autorun->is_visible = true;
+
+	desktop->gui->invalidate();
+}
+void mouse_press_change_to_incomming(int mx, int my) {
+	
+	desktop->btn_change_to_autorun->is_mouse_pressed = false;
+	desktop->btn_change_to_incomming->is_mouse_pressed = true;
+	desktop->btn_change_to_outcomming->is_mouse_pressed = false;
+
+	desktop->panel_incoming->is_visible = true;
+	desktop->panel_outgoing->is_visible = false;
+	desktop->panel_autorun->is_visible = false;
+
+	desktop->gui->invalidate();
+}
+void mouse_press_change_to_outcomming(int mx, int my) {
+
+	desktop->btn_change_to_autorun->is_mouse_pressed = false;
+	desktop->btn_change_to_incomming->is_mouse_pressed = false;
+	desktop->btn_change_to_outcomming->is_mouse_pressed = true;
+
+	desktop->panel_incoming->is_visible = false;
+	desktop->panel_outgoing->is_visible = true;
+	desktop->panel_autorun->is_visible = false;
+
+	desktop->gui->invalidate();
+}
+
+void mouse_press_btn_outgoing_connect(int mx, int my) {
+
+	if (desktop->btn_outgoing_connect->is_visible == false) return;
+	if (desktop->btn_outgoing_connect->parent != nullptr && desktop->btn_outgoing_connect->parent->is_visible == false) return;
+
+	if (mx >= desktop->btn_outgoing_connect->x
+		&& mx < desktop->btn_outgoing_connect->x + desktop->btn_outgoing_connect->w
+		&& my >= desktop->btn_outgoing_connect->y
+		&& my < desktop->btn_outgoing_connect->y + desktop->btn_outgoing_connect->h) {
+		if (desktop->btn_outgoing_connect->is_mouse_pressed == false) {
+			desktop->btn_outgoing_connect->set_mouse_pressed(true);
+			desktop->gui->invalidate();
+		}
+	}
+}
+
+void mouse_unpress_btn_outgoing_connect(int mx, int my) {
+	if (desktop->btn_outgoing_connect->is_mouse_pressed == true) {
+		desktop->btn_outgoing_connect->set_mouse_pressed(false);
+		desktop->gui->invalidate();
+	}
+}
+
+void mouse_press_btn_save_pass(int mx, int my) {
+	if (desktop->btn_save_pass->is_visible == false) return;
+	if (desktop->btn_save_pass->parent != nullptr && desktop->btn_save_pass->parent->is_visible == false) return;
+
+	if (mx >= desktop->btn_save_pass->x
+		&& mx < desktop->btn_save_pass->x + desktop->btn_save_pass->w
+		&& my >= desktop->btn_save_pass->y
+		&& my < desktop->btn_save_pass->y + desktop->btn_save_pass->h) {
+		if (desktop->btn_save_pass->is_mouse_pressed == false) {
+			desktop->btn_save_pass->set_mouse_pressed(true);
+			desktop->gui->invalidate();
+		}
+	}
+}
+
+void mouse_unpress_btn_save_pass(int mx, int my) {
+	if (desktop->btn_save_pass->is_mouse_pressed == true) {
+		desktop->btn_save_pass->set_mouse_pressed(false);
+		desktop->gui->invalidate();
+	}
+}
+
+void mouse_press_btn_www(int mx, int my) {
+	if (desktop->btn_www->is_visible == false) return;
+	if (desktop->btn_www->parent != nullptr && desktop->btn_www->parent->is_visible == false) return;
+
+	if (mx >= desktop->btn_www->x
+		&& mx < desktop->btn_www->x + desktop->btn_www->w
+		&& my >= desktop->btn_www->y
+		&& my < desktop->btn_www->y + desktop->btn_www->h) {
+		if (desktop->btn_www->is_mouse_pressed == false) {
+			desktop->btn_www->set_mouse_pressed(true);
+			desktop->gui->invalidate();
+		}
+	}
+}
+
+void mouse_unpress_btn_www(int mx, int my) {
+	if (desktop->btn_www->is_mouse_pressed == true) {
+		desktop->btn_www->set_mouse_pressed(false);
+		desktop->gui->invalidate();
+	}
+}
+
 void DESKTOP::init_gui() {
 	GUI_Element *q;
-	q = gui->add_element( GUI_Element_Type_panel , 50, 10, 80, 30, 0 );
-	q->color = 0xff00ff;
+
+	// main panel
+	q = gui->add_element( GUI_Element_Type_panel , 0, 0, 250, 344, 0xff00ff );
+	q->load_BMP_from_resource(10001, 0, 0);
+
+	// close button
+	btn_close = gui->add_element(GUI_Element_Type_button, 223, 8, 20, 20, 0xff00ff);
+	btn_close->load_BMP_from_resource(10002, 10003, 10004);
+	btn_close->func__mouse_press = mouse_press_close;
+	btn_close->func__mouse_unpress = mouse_unpress_close;
+
+	// white panel
+	panel_incoming = gui->add_element(GUI_Element_Type_panel, 8, 50, 234, 212, 0xff00ff);
+	panel_incoming->load_BMP_from_resource(10005, 0, 0);
+
+	panel_outgoing = gui->add_element(GUI_Element_Type_panel, 8, 50, 234, 212, 0xff00ff);
+	panel_outgoing->load_BMP_from_resource(10012, 0, 0);
+	panel_outgoing->is_visible = false;
+
+	panel_autorun = gui->add_element(GUI_Element_Type_panel, 8, 50, 234, 212, 0xff00ff);
+	panel_autorun->load_BMP_from_resource(10013, 0, 0);
+	panel_autorun->is_visible = false;
+
+
+	// btn auto 
+	btn_change_to_autorun = gui->add_element(GUI_Element_Type_button, 165, 270, 77, 65, 0xff00ff);
+	btn_change_to_autorun->load_BMP_from_resource(10006, 10006, 10007);
+	btn_change_to_autorun->func__mouse_press = mouse_press_change_to_autorun;
+
+	// btn incomming 
+	btn_change_to_incomming = gui->add_element(GUI_Element_Type_button, 8, 270, 77, 65, 0xff00ff);
+	btn_change_to_incomming->load_BMP_from_resource(10008, 10008, 10009);
+	btn_change_to_incomming->func__mouse_press = mouse_press_change_to_incomming;
+	btn_change_to_incomming->is_mouse_pressed = true;
+
+	// btn outcomming 
+	btn_change_to_outcomming = gui->add_element(GUI_Element_Type_button, 85, 270, 77, 65, 0xff00ff);
+	btn_change_to_outcomming->load_BMP_from_resource(10010, 10010, 10011);
+	btn_change_to_outcomming->func__mouse_press = mouse_press_change_to_outcomming;
+
+
+	btn_outgoing_connect = gui->add_element(GUI_Element_Type_button, 20, 213, 212, 46, 0xff00ff);
+	btn_outgoing_connect->load_BMP_from_resource(10014, 10015, 10016);
+	btn_outgoing_connect->func__mouse_press = mouse_press_btn_outgoing_connect;
+	btn_outgoing_connect->func__mouse_unpress = mouse_unpress_btn_outgoing_connect;
+	btn_outgoing_connect->parent = panel_outgoing;
+
+
+	btn_save_pass = gui->add_element(GUI_Element_Type_button, 110, 213, 122, 46, 0xff00ff);
+	btn_save_pass->load_BMP_from_resource(10017, 10018, 10019);
+	btn_save_pass->func__mouse_press = mouse_press_btn_save_pass;
+	btn_save_pass->func__mouse_unpress = mouse_unpress_btn_save_pass;
+	btn_save_pass->parent = panel_autorun;
+
+	btn_www = gui->add_element(GUI_Element_Type_button, 67, 224, 114, 14, 0xff00ff);
+	btn_www->load_BMP_from_resource(10020, 10021, 10022);
+	btn_www->func__mouse_press = mouse_press_btn_www;
+	btn_www->func__mouse_unpress = mouse_unpress_btn_www;
+	btn_www->parent = panel_incoming;
+
 }
 
 void DESKTOP::calc_start_size(int &x, int &y, int &w, int &h) {
@@ -38,7 +230,7 @@ void DESKTOP::RUN() {
 
 	app_attributes.is_desktop = true;
 
-	init_gui();
+	
 
 
 	HICON hi_sm = NULL;
@@ -132,13 +324,15 @@ void DESKTOP::RUN() {
 
 
 DESKTOP::DESKTOP() {
-	gui = new GUI();
+	
 }
 
 
 DESKTOP::~DESKTOP() {
 
 }
+
+
 
 LRESULT CALLBACK MainWinProcDesktop(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	//int w_param;
@@ -221,15 +415,14 @@ LRESULT CALLBACK MainWinProcDesktop(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 LRESULT DESKTOP::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (gui == nullptr) {
-		gui = new GUI();
+		gui = new GUI(hw);
 	}
-
-	if (low_level == nullptr) {
-		low_level = new GUI_low_level(hw);
-	}
+	init_gui();
+	
 
 	SetTimer(hw, 1, 1, NULL);
 
+	
 
 	/*** 2021
 	start_EXECUTE_net_server_session_pool();
@@ -252,32 +445,34 @@ LRESULT DESKTOP::WM_SYSKEYUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 };
 LRESULT DESKTOP::WM_NCHITTEST_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
-	/*** 2021
-	int mmx, mmy;
+	
+	int mx, my;
 	RECT rr;
 
 
-	mmx = (int)LOWORD(lp);
-	mmy = (int)HIWORD(lp);
+	mx = (int)LOWORD(lp);
+	my = (int)HIWORD(lp);
 
 
 	//char ss[500];
 
 
 	if (GetWindowRect(hw, &rr) != TRUE) return 0;
-	mmy -= (int)rr.top;
-	mmx -= (int)rr.left;
+	my -= (int)rr.top;
+	mx -= (int)rr.left;
 
 	GUI_Element *e;
 
-	e = gui->get_active_Element_mouse_over(mmx, mmy);
+	e = gui->get_active_Element_mouse_over(mx, my);
 	if (e != NULL) {
 
 		//sprintf_ s(ss, 450, "client %d %d ", mmx, mmy);
 		//send_udp(ss);
 		return HTCLIENT;
 	};
-	***/
+	
+	gui->mouse_move(mx, my);
+
 	return HTCAPTION;
 
 
@@ -317,7 +512,7 @@ LRESULT DESKTOP::WM_SIZE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	int mx = (int)LOWORD(lp);
 	int my = (int)HIWORD(lp);
-	low_level->change_size(hw, mx, my);
+	gui->change_size(hw, mx, my);
 
 
 
@@ -344,9 +539,9 @@ LRESULT DESKTOP::WM_ERASEBKGND_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 LRESULT DESKTOP::WM_PAINT_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
-	gui->Paint(low_level);
+	gui->Paint();
 
-	low_level->Paint();
+	
 	return 0;
 	//return DefWindowProc(hw, msg, wp, lp);
 };
@@ -360,13 +555,51 @@ LRESULT DESKTOP::WM_RBUTTONDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 };
 LRESULT DESKTOP::WM_NCLBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
+	int mx, my;
+	RECT rr;
+
+
+	mx = (int)LOWORD(lp);
+	my = (int)HIWORD(lp);
+	
+	if (GetWindowRect(hw, &rr) != TRUE) return 0;
+	my -= (int)rr.top;
+	mx -= (int)rr.left;
+
+	gui->left_button_mouse_up(mx, my);
+
 	return DefWindowProc(hw, msg, wp, lp);
 };
+
+void DESKTOP::set_track(HWND hw) {
+	//send_udp("set track");
+	if (mouse_track_is_set == true) return;
+	mouse_track_is_set = true;
+
+	tme.cbSize = sizeof(tme);
+	tme.dwFlags = TME_LEAVE;
+	tme.dwHoverTime = HOVER_DEFAULT;
+	tme.hwndTrack = hw; // hMainWnd;
+	TrackMouseEvent(&tme);
+
+}
+
 LRESULT DESKTOP::WM_NCMOUSELEAVE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	return 0;
 };
 LRESULT DESKTOP::WM_MOUSELEAVE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
+	mouse_track_is_set = false;
+
+	int mx, my;
+
+	mx = (int)LOWORD(lp);
+	my = (int)HIWORD(lp);
+
+
+	gui->mouse_move(mx, my);
+	gui->left_button_mouse_up(mx, my);
+	gui->invalidate();
 
 	return 0;
 };
@@ -377,6 +610,15 @@ LRESULT DESKTOP::WM_NCLBUTTONDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 };
 
 LRESULT DESKTOP::WM_LBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
+
+
+	int mx, my;
+
+
+	mx = (int)LOWORD(lp);
+	my = (int)HIWORD(lp);
+
+	gui->left_button_mouse_up(mx, my);
 
 	/*** 2021
 	if (app_attributes.modal_process != 0) {
@@ -417,6 +659,15 @@ LRESULT DESKTOP::WM_LBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 };
 
 LRESULT DESKTOP::WM_LBUTTONDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
+
+	int mx, my;
+
+
+	mx = (int)LOWORD(lp);
+	my = (int)HIWORD(lp);
+
+	gui->left_button_mouse_down(mx, my);
+
 
 	/*** 2021
 
@@ -514,11 +765,22 @@ LRESULT DESKTOP::WM_SETCURSOR_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 };
 LRESULT DESKTOP::WM_NCMOUSEMOVE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
+	
 
 	return DefWindowProc(hw, msg, wp, lp);
 };
 LRESULT DESKTOP::WM_MOUSEMOVE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
+	int mx, my;
+
+	mx = (int)LOWORD(lp);
+	my = (int)HIWORD(lp);
+
+
+	gui->mouse_move(mx, my);
+	gui->invalidate();
+
+	set_track(hw);
 
 	return DefWindowProc(hw, msg, wp, lp);
 };

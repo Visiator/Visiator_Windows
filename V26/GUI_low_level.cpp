@@ -10,6 +10,16 @@ GUI_low_level::GUI_low_level(HWND hw_) {
 	hw = hw_;
 }
 
+void GUI_low_level::invalidate() {
+	RECT r;
+	r.left = 0;
+	r.top = 0;
+	r.right = 5000;
+	r.bottom = 5000;
+	InvalidateRect(hw, nullptr, FALSE);
+}
+
+
 void GUI_low_level::change_size(HWND hw, int w_, int h_) {
 	if (w_ < 50) w_ = 50;
 	if (h_ < 50) h_ = 50;
@@ -64,10 +74,10 @@ void GUI_low_level::change_size(HWND hw, int w_, int h_) {
 void GUI_low_level::rectangle(int x, int y, int w, int h, uint32_t color) {
 	unsigned int *q;
 	if (buf == nullptr) return;
-	if (x < 0 || y < 0 || w < 0 || h < 0 || x + w >= window_w || y + h >= window_h) return;
-	for (int yy = y; yy < h; yy++) {
+	if (x < 0 || y < 0 || w < 0 || h < 0 || x + w > window_w || y + h > window_h) return;
+	for (int yy = y; yy < y+h; yy++) {
 		q = &buf[yy*window_w + x];
-		for (int xx = x; xx < w; xx++) {
+		for (int xx = x; xx < x+w; xx++) {
 			*q = color;
 			q++;
 		}
