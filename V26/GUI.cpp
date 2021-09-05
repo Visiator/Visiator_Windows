@@ -1,7 +1,10 @@
 
 #include "GUI.h"
+#include "FONT.h"
 
 extern bool GLOBAL_STOP;
+
+extern FONT *font[10];
 
 GUI::GUI(HWND hw_) {
 	hw = hw_;
@@ -28,7 +31,9 @@ void GUI::Paint() {
 		// do nothing, for loop terminates if "it" points to "myElem"
 		  // or if we don't find your element.
 		(*it).Paint(low_level);
-	}
+	};
+
+	
 
 	low_level->Paint();
 }
@@ -125,9 +130,14 @@ void GUI::left_button_mouse_down(int mx, int my) {
 	for (it = elements.begin(), end = elements.end(); it != end; ++it)
 	{
 		// сбросим все отметки is_mouse_pressed
-
 		
+			
+
 			if (q == nullptr || &*it != q) {
+				if (it->is_edit_begin) {
+					it->edit_end();
+					invalidate();
+				}
 				if (it->func__mouse_unpress != nullptr) {
 					it->func__mouse_unpress(mx, my);
 				}
@@ -140,10 +150,14 @@ void GUI::left_button_mouse_down(int mx, int my) {
 		
 	}
 
-	/*if (q != nullptr && q->is_mouse_pressed == false) {
-		q->set_mouse_pressed(true);
+	if (q != nullptr && q->type == GUI_Element_Type_edit) {
+		if (q->is_active == true) {
+			if (q->is_edit_begin == false) {
+				q->edit_begin();
+			}
+		}
 		invalidate();
-	}*/
+	}
 	
 }
 
@@ -186,3 +200,30 @@ void GUI::close_application() {
 	PostMessage(hw, WM_DESTROY, 0, 0);
 }
 
+
+void GUI::char_keydown(int msg, int wp, int lp) {
+	int i;
+	i = 0;
+	while (i < element_max_count && element[i] != nullptr) {
+		if (element[i]->is_edit_process) {
+			element[i]->char_keydown(low_level, msg, wp, lp);
+		}
+		i++;
+	};
+}
+
+void GUI::char_keyup(int msg, int wp, int lp) {
+
+	std::list <GUI_Element>::iterator it, end;
+
+	for (it = elements.begin(), end = elements.end(); it != end; ++it)
+	{
+		// сбросим все отметки is_mouse_hover
+
+		if (it->is_edit_begin) {
+			it->char_keyup(msg, wp, lp);
+			invalidate();
+		}
+	}
+
+}

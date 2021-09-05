@@ -77,6 +77,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>
       </ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_77_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -127,6 +128,7 @@
   <ItemGroup>
     <ClCompile Include="APPLICATION_ATTRIBUTES.cpp" />
     <ClCompile Include="DESKTOP.cpp" />
+    <ClCompile Include="FONT.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="GUI_Element.cpp" />
     <ClCompile Include="GUI_low_level.cpp" />
@@ -137,6 +139,7 @@
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h" />
     <ClInclude Include="DESKTOP.h" />
+    <ClInclude Include="FONT.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="GUI_Element.h" />
     <ClInclude Include="GUI_low_level.h" />

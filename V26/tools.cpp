@@ -1,5 +1,10 @@
 #include "tools.h"
 #include "APPLICATION_ATTRIBUTES.h"
+#include "FONT.h"
+#include "resource.h"
+
+extern FONT *font[10];
+
 
 void fatal_error(const char *s) {
 	FILE *f;
@@ -483,4 +488,73 @@ void load_onetime_screenposition_desktop(int *x, int *y) {
 	}
 
 
+}
+
+
+void load_fonts() {
+
+	HMODULE hMod = GetModuleHandle(nullptr);
+
+	//////////////////////////////////////////////////////////////////////
+
+	font[0] = new FONT();
+
+	HRSRC hRes_font0 = FindResource(hMod, MAKEINTRESOURCE(20000), L"BINARY");
+	HGLOBAL hGlob_font0 = LoadResource(hMod, hRes_font0);
+	BYTE *lpbArray_font0 = (BYTE*)LockResource(hGlob_font0);
+	DWORD sz_font0;
+	sz_font0 = SizeofResource(hMod, hRes_font0);
+
+	font[0]->load_from_buffer(lpbArray_font0, sz_font0);
+
+	//////////////////////////////////////////////////////////////////////
+
+	font[1] = new FONT();
+
+	HRSRC hRes_font1 = FindResource(hMod, MAKEINTRESOURCE(20001), L"BINARY");
+	HGLOBAL hGlob_font1 = LoadResource(hMod, hRes_font1);
+	BYTE *lpbArray_font1 = (BYTE*)LockResource(hGlob_font1);
+	DWORD sz_font1;
+	sz_font1 = SizeofResource(hMod, hRes_font1);
+
+	font[1]->load_from_buffer(lpbArray_font1, sz_font1);
+
+}
+
+uint32_t transparent_color(uint32_t old_color, uint32_t new_color, int percent) {
+	int need_r, need_g, need_b;
+
+	int old_r, old_g, old_b, new_r, new_g, new_b;
+
+	need_r = new_color & 0x0000ff;
+	need_g = (new_color & 0x00ff00) >> 8;
+	need_b = (new_color & 0xff0000) >> 16;
+
+	old_r = old_color & 0xff;
+	old_g = ((old_color & 0xff00) >> 8);
+	old_b = ((old_color & 0xff0000) >> 16);
+
+
+
+	new_r = (int)(old_r + (float)(need_r - old_r) / (float)255 * (float)percent);
+	new_g = (int)(old_g + (float)(need_g - old_g) / (float)255 * (float)percent);
+	new_b = (int)(old_b + (float)(need_b - old_b) / (float)255 * (float)percent);
+
+	return new_r | (new_g << 8) | (new_b << 16);
+
+}
+
+int wchar_to_ascii(int p) {
+
+	if (p == 0x401) return '¸';
+	if (p == 0x451) return '¨';
+	if (p >= 0x410 && p <= 0x44f) {
+		return (0xC0 + (p - 0x410));
+	};
+	if (p >= 0x20 && p <= 0x7f)
+	{
+		return p;
+	};
+	if (p == 8226) return 150;
+	return '?';
 }

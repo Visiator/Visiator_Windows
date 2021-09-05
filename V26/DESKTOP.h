@@ -27,8 +27,15 @@ public:
 		, *panel_autorun = nullptr
 		, *btn_outgoing_connect = nullptr
 		, *btn_save_pass = nullptr
-		, *btn_www = nullptr;
+		, *btn_www = nullptr
+		, *checkbox_autorun = nullptr
 
+		, *edit_incoming_id = nullptr
+		, *edit_incoming_pass = nullptr
+		, *edit_outgoing_id = nullptr
+		, *edit_outgoing_pass = nullptr
+		, *edit_autorun_id = nullptr
+		, *edit_autorun_pass = nullptr;
 
 	void RUN();
 	void init_gui();

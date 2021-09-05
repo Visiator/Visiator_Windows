@@ -126,6 +126,7 @@ void mouse_unpress_btn_save_pass(int mx, int my) {
 }
 
 void mouse_press_btn_www(int mx, int my) {
+	
 	if (desktop->btn_www->is_visible == false) return;
 	if (desktop->btn_www->parent != nullptr && desktop->btn_www->parent->is_visible == false) return;
 
@@ -145,6 +146,29 @@ void mouse_unpress_btn_www(int mx, int my) {
 		desktop->btn_www->set_mouse_pressed(false);
 		desktop->gui->invalidate();
 	}
+}
+
+void mouse_press_checkbox_autorun(int mx, int my) {
+
+	if (desktop->checkbox_autorun->is_visible == false) return;
+	if (desktop->checkbox_autorun->parent != nullptr && desktop->checkbox_autorun->parent->is_visible == false) return;
+
+	if (   mx >= desktop->checkbox_autorun->x
+		&& mx < desktop->checkbox_autorun->x + desktop->checkbox_autorun->w
+		&& my >= desktop->checkbox_autorun->y
+		&& my < desktop->checkbox_autorun->y + desktop->checkbox_autorun->h) {
+		if (desktop->checkbox_autorun->is_mouse_pressed == false) {
+			desktop->checkbox_autorun->set_mouse_pressed(true);
+			desktop->gui->invalidate();
+		}
+		else {
+			desktop->checkbox_autorun->set_mouse_pressed(false);
+			desktop->gui->invalidate();
+		}
+	}
+}
+void mouse_unpress_checkbox_autorun(int mx, int my) {
+
 }
 
 void DESKTOP::init_gui() {
@@ -208,6 +232,45 @@ void DESKTOP::init_gui() {
 	btn_www->func__mouse_press = mouse_press_btn_www;
 	btn_www->func__mouse_unpress = mouse_unpress_btn_www;
 	btn_www->parent = panel_incoming;
+
+
+	checkbox_autorun = gui->add_element(GUI_Element_Type_button, 33, 224, 18, 18, 0xff00ff);
+	checkbox_autorun->load_BMP_from_resource(10023, 10023, 10024);
+	checkbox_autorun->func__mouse_press = mouse_press_checkbox_autorun;
+	checkbox_autorun->func__mouse_unpress = mouse_unpress_checkbox_autorun;
+	checkbox_autorun->parent = panel_autorun;
+
+
+	edit_incoming_id = gui->add_element(GUI_Element_Type_edit, 76, 116, 140, 21, 0xffffff);
+	edit_incoming_id->set_text(L"123-456-389");
+	edit_incoming_id->parent = panel_incoming;
+
+	edit_incoming_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 140, 21, 0xffffff);
+	edit_incoming_pass->set_text(L"4863");
+	edit_incoming_pass->parent = panel_incoming;
+
+
+	edit_outgoing_id = gui->add_element(GUI_Element_Type_edit, 76, 116, 140, 21, 0xffffff);
+	edit_outgoing_id->set_text(L"518-265-459");
+	edit_outgoing_id->parent = panel_outgoing;
+
+	edit_outgoing_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 140, 21, 0xffffff);
+	edit_outgoing_pass->set_text(L"****");
+	edit_outgoing_pass->parent = panel_outgoing;
+
+
+	edit_autorun_id = gui->add_element(GUI_Element_Type_edit, 76, 116, 140, 21, 0xffffff);
+	edit_autorun_id->set_text(L"508-193-884");
+	edit_autorun_id->is_active = true;
+	edit_autorun_id->parent = panel_autorun;
+
+	edit_autorun_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 140, 21, 0xffffff);
+	edit_autorun_pass->set_text(L"*********");
+	edit_autorun_pass->is_active = true;
+	edit_autorun_pass->parent = panel_autorun;
+
+	edit_autorun_id->name = L"edit_autorun_id";
+	edit_autorun_pass->name = L"edit_autorun_pass";
 
 }
 
@@ -497,10 +560,10 @@ LRESULT DESKTOP::WM_KEYDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	/*** 2021
 	if (app_attributes.modal_process != 0) {
 		return DefWindowProc(hw, msg, wp, lp);
-	}
+	}***/
 
 	char_keydown(msg, wp, lp);
-	***/
+	
 	return 0;
 };
 LRESULT DESKTOP::WM_MOUSEWHEEL_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
@@ -905,9 +968,9 @@ void DESKTOP::char_keydown(int msg, int wp, int lp) {
 	/*** 2021
 	if (app_attributes.modal_process != 0) {
 		return;
-	}
-	gui->char_keydown(low_level, msg, wp, lp);
-	***/
+	}***/
+	gui->char_keydown(msg, wp, lp);
+	
 }
 
 void DESKTOP::char_keyup(int msg, int wp, int lp) {

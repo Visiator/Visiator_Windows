@@ -1,5 +1,10 @@
+
+
 #include "GUI_Element.h"
 #include "GUI_low_level.h"
+#include "FONT.h"
+
+extern FONT *font[10];
 
 GUI_Element::GUI_Element(int type_, int x_, int y_, int w_, int h_,  uint32_t color_) {
 	clean();
@@ -62,6 +67,8 @@ void GUI_Element::clean() {
 
 void GUI_Element::Paint(GUI_low_level *low_level) {
 
+	int cur_pos;
+
 	if (is_visible == false) return;
 	if (parent != nullptr && parent->is_visible == false) return;
 
@@ -70,12 +77,27 @@ void GUI_Element::Paint(GUI_low_level *low_level) {
 		textura_pressed->Paint(low_level, x, y);
 		return;
 	}
-	if (is_mouse_hover == true && textura_hover != nullptr) {
-		textura_hover->Paint(low_level, x, y);
-		return;
-	}
-	if (textura_normal != nullptr) {
-		textura_normal->Paint(low_level, x, y);
+	else {
+		if (is_mouse_hover == true && textura_hover != nullptr) {
+			textura_hover->Paint(low_level, x, y);
+			return;
+		}
+		else {
+			if (textura_normal != nullptr) {
+				textura_normal->Paint(low_level, x, y);
+			}
+		};
+	};
+	if (type == GUI_Element_Type_edit) {
+		if (text.empty() == false) {	
+			if (is_active == true && is_edit_begin == true) {
+				cur_pos = cursor_position;
+			}
+			else {
+				cur_pos = -1;
+			}
+			font[1]->paintAAA(low_level, x, y, text.c_str(), 0x000000, cur_pos);
+		};
 	}
 }
 
@@ -89,4 +111,28 @@ void GUI_Element::load_BMP_from_resource(int id_normal, int id_hover, int id_pre
 	if (id_pressed != 0 && textura_pressed == nullptr) {
 		textura_pressed = new TEXTURA(id_pressed);
 	}
+}
+
+void GUI_Element::set_text(wchar_t *txt_) {
+	text.clear();
+	text = txt_;
+}
+
+void GUI_Element::edit_begin() {
+	if (is_edit_begin == true) return;
+	is_edit_begin = true;
+	cursor_position = text.length();
+}
+
+void GUI_Element::edit_end() {
+	if (is_edit_begin == false) return;
+	is_edit_begin = false;
+}
+
+void GUI_Element::char_keydown(int msg, int wp, int lp) {
+
+}
+
+void GUI_Element::char_keyup(int msg, int wp, int lp) {
+
 }

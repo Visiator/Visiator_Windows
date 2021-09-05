@@ -31,10 +31,13 @@
 #include "APPLICATION_ATTRIBUTES.h"
 #include "DESKTOP.h"
 
+#include <boost/lambda/lambda.hpp>
+
 #pragma comment(lib,"vfw32.lib")
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "version.lib")
 
+FONT *font[10] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 bool GLOBAL_STOP = false;
 APPLICATION_ATTRIBUTES app_attributes;
 DESKTOP  *desktop = nullptr;
@@ -43,15 +46,17 @@ void WinMain_finish();
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 
+	//using namespace boost::lambda;
+
 	init_crit_section();
 	
 	if (init_net() == false) { return -1; }
 
 	app_attributes.get_all_parametrs(hInstance);
 
-	/*
+	
 	load_fonts();
-
+	/*
 	thread_list = new ALL_THREAD_LIST();
 
 	view_visiator_com = new char[50];

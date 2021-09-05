@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdint.h"
+
 #define _WINSOCKAPI_ 
 #include <windows.h>
 #undef _WINSOCKAPI_
@@ -9,7 +11,7 @@
 #include <stdio.h>
 #undef _WINSOCKAPI_
 
-#include "stdint.h"
+
 
 class GUI_low_level
 {
@@ -36,6 +38,9 @@ public:
 	void unlock_READ();
 	void unlock_WRITE();
 
+	void set_pixx(int x, int y, uint32_t color);
+	uint32_t get_pix(int x, int y);
+	void line_v(int x, int y, int h, uint32_t color);
 	void fill_color(unsigned int col);
 
 	void rectangle(int x, int y, int w, int h, uint32_t color);

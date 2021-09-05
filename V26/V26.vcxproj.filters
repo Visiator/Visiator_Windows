@@ -39,6 +39,9 @@
     <ClCompile Include="TEXTURA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FONT.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -63,6 +66,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TEXTURA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FONT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

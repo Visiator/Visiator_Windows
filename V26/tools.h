@@ -1,4 +1,6 @@
+#pragma once
 
+#include "stdint.h"
 
 #define _WINSOCKAPI_ 
 #include <windows.h>
@@ -20,7 +22,7 @@
 
 
 
-#pragma once
+
 
 void init_crit_section();
 void enter_crit(int id);
@@ -58,3 +60,7 @@ void set_GLOBAL_STOP_true();
 void fatal_error(const char *s);
 void get_screen_size(int *scr_w, int *scr_h);
 void load_onetime_screenposition_desktop(int *x, int *y);
+
+void load_fonts();
+uint32_t transparent_color(uint32_t old_color, uint32_t new_color, int percent);
+int wchar_to_ascii(int p);

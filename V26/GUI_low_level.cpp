@@ -1,5 +1,5 @@
 
-#include "stdint.h"
+//#include "stdint.h"
 
 #include "GUI_low_level.h"
 #include "tools.h"
@@ -140,6 +140,24 @@ void GUI_low_level::unlock_READ() {
 
 }
 
+void GUI_low_level::set_pixx(int x, int y, uint32_t color)
+{
+
+	if (y < 0) {
+		return;
+	}
+	if (x < 0 || y < 0 || x >= window_w || y >= window_h) {
+		return;
+	};
+	buf[x + y * window_w] = color;
+};
+
+uint32_t GUI_low_level::get_pix(int x, int y)
+{
+	if (x < 0 || y < 0 || x >= window_w || y >= window_h) return 0;
+	return buf[x + y * window_w];
+};
+
 
 void GUI_low_level::Paint() {
 
@@ -195,4 +213,24 @@ void GUI_low_level::Paint() {
 	EndPaint(hw, &ps);
 
 
+}
+
+void GUI_low_level::line_v(int x, int y, int h, uint32_t color) {
+	if (x < 0 || y < 0) return;
+	if (y + h >= window_h) {
+		h = window_h - y;
+		if (h <= 0) return;
+	}
+	if (x >= window_w) {
+		return;
+	}
+
+	unsigned int *qq;
+	qq = buf + x + y * window_w;
+	for (int i = 0; i < h; i++) {
+		//set_pix(x, y + i, color);
+		*qq = color;
+		qq += window_w;
+
+	}
 }

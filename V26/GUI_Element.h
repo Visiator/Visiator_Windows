@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stdint.h"
+#include <string>
 
 
 
@@ -9,20 +9,31 @@
 
 #define GUI_Element_Type_panel 1
 #define GUI_Element_Type_button 2
+#define GUI_Element_Type_edit 3
 
 class GUI_Element
 {
 public:
+	std::wstring name;
 	int  type = 0;
 	int  x = 0, y = 0, w = 0, h = 0;
 	uint32_t color = 0;
 
+	int cursor_position = 0;
+	std::wstring text;
+	void set_text(wchar_t *txt_);
+
 	GUI_Element *parent = nullptr;
 
+	
 	bool is_visible = true;
 	bool is_active = false;
 	bool is_mouse_hover = false;
 	bool is_mouse_pressed = false;
+	bool is_edit_begin = false;
+
+	void edit_begin();
+	void edit_end();
 
 	void set_mouse_hover(bool val);
 	void set_mouse_pressed(bool val);
@@ -34,6 +45,9 @@ public:
 	TEXTURA *textura_normal  = nullptr;
 	TEXTURA *textura_hover   = nullptr;
 	TEXTURA *textura_pressed = nullptr;
+
+	void char_keydown(int msg, int wp, int lp);
+	void char_keyup(int msg, int wp, int lp);
 
 
 	void clean();
