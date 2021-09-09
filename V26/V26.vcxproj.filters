@@ -42,6 +42,9 @@
     <ClCompile Include="FONT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CRYPTO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">

@@ -36,6 +36,7 @@
 #pragma comment(lib,"vfw32.lib")
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "version.lib")
+#pragma comment(lib, "cryptlib.lib")
 
 FONT *font[10] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 bool GLOBAL_STOP = false;

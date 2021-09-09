@@ -78,6 +78,7 @@
       <ConformanceMode>
       </ConformanceMode>
       <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_77_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -128,6 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="APPLICATION_ATTRIBUTES.cpp" />
+    <ClCompile Include="CRYPTO.cpp" />
     <ClCompile Include="DESKTOP.cpp" />
     <ClCompile Include="FONT.cpp" />
     <ClCompile Include="GUI.cpp" />

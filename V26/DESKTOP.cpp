@@ -2,6 +2,7 @@
 #include "APPLICATION_ATTRIBUTES.h"
 #include "GUI.h"
 #include "GUI_low_level.h"
+#include "CRYPTO.h"
 
 #define _window_w 250
 #define _window_h 344
@@ -97,8 +98,10 @@ void mouse_press_btn_outgoing_connect(int mx, int my) {
 }
 
 void mouse_unpress_btn_outgoing_connect(int mx, int my) {
-	if (desktop->btn_outgoing_connect->is_mouse_pressed == true) {
+	if (desktop->btn_outgoing_connect->is_mouse_pressed == true) {		
 		desktop->btn_outgoing_connect->set_mouse_pressed(false);
+
+		desktop->outgoing_pass_encrypted_START();
 		desktop->gui->invalidate();
 	}
 }
@@ -121,6 +124,9 @@ void mouse_press_btn_save_pass(int mx, int my) {
 void mouse_unpress_btn_save_pass(int mx, int my) {
 	if (desktop->btn_save_pass->is_mouse_pressed == true) {
 		desktop->btn_save_pass->set_mouse_pressed(false);
+		desktop->gui->invalidate();
+
+		desktop->autorun_pass_encrypted_START();
 		desktop->gui->invalidate();
 	}
 }
@@ -282,6 +288,14 @@ void DESKTOP::init_gui() {
 
 	indicator_incoming = gui->add_element(GUI_Element_Type_indicator, 64, 168, 165, 32, 0xffffff);
 	indicator_incoming->parent = panel_incoming;
+
+	indicator_outgoing = gui->add_element(GUI_Element_Type_indicator, 64, 168, 165, 32, 0xffffff);
+	indicator_outgoing->parent = panel_outgoing;
+	indicator_outgoing->is_visible = false;
+
+	indicator_autorun = gui->add_element(GUI_Element_Type_indicator, 64, 168, 165, 32, 0xffffff);
+	indicator_autorun->parent = panel_autorun;
+	indicator_autorun->is_visible = false;
 }
 
 void DESKTOP::calc_start_size(int &x, int &y, int &w, int &h) {
@@ -398,15 +412,109 @@ void DESKTOP::RUN() {
 }
 
 
+void DESKTOP::incoming_pass_encrypted_START() {
+	indicator_incoming->cursor_position = 0;
+	indicator_incoming->is_visible = true;
+	edit_incoming_pass->is_visible = false;
+	if (gui != nullptr) gui->invalidate();
+	need_encrypt_incoming_pass = true;
+}
+
+void DESKTOP::incoming_pass_encrypted_FINISH() {
+	indicator_incoming->is_visible = false;
+	edit_incoming_pass->is_visible = true;
+	if (gui != nullptr) gui->invalidate();
+
+}
+
+void DESKTOP::outgoing_pass_encrypted_START() {
+	indicator_outgoing->cursor_position = 0;
+	indicator_outgoing->is_visible = true;
+	edit_outgoing_pass->is_visible = false;
+	if (gui != nullptr) gui->invalidate();
+	need_encrypt_outgoing_pass = true;
+	
+}
+
+void DESKTOP::outgoing_pass_encrypted_FINISH() {
+	indicator_outgoing->is_visible = false;
+	edit_outgoing_pass->is_visible = true;
+	if (gui != nullptr) gui->invalidate();
+
+}
+
+
+
+void DESKTOP::autorun_pass_encrypted_START() {
+	indicator_autorun->cursor_position = 0;
+	indicator_autorun->is_visible = true;
+	edit_autorun_pass->is_visible = false;
+	if (gui != nullptr) gui->invalidate();
+	need_encrypt_autorun_pass = true;
+
+}
+
+void DESKTOP::autorun_pass_encrypted_FINISH() {
+	indicator_autorun->is_visible = false;
+	edit_autorun_pass->is_visible = true;
+	if (gui != nullptr) gui->invalidate();
+
+}
+
+
 void DESKTOP::EXECUTE() {
+
+	int i, j, k;
+
 	EXECUTE_is_run = true;
+
+	MY_SHA3 sha3;
 
 	boost::posix_time::milliseconds SleepTime(100);
 
 	while (GLOBAL_STOP == false) {
 		
-		if (need_encrypt_incoming_pass) {
 
+		if (need_encrypt_incoming_pass) {
+			need_encrypt_incoming_pass = false;
+			for (i = 0; i < 32; i++) incoming_pass_encrypted[i] = incoming_pass[i];
+			for (i = 0; i < 20; i++) {
+				if (GLOBAL_STOP != false) { EXECUTE_is_run = false; return; };
+				for (j = 0; j < 5000; j++) {
+					sha3.hash_32_byte(incoming_pass_encrypted, incoming_pass_encrypted);
+				};
+				indicator_incoming->cursor_position++;
+				if(gui != nullptr) gui->invalidate();
+			}
+			incoming_pass_encrypted_FINISH();
+		}
+
+		if (need_encrypt_outgoing_pass) {
+			need_encrypt_outgoing_pass = false;
+			for (i = 0; i < 16; i++) outgoing_pass_encrypted[i] = outgoing_pass[i];
+			for (i = 0; i < 20; i++) {
+				if (GLOBAL_STOP != false) { EXECUTE_is_run = false; return; };
+				for (j = 0; j < 5000; j++) {
+					sha3.hash_32_byte(outgoing_pass_encrypted, outgoing_pass_encrypted);
+				};
+				indicator_outgoing->cursor_position++;
+				if (gui != nullptr) gui->invalidate();
+			}
+			outgoing_pass_encrypted_FINISH();
+		}
+
+		if (need_encrypt_autorun_pass) {
+			need_encrypt_autorun_pass = false;
+			for (i = 0; i < 16; i++) autorun_pass_encrypted[i] = autorun_pass[i];
+			for (i = 0; i < 20; i++) {
+				if (GLOBAL_STOP != false) { EXECUTE_is_run = false; return; };
+				for (j = 0; j < 5000; j++) {
+					sha3.hash_32_byte(autorun_pass_encrypted, autorun_pass_encrypted);
+				};
+				indicator_autorun->cursor_position++;
+				if (gui != nullptr) gui->invalidate();
+			}
+			autorun_pass_encrypted_FINISH();
 		}
 
 		boost::this_thread::sleep(SleepTime);
@@ -516,6 +624,11 @@ LRESULT DESKTOP::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	SetTimer(hw, 1, 1, NULL);
 
+	for (int i = 0; i < 32; i++) {
+		incoming_pass[i] = 0;
+		incoming_pass_encrypted[i] = 0;
+	}
+	incoming_pass_encrypted_START();
 	
 
 	/*** 2021

@@ -41,7 +41,8 @@ public:
 		, *edit_autorun_id = nullptr
 		, *edit_autorun_pass = nullptr
 		, *indicator_incoming = nullptr
-		, *indicator_outgoing = nullptr;
+		, *indicator_outgoing = nullptr
+		, *indicator_autorun = nullptr;
 
 	void RUN();
 	void init_gui();
@@ -54,12 +55,31 @@ public:
 	void  start_EXECUTE_net_server_session_pool();
 
 	bool need_encrypt_incoming_pass = false;
-	uint8_t incoming_pass[16];
-	uint8_t incoming_pass_encrypted[16];
+	uint8_t incoming_pass[32];
+	uint8_t incoming_pass_encrypted[32];
+
+	bool need_encrypt_outgoing_pass = false;
+	uint8_t outgoing_pass[32];
+	uint8_t outgoing_pass_encrypted[32];
+
+	bool need_encrypt_autorun_pass = false;
+	uint8_t autorun_pass[32];
+	uint8_t autorun_pass_encrypted[32];
+
+	
 
 	boost::thread* thread_EXECUTE = nullptr;
-	bool  EXECUTE_is_run = false;
+	bool EXECUTE_is_run = false;
 	void EXECUTE();
+
+	void incoming_pass_encrypted_START();
+	void incoming_pass_encrypted_FINISH();
+
+	void outgoing_pass_encrypted_START();
+	void outgoing_pass_encrypted_FINISH();
+
+	void autorun_pass_encrypted_START();
+	void autorun_pass_encrypted_FINISH();
 
 	// thread для encrypt out pass
 	/* bool  EXECUTE_encrypt_out_pass_thread_is_run = false;

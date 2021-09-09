@@ -1,3 +1,5 @@
 Browse.VC.opendb
 *.ipch
 .vs
+*.obj
+*.exe

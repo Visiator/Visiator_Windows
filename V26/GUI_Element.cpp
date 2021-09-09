@@ -67,6 +67,7 @@ void GUI_Element::clean() {
 
 void GUI_Element::Paint(GUI_low_level *low_level) {
 
+	uint32_t clr;
 	int cur_pos;
 
 	if (is_visible == false) return;
@@ -77,7 +78,9 @@ void GUI_Element::Paint(GUI_low_level *low_level) {
 	if (type == GUI_Element_Type_indicator) {
 
 		for (int i = 0; i < 20; i++) {
-			low_level->line_v(x+i*5 + 15, y+7, 20, 0xdddddd);
+			if (i < cursor_position) clr = 0;
+			else clr = 0xdddddd;
+			low_level->line_v(x+i*5 + 15, y+7, 20, clr);
 		};
 		return;
 	}
