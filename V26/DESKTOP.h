@@ -9,6 +9,10 @@
 #include <stdio.h>
 #undef _WINSOCKAPI_
 
+
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+
 #include "tools.h"
 #include "GUI.h"
 #include "GUI_low_level.h"
@@ -35,7 +39,9 @@ public:
 		, *edit_outgoing_id = nullptr
 		, *edit_outgoing_pass = nullptr
 		, *edit_autorun_id = nullptr
-		, *edit_autorun_pass = nullptr;
+		, *edit_autorun_pass = nullptr
+		, *indicator_incoming = nullptr
+		, *indicator_outgoing = nullptr;
 
 	void RUN();
 	void init_gui();
@@ -47,8 +53,12 @@ public:
 	DWORD EXECUTE_net_server_session_pool_thread_id = 0;
 	void  start_EXECUTE_net_server_session_pool();
 
+	boost::thread* thread_EXECUTE = nullptr;
+	bool  EXECUTE_is_run = false;
+	void EXECUTE();
+
 	// thread для encrypt out pass
-	bool  EXECUTE_encrypt_out_pass_thread_is_run = false;
+	/* bool  EXECUTE_encrypt_out_pass_thread_is_run = false;
 	void  EXECUTE_encrypt_out_pass();
 	DWORD EXECUTE_encrypt_out_pass_thread_id = 0;
 	void  start_EXECUTE_encrypt_out_pass();
@@ -59,7 +69,7 @@ public:
 	void  EXECUTE_encrypt_autostart_pass();
 	DWORD EXECUTE_encrypt_autostart_pass_thread_id = 0;
 	void  start_EXECUTE_encrypt_autostart_pass();
-	bool  need_encrypt_autostart_pass = false;
+	bool  need_encrypt_autostart_pass = false; */
 
 	LRESULT WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 	LRESULT WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
@@ -113,8 +123,9 @@ public:
 	LRESULT WM_DRAWCLIPBOARD_(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 	LRESULT WM_CHANGECBCHAIN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 
+	
 
-	void char_keydown(int msg, int wp, int lp);
+	void char_keydown(int msg, int wp, int lp, wchar_t *wbuffer);
 	void char_keyup(int msg, int wp, int lp);
 
 	void char_(int msg, int wp, int lp);

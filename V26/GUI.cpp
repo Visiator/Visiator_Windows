@@ -155,6 +155,16 @@ void GUI::left_button_mouse_down(int mx, int my) {
 			if (q->is_edit_begin == false) {
 				q->edit_begin();
 			}
+			if (mx > q->x && mx < q->x + q->w) {
+				if (mx > q->x + q->w - 18) {
+					if (q->pass_eye.is_eye_open) {
+						q->pass_eye.is_eye_open = false;
+					}
+					else {
+						q->pass_eye.is_eye_open = true;
+					}
+				}
+			}
 		}
 		invalidate();
 	}
@@ -201,15 +211,20 @@ void GUI::close_application() {
 }
 
 
-void GUI::char_keydown(int msg, int wp, int lp) {
-	int i;
-	i = 0;
-	while (i < element_max_count && element[i] != nullptr) {
-		if (element[i]->is_edit_process) {
-			element[i]->char_keydown(low_level, msg, wp, lp);
+void GUI::char_keydown(int msg, int wp, int lp, wchar_t *wbuffer) {
+	
+	std::list <GUI_Element>::iterator it, end;
+
+	for (it = elements.begin(), end = elements.end(); it != end; ++it)
+	{
+		// сбросим все отметки is_mouse_hover
+
+		if (it->is_edit_begin) {
+			it->char_keydown(msg, wp, lp, wbuffer);
+			invalidate();
 		}
-		i++;
-	};
+	}
+
 }
 
 void GUI::char_keyup(int msg, int wp, int lp) {

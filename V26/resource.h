@@ -45,6 +45,8 @@
 #define IDB__BMP__checkbox              10023
 #define IDB__BMP__checkbox_set          10024
 
+#define IDB__BMP__pass_eye              10025
+#define IDB__BMP__pass_eye_open         10026
 
 
 

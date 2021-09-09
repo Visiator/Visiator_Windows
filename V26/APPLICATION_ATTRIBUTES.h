@@ -9,12 +9,16 @@
 #include <stdio.h>
 #undef _WINSOCKAPI_
 
+#include <boost/thread.hpp>
+#include <boost/bind.hpp>
+
+
 #include "tools.h"
 
 class APPLICATION_ATTRIBUTES
 {
 public:
-
+	boost::thread_group tgroup;
 	bool is_desktop = false;
 
 	HWND  desktop_window_hwnd = 0;

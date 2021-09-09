@@ -108,7 +108,18 @@ void FONT::load_from_buffer(uint8_t *buf, int buf_size) {
 
 };
 
-void FONT::paintAAA(GUI_low_level *low_level, int x, int y, const wchar_t *txt, uint32_t color_, int cursor_position) {
+int FONT::text_width(const wchar_t *txt) {
+	int i, ww;
+	i = 0;
+	ww = 0;
+	while (txt[i] != 0) {
+		ww += bukva[wchar_to_ascii(txt[i])].w;
+		i++;
+	}
+	return ww;
+}
+
+void FONT::paintAAA(GUI_low_level *low_level, int x, int y, const wchar_t *txt, uint32_t color_, int cursor_position, bool is_pass) {
 	bool show_cursor;
 	int i, ww;
 	i = 0;
@@ -116,7 +127,12 @@ void FONT::paintAAA(GUI_low_level *low_level, int x, int y, const wchar_t *txt, 
 	while (txt[i] != 0) {
 		show_cursor = false;
 		if (i == cursor_position) show_cursor = true;
-		ww += bukva[wchar_to_ascii(txt[i])].paintAAA(low_level, x + ww, y, color_, show_cursor);
+		if (is_pass == false) {
+			ww += bukva[wchar_to_ascii(txt[i])].paintAAA(low_level, x + ww, y, color_, show_cursor);
+		}
+		else {
+			ww += bukva[150].paintAAA(low_level, x + ww, y, color_, show_cursor);
+		}
 		i++;
 	}
 	if (i == cursor_position) {

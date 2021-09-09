@@ -10,6 +10,14 @@
 #define GUI_Element_Type_panel 1
 #define GUI_Element_Type_button 2
 #define GUI_Element_Type_edit 3
+#define GUI_Element_Type_indicator 4
+
+class PASS_EYE {
+public: 
+	bool is_eye_open = false;
+	TEXTURA *eye = nullptr, *eye_open = nullptr;
+	PASS_EYE();
+};
 
 class GUI_Element
 {
@@ -31,6 +39,9 @@ public:
 	bool is_mouse_hover = false;
 	bool is_mouse_pressed = false;
 	bool is_edit_begin = false;
+	bool is_password = false;
+	
+
 
 	void edit_begin();
 	void edit_end();
@@ -45,8 +56,10 @@ public:
 	TEXTURA *textura_normal  = nullptr;
 	TEXTURA *textura_hover   = nullptr;
 	TEXTURA *textura_pressed = nullptr;
+	PASS_EYE pass_eye;
+	
 
-	void char_keydown(int msg, int wp, int lp);
+	void char_keydown(int msg, int wp, int lp, wchar_t *wbuffer);
 	void char_keyup(int msg, int wp, int lp);
 
 

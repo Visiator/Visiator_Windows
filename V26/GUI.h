@@ -25,7 +25,7 @@ public:
 
 	GUI_Element *add_element(int type_, int x_, int y_, int w_, int h_, uint32_t color_);
 
-	void char_keydown(int msg, int wp, int lp);
+	void char_keydown(int msg, int wp, int lp, wchar_t *wbuffer);
 	void char_keyup(int msg, int wp, int lp);
 
 

@@ -234,7 +234,7 @@ void DESKTOP::init_gui() {
 	btn_www->parent = panel_incoming;
 
 
-	checkbox_autorun = gui->add_element(GUI_Element_Type_button, 33, 224, 18, 18, 0xff00ff);
+	checkbox_autorun = gui->add_element(GUI_Element_Type_button, 33, 224, 70, 18, 1);
 	checkbox_autorun->load_BMP_from_resource(10023, 10023, 10024);
 	checkbox_autorun->func__mouse_press = mouse_press_checkbox_autorun;
 	checkbox_autorun->func__mouse_unpress = mouse_unpress_checkbox_autorun;
@@ -248,30 +248,40 @@ void DESKTOP::init_gui() {
 	edit_incoming_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 140, 21, 0xffffff);
 	edit_incoming_pass->set_text(L"4863");
 	edit_incoming_pass->parent = panel_incoming;
+	edit_incoming_pass->is_visible = false;
 
 
 	edit_outgoing_id = gui->add_element(GUI_Element_Type_edit, 76, 116, 140, 21, 0xffffff);
-	edit_outgoing_id->set_text(L"518-265-459");
+	edit_outgoing_id->set_text(L"");
+	edit_outgoing_id->is_active = true;
 	edit_outgoing_id->parent = panel_outgoing;
 
-	edit_outgoing_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 140, 21, 0xffffff);
-	edit_outgoing_pass->set_text(L"****");
+	edit_outgoing_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 150, 21, 0xffffff);
+	edit_outgoing_pass->set_text(L"");
+	edit_outgoing_pass->is_active = true;
+	edit_outgoing_pass->is_password = true;
 	edit_outgoing_pass->parent = panel_outgoing;
-
+	edit_outgoing_pass->pass_eye.eye = new TEXTURA(10025);
+	edit_outgoing_pass->pass_eye.eye_open = new TEXTURA(10026);
 
 	edit_autorun_id = gui->add_element(GUI_Element_Type_edit, 76, 116, 140, 21, 0xffffff);
 	edit_autorun_id->set_text(L"508-193-884");
-	edit_autorun_id->is_active = true;
+	//edit_autorun_id->is_active = true;
 	edit_autorun_id->parent = panel_autorun;
 
-	edit_autorun_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 140, 21, 0xffffff);
-	edit_autorun_pass->set_text(L"*********");
+	edit_autorun_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 150, 21, 0xffffff);
+	edit_autorun_pass->set_text(L"1234r567");
 	edit_autorun_pass->is_active = true;
 	edit_autorun_pass->parent = panel_autorun;
+	edit_autorun_pass->is_password = true;
+	edit_autorun_pass->pass_eye.eye = new TEXTURA(10025);
+	edit_autorun_pass->pass_eye.eye_open = new TEXTURA(10026);
 
 	edit_autorun_id->name = L"edit_autorun_id";
 	edit_autorun_pass->name = L"edit_autorun_pass";
 
+	indicator_incoming = gui->add_element(GUI_Element_Type_indicator, 64, 168, 165, 32, 0xffffff);
+	indicator_incoming->parent = panel_incoming;
 }
 
 void DESKTOP::calc_start_size(int &x, int &y, int &w, int &h) {
@@ -346,6 +356,8 @@ void DESKTOP::RUN() {
 		return;
 	};
 
+	thread_EXECUTE = app_attributes.tgroup.create_thread(boost::bind(&DESKTOP::EXECUTE, this));
+
 	ShowWindow(app_attributes.desktop_window_hwnd, SW_SHOWNORMAL);
 	UpdateWindow(app_attributes.desktop_window_hwnd);
 
@@ -382,9 +394,24 @@ void DESKTOP::RUN() {
 	//while (net_client_session != nullptr && net_client_session->EXECUTE_thread_is_run == true) { Sleep(10); }
 
 	while (EXECUTE_net_server_session_pool_thread_is_run == true) { Sleep(10); }
-	while (EXECUTE_encrypt_out_pass_thread_is_run == true) { Sleep(10); }
+	while (EXECUTE_is_run == true) { Sleep(10); }
 }
 
+
+void DESKTOP::EXECUTE() {
+	EXECUTE_is_run = true;
+
+	boost::posix_time::milliseconds SleepTime(100);
+
+	while (GLOBAL_STOP == false) {
+		
+		boost::this_thread::sleep(SleepTime);
+		
+		
+	}
+
+	EXECUTE_is_run = false;
+}
 
 DESKTOP::DESKTOP() {
 	
@@ -557,12 +584,18 @@ LRESULT DESKTOP::WM_CHAR_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 LRESULT DESKTOP::WM_KEYDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
+	wchar_t wbuffer[8];
+	BYTE lpKeyState[256];
+
+	GetKeyboardState(lpKeyState);
+	ToUnicode(wp, HIWORD(lp) & 0xFF, lpKeyState, wbuffer, 8, 0);
+
 	/*** 2021
 	if (app_attributes.modal_process != 0) {
 		return DefWindowProc(hw, msg, wp, lp);
 	}***/
-
-	char_keydown(msg, wp, lp);
+	
+	char_keydown(msg, wp, lp, wbuffer);	
 	
 	return 0;
 };
@@ -964,12 +997,12 @@ LRESULT DESKTOP::WM_CHANGECBCHAIN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	return 0;
 }
 
-void DESKTOP::char_keydown(int msg, int wp, int lp) {
+void DESKTOP::char_keydown(int msg, int wp, int lp, wchar_t *wbuffer) {
 	/*** 2021
 	if (app_attributes.modal_process != 0) {
 		return;
 	}***/
-	gui->char_keydown(msg, wp, lp);
+	gui->char_keydown(msg, wp, lp, wbuffer);
 	
 }
 

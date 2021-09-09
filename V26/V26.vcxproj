@@ -82,6 +82,7 @@
     <Link>
       <SubSystem>
       </SubSystem>
+      <AdditionalLibraryDirectories>C:\Program Files\boost\boost_1_77_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
