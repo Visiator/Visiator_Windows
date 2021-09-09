@@ -53,6 +53,10 @@ public:
 	DWORD EXECUTE_net_server_session_pool_thread_id = 0;
 	void  start_EXECUTE_net_server_session_pool();
 
+	bool need_encrypt_incoming_pass = false;
+	uint8_t incoming_pass[16];
+	uint8_t incoming_pass_encrypted[16];
+
 	boost::thread* thread_EXECUTE = nullptr;
 	bool  EXECUTE_is_run = false;
 	void EXECUTE();

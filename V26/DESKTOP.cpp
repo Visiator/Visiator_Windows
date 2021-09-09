@@ -405,6 +405,10 @@ void DESKTOP::EXECUTE() {
 
 	while (GLOBAL_STOP == false) {
 		
+		if (need_encrypt_incoming_pass) {
+
+		}
+
 		boost::this_thread::sleep(SleepTime);
 		
 		
