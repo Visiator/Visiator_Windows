@@ -71,8 +71,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	cmd_line.decode((char *)lpCmdLine);
 	*/
 
-	uint8_t partner_id[32];
-	uint8_t pass_encripted[32];
+	unsigned char partner_id[32];
+	unsigned char pass_encripted[32];
 
 	viewer = new VIEWER();
 	viewer->RUN_VIEWER(partner_id, pass_encripted);

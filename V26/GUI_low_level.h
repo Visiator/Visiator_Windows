@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stdint.h"
+//#include "stdint.h"
 
 #define _WINSOCKAPI_ 
 #include <windows.h>
@@ -38,12 +38,12 @@ public:
 	void unlock_READ();
 	void unlock_WRITE();
 
-	void set_pixx(int x, int y, uint32_t color);
-	uint32_t get_pix(int x, int y);
-	void line_v(int x, int y, int h, uint32_t color);
+	void set_pixx(int x, int y, unsigned int color);
+	unsigned int get_pix(int x, int y);
+	void line_v(int x, int y, int h, unsigned int color);
 	void fill_color(unsigned int col);
 
-	void rectangle(int x, int y, int w, int h, uint32_t color);
+	void rectangle(int x, int y, int w, int h, unsigned int color);
 
 	void change_size(HWND hw, int w_, int h_);
 	void invalidate();

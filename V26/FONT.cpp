@@ -84,7 +84,7 @@ FONT::FONT() {
 	
 }
 
-void FONT::load_from_buffer(uint8_t *buf, int buf_size) {
+void FONT::load_from_buffer(unsigned char *buf, int buf_size) {
 
 	
 

@@ -57,6 +57,9 @@
     <ClCompile Include="NET_CLIENT_SESSION.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NET_SERVER_SESSION.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -96,6 +99,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NET_CLIENT_SESSION.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NET_SERVER_SESSION.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

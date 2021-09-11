@@ -20,7 +20,10 @@ class APPLICATION_ATTRIBUTES
 public:
 	boost::thread_group tgroup;
 	bool is_desktop = false;
-	bool is_viewer = false;
+	bool is_viewer  = false;
+	bool is_service = false;
+
+	PROXY_LIST *proxy_list = nullptr;
 
 	HWND  desktop_window_hwnd = 0;
 	HWND  viewer_window_hwnd = 0;
@@ -31,5 +34,6 @@ public:
 
 	void get_all_parametrs(HINSTANCE hInstance_);
 
+	APPLICATION_ATTRIBUTES();
 };
 

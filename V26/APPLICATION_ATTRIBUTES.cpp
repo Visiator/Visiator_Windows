@@ -1,5 +1,9 @@
 #include "APPLICATION_ATTRIBUTES.h"
 
+APPLICATION_ATTRIBUTES::APPLICATION_ATTRIBUTES() {
+	proxy_list = new PROXY_LIST();
+};
+
 void APPLICATION_ATTRIBUTES::get_all_parametrs(HINSTANCE hInstance_) {
 	hInstance = hInstance_;
 

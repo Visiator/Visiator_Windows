@@ -36,20 +36,40 @@ void NET_CLIENT_SESSION::mouse_whell(int msg, int wp, int lp) {
 
 void NET_CLIENT_SESSION::EXECUTE() {
 
+	bool local_stop = false;
+	int connect_try_count = 0;
+
 	boost::posix_time::milliseconds SleepTime(100);
 
 	EXECUTE_is_run = true;
 
-	while (GLOBAL_STOP == false) {
+	set_status(L"waiting for the partner_id");
+
+	while (GLOBAL_STOP == false && local_stop == false) {
 
 		if (partner_pass_and_id_is_set == true) {
 
+			connect_try_count++;
+
+			if (my_priv_id == 0) {
+
+				set_status(L"Get local id... ");
+
+				Load_private_id_and_public_id_from_USER_registry(&my_pub_id, &my_priv_id);
+
+				if (my_pub_id == 0) {
+
+					set_status(L"Register... ");
+
+					Register_new_partner_on_proxy();
+				}
+			}
 		} 
 
 
 		boost::this_thread::sleep(SleepTime);
 	}
-
+	set_status(L"stoped");
 	EXECUTE_is_run = false;
 
 }

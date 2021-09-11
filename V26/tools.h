@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdint.h"
+//#include <boost/cstdint.hpp>
 
 #define _WINSOCKAPI_ 
 #include <windows.h>
@@ -15,6 +16,8 @@
 #include <aclapi.h>
 #include <sddl.h>
 
+#include <list>
+
 #include <stdio.h>
 #include <io.h>
 #include <fcntl.h>
@@ -22,6 +25,48 @@
 
 #include "SCREEN.h"
 
+#define view_visiator_com "view.visiator.com"
+#define SERVER_PORT 443
+
+#define PROXY_TYPE_HTTPS 1
+#define PROXY_TYPE_HTTP  2 // пока не реализовано
+#define PROXY_TYPE_SOCKS 3 // пока не реализовано
+
+//unsigned long long gg;
+
+class PROXY_element {
+public:
+	//int idx;
+	unsigned int type, ip, port;
+	void clean();
+	//void save_in_registry(HKEY key);
+	unsigned int get_ip_view_visiator_com();
+	PROXY_element(unsigned int type_, unsigned int ip_, unsigned int port_);
+};
+
+
+class PROXY_LIST
+{
+public:
+	bool is_changed;
+	//PROXY_element element[30];
+	std::list<PROXY_element> elements;
+	//int element_max_count;
+	void add(unsigned int type_, unsigned int ip_, unsigned int port_ );
+	void clean();
+
+	//void load_from_registry_element(HKEY key, int idx, unsigned int *ip, unsigned int *port);
+	void load_from_registry(HKEY key, wchar_t *subkey_name);
+	void save_in_registry(HKEY key, wchar_t *subkey_name);
+	bool Load_ProxySettings();
+
+	DWORD try_connect(unsigned int ip);
+	unsigned int get_ip_view_visiator_com();
+
+
+
+	PROXY_LIST();
+};
 
 
 void init_crit_section();
@@ -77,9 +122,42 @@ void clean_ENCODED_SCREEN_8bit_header(ENCODED_SCREEN_8bit_header *h);
 void zero_unsigned_char(unsigned char *s, int len);
 void zero_int(unsigned int *v, int sz);
 
-int  my_strlen(uint8_t *v);
+int  my_strlen(unsigned char *v);
+int  my_strlen(wchar_t *v);
 
-uint64_t generate_ID(uint8_t *id);
-uint64_t decode_cursor_id(uint32_t p);
+void Load_ProxySettings_from_reg(unsigned int *proxy_ip, unsigned int *proxy_port, wchar_t *name);
+
+unsigned long long generate_ID(unsigned char *id);
+unsigned long long  decode_cursor_id(unsigned int p);
+
+void Load_private_id_and_public_id_from_USER_registry(uint64_t *public_id, uint64_t *private_id);
+
+int my_strcmp(unsigned char *p1, unsigned char *p2);
+int my_strcmp(char *p1, char *p2);
+int my_strcmp(wchar_t *p1, wchar_t *p2);
+
+int my_send(uint32_t s, uint8_t *buf, int len, int flag, char *info, uint64_t *send_couner);
+int my_recv(uint32_t socket_, uint8_t *buf, int len, uint64_t *recv_couner);
+
+int setnonblocking(int sockfd);
+void my_Slip(DWORD p);
+unsigned int get_ip_view_visiator_com();
 
 
+void my_strcpy(wchar_t *dest, wchar_t *source);
+void my_strcat(wchar_t *dest, wchar_t *source);
+
+int get_hexch_w(wchar_t v);
+unsigned int decode_dig(char v);
+bool REG_check_and_create_key(HKEY root, wchar_t *reg_key);
+bool my_random(BYTE *buf, int buf_len);
+bool Register_new_partner_on_proxy();
+void Load_ProxySettings_from_reg(unsigned int *proxy_ip, unsigned int *proxy_port, wchar_t *name);
+void check_bit(DWORD v);
+DWORD try_connect_proxy(unsigned int proxy_ip, unsigned int proxy_port, unsigned int ip);
+
+void my_strcpy(unsigned char *dest, unsigned char *source);
+void my_strcat(char *dest, int max_len, char *source);
+char *ip_to_char(char *buf, unsigned int ip);
+int  http_result_code(unsigned char *b, int len);
+unsigned char *http_get_body(unsigned char *b, int len);

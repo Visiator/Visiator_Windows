@@ -9,7 +9,7 @@ class BUKVA
 {
 public:
 	uint32_t idx = 0;
-	uint8_t *buf;
+	unsigned char *buf;
 	int buf_size = 0;
 	int w, h;
 	

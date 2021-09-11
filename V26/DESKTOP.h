@@ -55,16 +55,16 @@ public:
 	void  start_EXECUTE_net_server_session_pool();
 
 	bool need_encrypt_incoming_pass = false;
-	uint8_t incoming_pass[32];
-	uint8_t incoming_pass_encrypted[32];
+	unsigned char incoming_pass[32];
+	unsigned char incoming_pass_encrypted[32];
 
 	bool need_encrypt_outgoing_pass = false;
-	uint8_t outgoing_pass[32];
-	uint8_t outgoing_pass_encrypted[32];
+	unsigned char outgoing_pass[32];
+	unsigned char outgoing_pass_encrypted[32];
 
 	bool need_encrypt_autorun_pass = false;
-	uint8_t autorun_pass[32];
-	uint8_t autorun_pass_encrypted[32];
+	unsigned char autorun_pass[32];
+	unsigned char autorun_pass_encrypted[32];
 
 	
 
