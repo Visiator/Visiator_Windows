@@ -7,10 +7,17 @@
 #include "GUI_low_level.h"
 #include "TEXTURA.h"
 
+
 #define GUI_Element_Type_panel 1
 #define GUI_Element_Type_button 2
 #define GUI_Element_Type_edit 3
 #define GUI_Element_Type_indicator 4
+#define GUI_Element_Type_viewer 5
+#define GUI_Element_Type_viewer_small_top_panel 6
+#define GUI_Element_Type_transfer_dialog 7
+
+class SCREEN_LIGHT;
+class TRANSFER_DIALOG2;
 
 class PASS_EYE {
 public: 
@@ -58,6 +65,9 @@ public:
 	TEXTURA *textura_pressed = nullptr;
 	PASS_EYE pass_eye;
 	
+	SCREEN_LIGHT *screen_light_from_server_fullsize = nullptr;
+	SCREEN_LIGHT *screen_light_from_server_resized = nullptr;
+	TRANSFER_DIALOG2 *file_transfer_dialog_ptr = nullptr;
 
 	void char_keydown(int msg, int wp, int lp, wchar_t *wbuffer);
 	void char_keyup(int msg, int wp, int lp);

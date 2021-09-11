@@ -15,7 +15,8 @@ public:
 	
 
 	void Paint(GUI_low_level *low_level, int x, int y);
-
+	void paint_transparent_green(GUI_low_level *low_level, int dx, int dy);
+	void paint_mono(GUI_low_level *low_level, int dx, int dy, unsigned int color);
 	
 
 	TEXTURA(int resource_id);

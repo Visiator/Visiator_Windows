@@ -30,6 +30,7 @@
 #include "GUI.h"
 #include "APPLICATION_ATTRIBUTES.h"
 #include "DESKTOP.h"
+#include "VIEWER.h"
 
 #include <boost/lambda/lambda.hpp>
 
@@ -42,6 +43,7 @@ FONT *font[10] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 bool GLOBAL_STOP = false;
 APPLICATION_ATTRIBUTES app_attributes;
 DESKTOP  *desktop = nullptr;
+VIEWER *viewer = nullptr;
 
 void WinMain_finish();
 
@@ -69,8 +71,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	cmd_line.decode((char *)lpCmdLine);
 	*/
 
+	uint8_t partner_id[32];
+	uint8_t pass_encripted[32];
+
+	viewer = new VIEWER();
+	viewer->RUN_VIEWER(partner_id, pass_encripted);
+
+	/***
 	if (desktop == NULL) desktop = new DESKTOP();
 	desktop->RUN();
+	***/
 
 	WinMain_finish();
 	return 0;

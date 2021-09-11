@@ -136,8 +136,12 @@
     <ClCompile Include="GUI_Element.cpp" />
     <ClCompile Include="GUI_low_level.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NET_CLIENT_SESSION.cpp" />
+    <ClCompile Include="SCREEN.cpp" />
     <ClCompile Include="TEXTURA.cpp" />
     <ClCompile Include="tools.cpp" />
+    <ClCompile Include="VIEWER.cpp" />
+    <ClCompile Include="VIEWER_small_top_panel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h" />
@@ -146,12 +150,50 @@
     <ClInclude Include="GUI.h" />
     <ClInclude Include="GUI_Element.h" />
     <ClInclude Include="GUI_low_level.h" />
+    <ClInclude Include="NET_CLIENT_SESSION.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SCREEN.h" />
     <ClInclude Include="TEXTURA.h" />
     <ClInclude Include="tools.h" />
+    <ClInclude Include="VIEWER.h" />
+    <ClInclude Include="VIEWER_small_top_panel.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="V26.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\$$$\visiator16.ico" />
+    <Image Include="icon1.ico" />
+    <Image Include="inc\btn_autorun_white.bmp" />
+    <Image Include="inc\btn_autorun_yellow.bmp" />
+    <Image Include="inc\btn_connect_hover.bmp" />
+    <Image Include="inc\btn_connect_normal.bmp" />
+    <Image Include="inc\btn_connect_pressed.bmp" />
+    <Image Include="inc\btn_incomming_white.bmp" />
+    <Image Include="inc\btn_incomming_yellow.bmp" />
+    <Image Include="inc\btn_outcomming_white.bmp" />
+    <Image Include="inc\btn_outcomming_yellow.bmp" />
+    <Image Include="inc\btn_save_hover.bmp" />
+    <Image Include="inc\btn_save_normal.bmp" />
+    <Image Include="inc\btn_save_pressed.bmp" />
+    <Image Include="inc\btn_www_hover.bmp" />
+    <Image Include="inc\btn_www_normal.bmp" />
+    <Image Include="inc\btn_www_pressed.bmp" />
+    <Image Include="inc\checkbox.bmp" />
+    <Image Include="inc\checkbox_set.bmp" />
+    <Image Include="inc\eye.bmp" />
+    <Image Include="inc\eye_active.bmp" />
+    <Image Include="inc\krest_black.bmp" />
+    <Image Include="inc\krest_blue.bmp" />
+    <Image Include="inc\krest_white.bmp" />
+    <Image Include="inc\main_bg.bmp" />
+    <Image Include="inc\panel_autorun.bmp" />
+    <Image Include="inc\panel_incoming.bmp" />
+    <Image Include="inc\panel_outgoing.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="inc\font\font_roboto_150.rawaaaa" />
+    <None Include="inc\font\font_roboto_220.rawaaaa" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

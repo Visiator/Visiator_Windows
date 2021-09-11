@@ -20,7 +20,7 @@
 #include <fcntl.h>
 #include <conio.h>
 
-
+#include "SCREEN.h"
 
 
 
@@ -58,9 +58,28 @@ void sprintf__s_wc_wc(wchar_t *s, int len, wchar_t *format, wchar_t *v1, wchar_t
 bool init_net();
 void set_GLOBAL_STOP_true();
 void fatal_error(const char *s);
+
 void get_screen_size(int *scr_w, int *scr_h);
+void get_display_size_pixel(int *display_w, int *display_h);
+
 void load_onetime_screenposition_desktop(int *x, int *y);
 
 void load_fonts();
 uint32_t transparent_color(uint32_t old_color, uint32_t new_color, int percent);
 int wchar_to_ascii(int p);
+void load_all_standart_cursor();
+
+PAL *new_PAL(int count);
+void delete_PAL(PAL **q);
+
+void clean_ENCODED_SCREEN_8bit_header(ENCODED_SCREEN_8bit_header *h);
+
+void zero_unsigned_char(unsigned char *s, int len);
+void zero_int(unsigned int *v, int sz);
+
+int  my_strlen(uint8_t *v);
+
+uint64_t generate_ID(uint8_t *id);
+uint64_t decode_cursor_id(uint32_t p);
+
+

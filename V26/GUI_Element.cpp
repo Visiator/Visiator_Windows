@@ -67,13 +67,25 @@ void GUI_Element::clean() {
 
 void GUI_Element::Paint(GUI_low_level *low_level) {
 
+	
 	uint32_t clr;
 	int cur_pos;
+
+
 
 	if (is_visible == false) return;
 	if (parent != nullptr && parent->is_visible == false) return;
 
 	if(color != 1) low_level->rectangle(x, y, w, h, color);
+
+	if (type == GUI_Element_Type_viewer) {
+
+		
+
+		font[0]->paintAAA(low_level, 300/2 - font[0]->text_width(L"Connect...")/2, 80, L"Connect...", 0x999999, -1, false);
+		font[1]->paintAAA(low_level, 300/2 - font[1]->text_width(L"123-456-321")/2, 55, L"123-456-321", 0x999999, -1, false);
+		return;
+	}
 
 	if (type == GUI_Element_Type_indicator) {
 

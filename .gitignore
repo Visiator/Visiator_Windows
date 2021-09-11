@@ -3,3 +3,4 @@ Browse.VC.opendb
 .vs
 *.obj
 *.exe
+*.tlog

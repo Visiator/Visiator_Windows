@@ -616,9 +616,7 @@ LRESULT CALLBACK MainWinProcDesktop(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 LRESULT DESKTOP::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
-	if (gui == nullptr) {
-		gui = new GUI(hw);
-	}
+	if (gui == nullptr) {  gui = new GUI(hw);  }
 	init_gui();
 	
 

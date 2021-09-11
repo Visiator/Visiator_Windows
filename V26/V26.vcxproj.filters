@@ -45,6 +45,18 @@
     <ClCompile Include="CRYPTO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VIEWER.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SCREEN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VIEWER_small_top_panel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NET_CLIENT_SESSION.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -74,10 +86,112 @@
     <ClInclude Include="FONT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VIEWER.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SCREEN.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VIEWER_small_top_panel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NET_CLIENT_SESSION.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="V26.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\main_bg.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\krest_black.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\krest_blue.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\krest_white.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\panel_incoming.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\panel_outgoing.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\panel_autorun.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_autorun_white.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_autorun_yellow.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_incomming_white.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_incomming_yellow.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_outcomming_white.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_outcomming_yellow.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_connect_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_connect_normal.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_connect_pressed.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_save_normal.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_save_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_save_pressed.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_www_normal.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_www_hover.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\btn_www_pressed.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\checkbox.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\checkbox_set.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\eye.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\eye_active.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\..\$$$\visiator16.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="inc\font\font_roboto_150.rawaaaa" />
+    <None Include="inc\font\font_roboto_220.rawaaaa" />
   </ItemGroup>
 </Project>

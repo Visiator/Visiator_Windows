@@ -20,8 +20,10 @@ class APPLICATION_ATTRIBUTES
 public:
 	boost::thread_group tgroup;
 	bool is_desktop = false;
+	bool is_viewer = false;
 
 	HWND  desktop_window_hwnd = 0;
+	HWND  viewer_window_hwnd = 0;
 
 	HINSTANCE hInstance = 0;
 	DWORD global_my_proc_id = 0;

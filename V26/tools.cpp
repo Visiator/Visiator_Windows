@@ -558,3 +558,179 @@ int wchar_to_ascii(int p) {
 	if (p == 8226) return 150;
 	return '?';
 }
+
+HCURSOR
+hCurs_IDC_HAND = 0
+, hCurs_IDC_ARROW = 0
+, hCurs_IDC_IBEAM = 0
+, hCurs_IDC_WAIT = 0
+, hCurs_IDC_CROSS = 0
+, hCurs_IDC_UPARROW = 0
+, hCurs_IDC_SIZE = 0
+, hCurs_IDC_ICON = 0
+, hCurs_IDC_SIZENWSE = 0
+, hCurs_IDC_SIZENESW = 0
+, hCurs_IDC_SIZEWE = 0
+, hCurs_IDC_SIZENS = 0
+, hCurs_IDC_SIZEALL = 0
+, hCurs_IDC_NO = 0
+, hCurs_IDC_APPSTARTING = 0;
+
+void load_all_standart_cursor() {
+	if (hCurs_IDC_HAND == 0) hCurs_IDC_HAND = LoadCursor(NULL, IDC_HAND);
+	if (hCurs_IDC_ARROW == 0) hCurs_IDC_ARROW = LoadCursor(NULL, IDC_ARROW);
+	if (hCurs_IDC_IBEAM == 0) hCurs_IDC_IBEAM = LoadCursor(NULL, IDC_IBEAM);
+	if (hCurs_IDC_WAIT == 0) hCurs_IDC_WAIT = LoadCursor(NULL, IDC_WAIT);
+	if (hCurs_IDC_CROSS == 0) hCurs_IDC_CROSS = LoadCursor(NULL, IDC_CROSS);
+	if (hCurs_IDC_UPARROW == 0) hCurs_IDC_UPARROW = LoadCursor(NULL, IDC_UPARROW);
+	if (hCurs_IDC_SIZE == 0) hCurs_IDC_SIZE = LoadCursor(NULL, IDC_SIZE);
+	if (hCurs_IDC_ICON == 0) hCurs_IDC_ICON = LoadCursor(NULL, IDC_ICON);
+	if (hCurs_IDC_SIZENWSE == 0) hCurs_IDC_SIZENWSE = LoadCursor(NULL, IDC_SIZENWSE);
+	if (hCurs_IDC_SIZENESW == 0) hCurs_IDC_SIZENESW = LoadCursor(NULL, IDC_SIZENESW);
+	if (hCurs_IDC_SIZEWE == 0) hCurs_IDC_SIZEWE = LoadCursor(NULL, IDC_SIZEWE);
+	if (hCurs_IDC_SIZENS == 0) hCurs_IDC_SIZENS = LoadCursor(NULL, IDC_SIZENS);
+	if (hCurs_IDC_SIZEALL == 0) hCurs_IDC_SIZEALL = LoadCursor(NULL, IDC_SIZEALL);
+	if (hCurs_IDC_NO == 0) hCurs_IDC_NO = LoadCursor(NULL, IDC_NO);
+	if (hCurs_IDC_APPSTARTING == 0) hCurs_IDC_APPSTARTING = LoadCursor(NULL, IDC_APPSTARTING);
+
+
+
+}
+
+PAL *new_PAL(int count) {
+	int sz;
+	sz = sizeof(PAL);
+	sz *= count;
+	return (PAL *)new unsigned char[sz];
+}
+
+void delete_PAL(PAL **q) {
+	unsigned char *p;
+	p = (unsigned char *)*q;
+	delete[] p;
+	*q = nullptr;
+}
+
+void zero_unsigned_char(unsigned char *s, int len) {
+	for (int i = 0; i < len; i++) s[i] = 0;
+}
+
+void zero_int(unsigned int *v, int sz) {
+	for (int i = 0; i < sz; i++) v[i] = 0;
+}
+
+void zero_void(void *s, int len) {
+	char *q;
+	q = (char *)s;
+	for (int i = 0; i < len; i++) q[i] = 0;
+}
+
+
+void clean_ENCODED_SCREEN_8bit_header(ENCODED_SCREEN_8bit_header *h) {
+	if (h == NULL) return;
+	zero_void(h, sizeof(ENCODED_SCREEN_8bit_header));
+}
+
+uint64_t generate_ID(uint8_t *id) {
+	if (id == NULL) return 0;
+
+	uint8_t p1, p2, p3;
+	uint64_t ll;
+	uint8_t *s;
+	s = (uint8_t *)&ll;
+	ll = 0;
+
+	if (my_strlen(id) == 11) {
+
+		if (id[0] < '0' || id[0] > '9') return 0;
+		if (id[1] < '0' || id[1] > '9') return 0;
+		if (id[2] < '0' || id[2] > '9') return 0;
+
+		if (id[3] >= '0' && id[3] <= '9') return 0;
+
+		if (id[4] < '0' || id[4] > '9') return 0;
+		if (id[5] < '0' || id[5] > '9') return 0;
+		if (id[6] < '0' || id[6] > '9') return 0;
+
+		if (id[7] >= '0' && id[7] <= '9') return 0;
+
+		if (id[8] < '0' || id[8] > '9') return 0;
+		if (id[9] < '0' || id[9] > '9') return 0;
+		if (id[10] < '0' || id[10] > '9') return 0;
+
+		p1 = (id[0] - '0') * 100 + (id[1] - '0') * 10 + (id[2] - '0');
+		p2 = (id[4] - '0') * 100 + (id[5] - '0') * 10 + (id[6] - '0');
+		p3 = (id[8] - '0') * 100 + (id[9] - '0') * 10 + (id[10] - '0');
+
+		*s = p1; 	s++;
+		*s = p2;	s++;
+		*s = p3;	s++;
+
+		return ll;
+	}
+
+	if (my_strlen(id) != 9) return 0;
+
+
+
+
+	p1 = (id[0] - '0') * 100 + (id[1] - '0') * 10 + (id[2] - '0');
+	p2 = (id[3] - '0') * 100 + (id[4] - '0') * 10 + (id[5] - '0');
+	p3 = (id[6] - '0') * 100 + (id[7] - '0') * 10 + (id[8] - '0');
+
+	*s = p1; 	s++;
+	*s = p2;	s++;
+	*s = p3;	s++;
+
+	return ll;
+}
+
+int  my_strlen(uint8_t *v) {
+	if (v == NULL || v[0] == 0) return 0;
+	int i;
+	i = 0;
+	while (v[i] != 0) i++;
+	return i;
+};
+
+uint64_t decode_cursor_id(uint32_t p) {
+
+	switch (p)
+	{
+	case 100: return (unsigned long long)hCurs_IDC_ARROW;
+	case 101: return (unsigned long long)hCurs_IDC_HAND;
+	case 102: return (unsigned long long)hCurs_IDC_IBEAM;
+	case 103: return (unsigned long long)hCurs_IDC_WAIT;
+	case 104: return (unsigned long long)hCurs_IDC_CROSS;
+	case 105: return (unsigned long long)hCurs_IDC_UPARROW;
+	case 106: return (unsigned long long)hCurs_IDC_SIZE;
+	case 107: return (unsigned long long)hCurs_IDC_ICON;
+	case 108: return (unsigned long long)hCurs_IDC_SIZENWSE;
+	case 109: return (unsigned long long)hCurs_IDC_SIZENESW;
+	case 110: return (unsigned long long)hCurs_IDC_SIZEWE;
+	case 111: return (unsigned long long)hCurs_IDC_SIZENS;
+	case 112: return (unsigned long long)hCurs_IDC_SIZEALL;
+	case 113: return (unsigned long long)hCurs_IDC_NO;
+	case 114: return (unsigned long long)hCurs_IDC_APPSTARTING;
+
+	default:
+		break;
+	}
+
+	return (unsigned long long)hCurs_IDC_ARROW;
+}
+
+void get_display_size_pixel(int *display_w, int *display_h) {
+
+	HDC hdc2;
+	HDC g_hdcScreen;
+
+	hdc2 = CreateCompatibleDC(NULL); //::DeleteDC(hdc2);
+	g_hdcScreen = GetDC(NULL); //ReleaseDC(NULL, g_hdcScreen);
+
+	*display_w = GetDeviceCaps(g_hdcScreen, DESKTOPHORZRES);
+	*display_h = GetDeviceCaps(g_hdcScreen, DESKTOPVERTRES);
+
+	ReleaseDC(NULL, g_hdcScreen);
+	::DeleteDC(hdc2);
+}

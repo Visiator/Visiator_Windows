@@ -176,6 +176,65 @@ void TEXTURA::Paint(GUI_low_level *low_level, int x, int y) {
 	}
 }
 
+void TEXTURA::paint_transparent_green(GUI_low_level *low_level, int dx, int dy) {
+
+	unsigned int *v, pix, vv;
+	int hh, ww;
+	hh = h;
+	if (dy + hh >= low_level->window_h) hh = low_level->window_h - 1 - dy;
+
+	ww = w;
+	if (dx + ww >= low_level->window_w) ww = low_level->window_w - 1 - dx;
+
+	for (int y = 0; y < hh; y++) {
+		v = bitmap + y * w;
+		for (int x = 0; x < ww; x++) {
+			if (*v != 0x00fe00) {
+				pix = low_level->get_pix(x + dx, y + dy);
+
+
+				vv = ((pix & 0xff0000) >> 16) + ((pix & 0x00ff00) >> 8) + (pix & 0x0000ff);
+				vv /= 3;
+				if (vv > 255) vv = 255;
+
+
+				vv /= 4;
+				vv += 100;
+
+				if (vv > 255) vv = 255;
+				//vv = (unsigned int)((float)vv / (float)1.2);
+				//if (vv > 127) vv = 127;
+				//vv += 120;
+
+				pix = vv << 8;
+				//pix = vv;
+
+				low_level->set_pixx(x + dx, y + dy, pix);
+			};
+			v++;
+		}
+	}
+}
+
+void TEXTURA::paint_mono(GUI_low_level *low_level, int dx, int dy, unsigned int color) {
+
+	unsigned int *v;
+	int hh, ww;
+	hh = h;
+	if (dy + hh >= low_level->window_h) hh = low_level->window_h - 1 - dy;
+
+	ww = w;
+	if (dx + ww >= low_level->window_w) ww = low_level->window_w - 1 - dx;
+
+	for (int y = 0; y < hh; y++) {
+		v = bitmap + y * w;
+		for (int x = 0; x < ww; x++) {
+			if (*v == 0) low_level->set_pixx(x + dx, y + dy, color);
+			v++;
+		}
+	}
+}
+
 
 
 
