@@ -73,9 +73,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	unsigned char partner_id[32];
 	unsigned char pass_encripted[32];
+	unsigned char pass_no_encripted[32];
+
+	zero_unsigned_char(pass_encripted, 32);
+	zero_unsigned_char(pass_no_encripted, 32);
+
+	my_strcpy(partner_id, (unsigned char *)"239231241");
+	                                
+
+	my_strcpy(pass_no_encripted, (unsigned char *)"Bara*}Oke");
 
 	viewer = new VIEWER();
-	viewer->RUN_VIEWER(partner_id, pass_encripted);
+	viewer->RUN_VIEWER(partner_id, pass_encripted, pass_no_encripted);
 
 	/***
 	if (desktop == NULL) desktop = new DESKTOP();

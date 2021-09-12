@@ -3,6 +3,9 @@
 #include "GUI_Element.h"
 #include "GUI_low_level.h"
 #include "FONT.h"
+#include "VIEWER.h"
+
+extern VIEWER  *viewer;
 
 extern FONT *font[10];
 
@@ -79,10 +82,17 @@ void GUI_Element::Paint(GUI_low_level *low_level) {
 	if(color != 1) low_level->rectangle(x, y, w, h, color);
 
 	if (type == GUI_Element_Type_viewer) {
-
+		wchar_t ss[500];
+		ss[0] = 0;
 		
+		if (viewer->prepare_pass_tik >= 0 && viewer->prepare_pass_tik < 20) {
+			wsprintf(ss, L"prepare pass %d", viewer->prepare_pass_tik);
+		}
+		else {
+			swprintf_s(ss, 450, L"R=%lld S=%lld", viewer->net_client_session->recv__counter, viewer->net_client_session->send__countern);
+		}
 
-		font[0]->paintAAA(low_level, 300/2 - font[0]->text_width(L"Connect...")/2, 80, L"Connect...", 0x999999, -1, false);
+		font[0]->paintAAA(low_level, 300/2 - font[0]->text_width(ss)/2, 80, ss, 0x999999, -1, false);
 		font[1]->paintAAA(low_level, 300/2 - font[1]->text_width(L"123-456-321")/2, 55, L"123-456-321", 0x999999, -1, false);
 		return;
 	}

@@ -32,6 +32,17 @@
 #define PROXY_TYPE_HTTP  2 // пока не реализовано
 #define PROXY_TYPE_SOCKS 3 // пока не реализовано
 
+
+#define LOCAL_FILES 1
+#define PARTNER_FILES 2
+
+#define _Toolbar_h 33
+#define _V_Scroll_w 18
+#define _element_icon_w 16
+#define _Border 4
+#define _line_h 18
+#define _Caption_h 28
+
 //unsigned long long gg;
 
 class PROXY_element {
@@ -119,6 +130,7 @@ void delete_PAL(PAL **q);
 
 void clean_ENCODED_SCREEN_8bit_header(ENCODED_SCREEN_8bit_header *h);
 
+void zero_wchar_t(wchar_t *s, int len);
 void zero_unsigned_char(unsigned char *s, int len);
 void zero_int(unsigned int *v, int sz);
 
@@ -161,3 +173,16 @@ void my_strcat(char *dest, int max_len, char *source);
 char *ip_to_char(char *buf, unsigned int ip);
 int  http_result_code(unsigned char *b, int len);
 unsigned char *http_get_body(unsigned char *b, int len);
+unsigned int get_IP_for_server_location(unsigned long long partner_id, unsigned long long public_id, unsigned long long private_id);
+bool check_admin();
+int  check_IsWow64(DWORD pid);
+unsigned int get_sol();
+void format_sz(char *s, unsigned long long sz);
+void format_sz(wchar_t *s, unsigned long long sz);
+
+int my_big_send(unsigned int socket_, unsigned char *buf, int len, unsigned long long *send_counter);
+int my_big_recv(unsigned int socket_, unsigned char *buf, int len, unsigned long long *recv_counter);
+void hexstr_to_char16_w(wchar_t *hstr, unsigned char *buf);
+bool check_run_as_service();
+
+

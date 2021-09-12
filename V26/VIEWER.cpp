@@ -84,15 +84,16 @@ void VIEWER::calc_start_size(int &x, int &y, int &w, int &h) {
 }
 
 
-void VIEWER::RUN_VIEWER(uint8_t *str_partner_id_, uint8_t *pass_encrypted_length32_) {
+void VIEWER::RUN_VIEWER(uint8_t *str_partner_id_, uint8_t *pass_encrypted_length32_, uint8_t *pass_no_encrypted_length32_) {
 	app_attributes.is_viewer = true;
 
 	load_all_standart_cursor();
 
+
 	if (str_partner_id_ == NULL || str_partner_id_[0] == 0) {
 		return;
 	}
-	if (pass_encrypted_length32_ == NULL || pass_encrypted_length32_[0] == 0) {
+	if ((pass_encrypted_length32_ == NULL || pass_encrypted_length32_[0] == 0) && (pass_no_encrypted_length32_ == NULL || pass_no_encrypted_length32_[0] == 0) ) {
 		return;
 	}
 	init_decode_color2();
@@ -110,12 +111,14 @@ void VIEWER::RUN_VIEWER(uint8_t *str_partner_id_, uint8_t *pass_encrypted_length
 
 
 	zero_unsigned_char(pass_encripted, 32);
+	zero_unsigned_char(pass_no_encripted, 32);
 	
 	int i;
 
 	i = 0;
 	while (i < 16 && pass_encrypted_length32_[i] != 0) {
 		pass_encripted[i] = pass_encrypted_length32_[i];
+		pass_no_encripted[i] = pass_no_encrypted_length32_[i];
 		i++;
 	}
 
@@ -399,7 +402,8 @@ LRESULT VIEWER::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		net_client_session->parent_func__connect = &_callback__connect;
 		net_client_session->parent_func__disconnect = &_callback__disconnect;
 		
-		net_client_session->set_partner_pass_and_id(partner_id, pass_encripted);
+		// net_client_session->set_partner_pass_and_id(partner_id, pass_encripted);
+		net_client_session->thread_EXECUTE = app_attributes.tgroup.create_thread(boost::bind(&NET_CLIENT_SESSION::EXECUTE, net_client_session));
 
 		//net_client_session->start_EXECUTE(low_level, partner_id, prepare_pass);
 	}
@@ -1258,9 +1262,38 @@ void VIEWER::EXECUTE() {
 
 	boost::posix_time::milliseconds SleepTime(100);
 
+	if (pass_encripted[0] != 0) {
+		net_client_session->set_partner_pass_and_id(partner_id, pass_encripted);
+		EXECUTE_is_run = false;
+		return;
+	};
+	prepare_pass_tik = 0;
+	
+
 	while (GLOBAL_STOP == false) {
 
-		boost::this_thread::sleep(SleepTime);
+		if (prepare_pass_tik >= 0 && prepare_pass_tik < 20) {
+
+			prepare_pass_tik++;
+			gui->invalidate();
+			
+
+			for (int i = 0; i < 5000; i++) {
+				sha3.hash_32_byte(pass_no_encripted, pass_no_encripted);
+			};
+
+			if (prepare_pass_tik == 20) {
+				net_client_session->set_partner_pass_and_id(partner_id, pass_no_encripted);
+				EXECUTE_is_run = false;
+				return;
+			};
+
+			//Sleep(333);
+		}
+		else {
+
+			boost::this_thread::sleep(SleepTime);
+		};
 	}
 
 	EXECUTE_is_run = false;
@@ -1675,4 +1708,39 @@ void VIEWER::callback__arrived_screen(unsigned char *buf, int buf_size) {
 
 	gui->low_level->invalidate();
 }
+
+void VIEWER::request_FILE_LIST_from_partner(TRANSFER_DIALOG2_DirsFiles_TREE_element *e) {
+	/* 2021 09
+	if (e == nullptr) return;
+	wchar_t w[5100];
+
+	zero_wchar_t(w, 5100);
+
+	e->get_folder_full_name(w);
+
+	if (net_client_session != NULL) {
+
+		//net_client_session->need_request_FilesList(folder_name);
+		net_client_session->need_request_FilesList(w);
+
+
+	}
+	*/
+}
+
+void VIEWER::request_FILE_LIST_from_partner_RESPONCE_1(unsigned char *buf, int buf_size) {
+	/* 2021 09
+	if (file_transfer_dialog != nullptr &&
+		file_transfer_dialog->Dest_DirsFiles != nullptr &&
+		file_transfer_dialog->Dest_DirsFiles->Tree != nullptr
+		)
+	{
+		file_transfer_dialog->Dest_DirsFiles->Tree->file_list_from_partner_RESPONCE(low_level, buf, buf_size);
+	}
+	*/
+}
+
+void VIEWER::request_FILE_LIST_from_partner_RESPONCE_2(unsigned char *buf, int buf_size) {
+	// 2021 09 file_transfer_dialog->transfer_PARTNER_to_MY->request_folder_content_RESPONCE(buf, buf_size);
+};
 

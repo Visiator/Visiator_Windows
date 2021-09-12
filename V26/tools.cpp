@@ -1,9 +1,13 @@
+
+
+
 #include "tools.h"
 #include "APPLICATION_ATTRIBUTES.h"
 #include "FONT.h"
 #include "resource.h"
 #include "NET_SERVER_SESSION.h"
 #include "CRYPTO.h"
+#include "KERNEL.h"
 
 #define ACE_NAME_SIZE 1500
 
@@ -617,6 +621,11 @@ void delete_PAL(PAL **q) {
 	*q = nullptr;
 }
 
+void zero_wchar_t(wchar_t *s, int len) {
+	for (int i = 0; i < len; i++) s[i] = 0;
+}
+
+
 void zero_unsigned_char(unsigned char *s, int len) {
 	for (int i = 0; i < len; i++) s[i] = 0;
 }
@@ -640,10 +649,10 @@ void clean_ENCODED_SCREEN_8bit_header(ENCODED_SCREEN_8bit_header *h) {
 unsigned long long generate_ID(unsigned char *id) {
 	if (id == NULL) return 0;
 
-	unsigned char p1, p2, p3;
+	uint16_t p1, p2, p3;
 	unsigned long long ll;
-	unsigned char *s;
-	s = (unsigned char *)&ll;
+	uint16_t *s;
+	s = (uint16_t *)&ll;
 	ll = 0;
 
 	if (my_strlen(id) == 11) {
@@ -2360,3 +2369,515 @@ unsigned char *http_get_body(unsigned char *b, int len) {
 
 	return NULL;
 }
+
+unsigned int get_IP_for_server_location(unsigned long long partner_id, unsigned long long public_id, unsigned long long private_id) {
+
+	unsigned long long recv__counter = 0, send__counter = 0;
+
+	unsigned int crc32;
+	unsigned char bb[500], xx[500]; // , zz[500]
+
+	SOCKET sos;
+	sockaddr_in dest_addr;
+
+	unsigned ip_to_server_connect;
+	ip_to_server_connect = 0;
+
+	MY_AES aes;
+	MY_CRC crc;
+	MY_RSA rsa;
+	rsa.init();
+
+	int res, snd;
+
+	if (INVALID_SOCKET == (sos = socket(AF_INET, SOCK_STREAM, 0)))
+	{ //3
+		//status = "create socket error";
+		return 1;
+	} //3
+
+	unsigned int view_ip;
+	view_ip = get_ip_view_visiator_com();
+
+	if (view_ip == 0) {
+		//send_udp("view_ip == 0");
+		closesocket(sos);
+		return 1;
+	}
+
+	PROXY_LIST *proxy_list = app_attributes.proxy_list;
+
+	/*HOSTENT *hosten;
+	hosten = gethostbyname(view _visiator_com);
+	if (hosten == NULL) {
+		closesocket(sos);
+		sos = 0;
+		//status = "err connect";
+		return 2;
+	}*/
+
+	dest_addr.sin_family = AF_INET;
+	dest_addr.sin_port = htons(SERVER_PORT);
+	//dest_addr.sin_addr.S_un.S_addr = inet_addr("139.162.182.46");// proxy_address );
+	dest_addr.sin_addr.S_un.S_addr = view_ip;// ((in_addr*)hosten->h_addr_list[0])->s_addr;
+
+
+
+
+
+
+
+		//status = "connect...";
+	if (SOCKET_ERROR == connect(sos, (sockaddr*)&dest_addr, sizeof(dest_addr))) // proxy+!
+	{//4
+		closesocket(sos);
+		sos = 0;
+
+		if (proxy_list != NULL) {
+			sos = proxy_list->try_connect(view_ip); //(((in_addr*)hosten->h_addr_list[0])->s_addr); // пробуем подключиться через прокси +
+		};
+		if (sos == 0) {
+			closesocket(sos);
+			return 3;
+		};
+	}//4
+
+	setnonblocking(sos);
+
+
+	zero_unsigned_char(bb, 128);
+
+	//***************************************
+	PACKET_LEVEL0 *p0;
+	PACKET_LEVEL1_1002_request *p1002;
+
+
+	unsigned char AES_pass[16];
+	my_random(AES_pass, 16);
+
+	aes.set_key_16_byte(AES_pass);
+
+	p0 = (PACKET_LEVEL0 *)bb;
+	p0->packet_type = 1002;
+	p1002 = (PACKET_LEVEL1_1002_request *)p0->body;
+	p1002->sub_type = 103;
+	p1002->im_public_id = partner_id;
+	p1002->im_private_id = public_id;
+	for (int i = 0; i < 16; i++) p1002->AES_pass[i] = AES_pass[i];
+
+	p0->crc32 = crc.calc(&bb[8], 120);
+	rsa.encode_128_byte(bb, bb);
+
+
+	//***************************************	
+
+	//status = "send_...";
+	snd = 0;
+	do
+	{
+		snd = my_send(sos, (unsigned char *)bb, 128, 0, "", &send__counter); // ok
+		Sleep(1);
+	} while (snd != 128);
+
+	//status = String("read... ");
+
+	do
+	{
+		res = my_recv(sos, xx, 128, &recv__counter);
+		Sleep(1);
+	} while (res != 128 && res != -1 && GLOBAL_STOP == false);
+	aes.decrypt_128_byte(xx);
+
+	//2019+ crc = CRC32_short(&xx[4], 124);
+	crc32 = crc.calc(&xx[8], 120);
+	PACKET_LEVEL0 *r0;
+	PACKET_LEVEL1_1002_responce *r1;
+
+	r0 = (PACKET_LEVEL0 *)xx;
+	if (r0->crc32 == crc32)
+	{
+		//status = "crc ok";
+
+		r1 = (PACKET_LEVEL1_1002_responce *)r0->body;
+
+		ip_to_server_connect = r1->ip4;
+		//status = String(idx) + "read ok pause 3000 " + String(res);
+
+		//::Sleep(300);
+		//status = "close...";
+	}
+	else {
+		//status = "crc err";
+	};
+	struct linger lng = { 1, 0 };
+	setsockopt(sos, SOL_SOCKET, SO_LINGER, (char *)(&lng), sizeof(struct linger));
+
+	int ee;
+	ee = shutdown(sos, SD_BOTH);
+	closesocket(sos);
+
+	return ip_to_server_connect;
+
+
+}
+
+BOOL IsElevated() {
+	BOOL fRet = FALSE;
+	HANDLE hToken = NULL;
+	if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+		TOKEN_ELEVATION Elevation;
+		DWORD cbSize = sizeof(TOKEN_ELEVATION);
+		if (GetTokenInformation(hToken, TokenElevation, &Elevation, sizeof(Elevation), &cbSize)) {
+			fRet = Elevation.TokenIsElevated;
+		}
+	}
+	if (hToken) {
+		CloseHandle(hToken);
+	}
+	return fRet;
+
+}
+
+
+#define MAX_NAME 256
+
+bool check_admin() {
+
+	BOOL EE;
+
+	EE = IsElevated();
+	if (EE == TRUE) { //send_udp("Elevated"); 
+	}
+	else { //send_udp("NO Elevated"); 
+	};
+
+	bool detect = false;
+	unsigned int i;
+	PTOKEN_GROUPS pGroupInfo;
+	SID_IDENTIFIER_AUTHORITY SIDAuth = SECURITY_NT_AUTHORITY;
+	PSID pSID = NULL;
+	wchar_t lpName[MAX_NAME];
+	wchar_t lpDomain[MAX_NAME];
+	SID_NAME_USE SidType;
+	HANDLE hToken;
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {
+		// error
+		return false;
+	}
+	DWORD dwSize = 0, dwResult = 0;
+
+	if (!GetTokenInformation(hToken, TokenGroups, NULL, dwSize, &dwSize)) {
+		dwResult = GetLastError();
+
+		wchar_t Buf[256];
+
+
+
+		if (dwResult != ERROR_INSUFFICIENT_BUFFER) {
+			//printf("GetTokenInformation Error %u\n", dwResult);
+			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, dwResult,
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), Buf, sizeof(Buf), NULL);
+			return FALSE;
+		}
+
+	};
+
+	pGroupInfo = (PTOKEN_GROUPS)GlobalAlloc(GPTR, dwSize);
+
+	if (!GetTokenInformation(hToken, TokenGroups, pGroupInfo, dwSize, &dwSize))
+	{
+		// error
+		return false;
+	}
+
+	if (!AllocateAndInitializeSid(&SIDAuth, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &pSID))
+	{
+		// error
+		return false;
+	}
+
+	for (i = 0; i < pGroupInfo->GroupCount; i++)
+	{
+		if (EqualSid(pSID, pGroupInfo->Groups[i].Sid))
+		{
+
+			// Lookup the account name and print it.
+
+			dwSize = MAX_NAME;
+			if (!LookupAccountSid(NULL, pGroupInfo->Groups[i].Sid, lpName, &dwSize, lpDomain, &dwSize, &SidType))
+			{
+				dwResult = GetLastError();
+				if (dwResult == ERROR_NONE_MAPPED) {
+					// strcpy_s(lpName, dwSize, "NONE_MAPPED");
+
+				}
+				else
+				{
+					// error
+					//printf("LookupAccountSid Error %u\n", GetLastError());
+					return false;
+				}
+			}
+			//printf("Current user is a member of the %s\\%s group\n",	lpDomain, lpName);
+			//send_udp(lpDomain, lpName);
+			// Find out whether the SID is enabled in the token.
+			if (pGroupInfo->Groups[i].Attributes & SE_GROUP_ENABLED) {
+				//send_udp("The group SID is enabled.\n");
+				detect = true;
+			}
+			else {
+				if (pGroupInfo->Groups[i].Attributes &	SE_GROUP_USE_FOR_DENY_ONLY) {
+					//send_udp("The group SID is a deny-only SID.\n");
+				}
+				else {
+					//send_udp("The group SID is not enabled.\n");
+				};
+			}
+		}
+	}
+
+	if (pSID)
+		FreeSid(pSID);
+	if (pGroupInfo)
+		GlobalFree(pGroupInfo);
+
+	return detect;
+
+
+}
+
+int  check_IsWow64(DWORD pid)
+{
+
+	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+	if (hProcess == NULL)
+		return 0;
+
+	typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
+	LPFN_ISWOW64PROCESS fnIsWow64Process;
+	fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
+
+	BOOL isWow64;
+	bool res = fnIsWow64Process != NULL && fnIsWow64Process(hProcess, &isWow64);
+	CloseHandle(hProcess);
+	if (res == true) {
+		if (isWow64 == TRUE) {
+			return 64;
+		}
+		else {
+			return 32;
+		}
+	}
+
+	return 0;
+}
+
+unsigned int get_sol() {
+
+	//return 0x7788BBDD;
+	unsigned int a;
+	my_random((BYTE *)&a, 4);
+	return a;
+};
+
+bool check_run_as_service() {
+
+	bool rr;
+	rr = false;
+
+	//TCHAR filename[MAX_PATH];
+
+	HANDLE h1;
+	BOOL Success;
+	DWORD current_pid, parent_pid;
+
+	current_pid = GetCurrentProcessId();
+	parent_pid = 0;
+
+	PROCESSENTRY32 ProcEntry;
+	ProcEntry.dwSize = sizeof(PROCESSENTRY32);
+
+	///////////////////////////////////////////////////////////
+	// Определим Parent PID для нашего процессы
+
+	h1 = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (h1 == INVALID_HANDLE_VALUE) return false;
+
+
+	Success = Process32First(h1, &ProcEntry);
+	while (Success == TRUE) {
+
+		if (ProcEntry.th32ProcessID == current_pid) {
+			//send_udp(L"FFFFFFFFFFFFFFFF ", ProcEntry.th32ProcessID, ProcEntry.th32ParentProcessID);
+			parent_pid = ProcEntry.th32ParentProcessID;
+
+		}
+
+		Success = Process32Next(h1, &ProcEntry);
+	}
+
+	CloseHandle(h1);
+
+	if (parent_pid == 0) {
+		//send_udp("parent_pid == 0");
+		return false;
+	};
+
+	/////////////////////////////////////
+	// Определим имя файла для нашего Parent а
+
+	h1 = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+	if (h1 == INVALID_HANDLE_VALUE) return false;
+
+
+	Success = Process32First(h1, &ProcEntry);
+	while (Success == TRUE) {
+
+		if (ProcEntry.th32ProcessID == parent_pid) {
+			//send_udp(L"parent ", ProcEntry.szExeFile);
+			wchar_t ss[150];
+			int i = 0;
+			for (i = 0; i < 150; i++) ss[i] = 0;
+			i = 0;
+			while (i < 150 && ProcEntry.szExeFile[i] != 0) {
+				ss[i] = ProcEntry.szExeFile[i];
+				i++;
+			}
+			_wcslwr_s(ss, 150);
+			if (my_strcmp(ss, L"services.exe") == 0) {
+
+				rr = true;
+			}
+		}
+
+		Success = Process32Next(h1, &ProcEntry);
+	}
+
+	CloseHandle(h1);
+
+	if (rr == true) {
+		//send_udp("is service");
+	}
+	else {
+		//send_udp("is no service");
+	}
+
+	return rr;
+
+
+
+}
+
+void format_sz(char *s, unsigned long long sz) {
+
+	s[0] = 0;
+
+	if (sz >= 1000000000L) {
+		sprintf__s_ull(s, 490, "%lld Gb", sz / 1000000000L);
+	}
+	else {
+		if (sz >= 1000000L) {
+			sprintf__s_ull(s, 490, "%lld Mb", sz / 1000000L);
+		}
+		else {
+			if (sz >= 1000L) {
+				sprintf__s_ull(s, 490, "%lld Kb", sz / 1000L);
+			}
+			else {
+				sprintf__s_ull(s, 490, "%lld", sz);
+			};
+		}
+	}
+
+}
+
+void format_sz(wchar_t *s, unsigned long long sz) {
+
+	s[0] = 0;
+
+	if (sz >= 1000000000L) {
+		wsprintf(s, L"%I64d GB", sz / 1000000000L);
+	}
+	else {
+		if (sz >= 1000000L) {
+			wsprintf(s, L"%I64d MB", sz / 1000000L);
+		}
+		else {
+			if (sz >= 1000L) {
+				wsprintf(s, L"%I64d KB", sz / 1000L);
+			}
+			else {
+				wsprintf(s, L"%I64d", sz);
+			};
+		}
+	}
+
+}
+
+int my_big_send(unsigned int socket_, unsigned char *buf, int len, unsigned long long *send_counter) {
+
+	int snd, need_send, send_ok, timeout;
+	need_send = len;
+	send_ok = 0;
+	timeout = 0;
+	snd = 0;
+
+	while (need_send > 0 && GLOBAL_STOP == false) {
+		snd = my_send(socket_, buf + send_ok, need_send, 0, "", send_counter);
+		if (snd < 0) {
+			return -1;
+		}
+		if (snd > 0) {
+			timeout = 0;
+			send_ok += snd;
+			need_send -= snd;
+		}
+		else {
+			Sleep(1);
+			timeout++;
+			if (timeout > 1000) {
+				return -1;
+			}
+		}
+	}
+	return send_ok; // WTF?? 2021 // snd;
+}
+
+int my_big_recv(unsigned int socket_, unsigned char *buf, int len, unsigned long long *recv_counter) {
+
+	int rcv, need_recv, recv_ok, timeout;
+	need_recv = len;
+	recv_ok = 0;
+	timeout = 0;
+	while (need_recv > 0 && GLOBAL_STOP == false) {
+		rcv = my_recv(socket_, buf + recv_ok, need_recv, recv_counter);
+		if (rcv < 0) {
+			return -1;
+		}
+		if (rcv > 0) {
+			timeout = 0;
+			recv_ok += rcv;
+			need_recv -= rcv;
+		}
+		else {
+			Sleep(1);
+			timeout++;
+			if (timeout > 10000) {
+				return -1;
+			}
+		}
+	}
+	return rcv;
+}
+
+void hexstr_to_char16_w(wchar_t *hstr, unsigned char *buf) {
+
+	if (hstr == NULL || buf == NULL) return;
+	for (int i = 0; i < 16; i++) {
+
+		buf[i] = (get_hexch_w(hstr[i * 2]) << 4) | get_hexch_w(hstr[i * 2 + 1]);
+		//sprintf_ s(ss, 290, "[%04X] [%04X] [%04X] ", get_hexch_w(hstr[i * 2]), get_hexch_w(hstr[i * 2 + 1]), buf[i]);
+		//send_udp2(ss);
+	}
+}
+

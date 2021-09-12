@@ -14,6 +14,7 @@
 #include "GUI_element.h"
 #include "NET_CLIENT_SESSION.h"
 //#include "TRANSFER_DIALOG2.h"
+#include "TRANSFER_DIALOG2_DirsFiles_TREE_element.h"
 
 #define VIEW_MODE_NOCONNECT 0
 #define VIEW_MODE_STRETCH 1
@@ -27,6 +28,7 @@ public:
 
 	uint64_t partner_id = 0;
 	unsigned char  pass_encripted[32];
+	unsigned char  pass_no_encripted[32];
 
 	GUI *gui = nullptr;
 	GUI_Element *gui_viewer = nullptr
@@ -53,6 +55,8 @@ public:
 	HWND window_hwnd = 0;
 	VIEWER_small_top_panel *small_top_panel = nullptr;
 
+	MY_SHA3 sha3;
+	int prepare_pass_tik = 99;
 	NET_CLIENT_SESSION *net_client_session = nullptr;
 	boost::thread* thread_EXECUTE = nullptr;
 	bool EXECUTE_is_run = false;
@@ -76,7 +80,15 @@ public:
 	void send_Change_LNG();
 
 	bool file_transfer_dialog_IS_ACTIVE();
-	
+	//########################################################################
+
+	void request_FILE_LIST_from_partner(TRANSFER_DIALOG2_DirsFiles_TREE_element *e);
+	void request_FILE_LIST_from_partner_RESPONCE_1(unsigned char *buf, int buf_size);
+	void request_FILE_LIST_from_partner_RESPONCE_2(unsigned char *buf, int buf_size);
+
+	//########################################################################
+
+	bool is_sync_clipboards = true;
 	void callback__arrived_screen(unsigned char *buf, int buf_size);
 	void callback__connect();
 	void callback__disconnect();
@@ -147,7 +159,7 @@ public:
 
 	void calc_start_size(int &x, int &y, int &w, int &h);
 
-	void RUN_VIEWER(uint8_t *partner_id, uint8_t *pass_encrypted);
+	void RUN_VIEWER(uint8_t *partner_id, uint8_t *pass_encrypted, uint8_t *pass_no_encripted);
 
 	VIEWER();
 	~VIEWER();

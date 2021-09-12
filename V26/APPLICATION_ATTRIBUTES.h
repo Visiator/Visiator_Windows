@@ -18,10 +18,17 @@
 class APPLICATION_ATTRIBUTES
 {
 public:
+	int VER = 0;
 	boost::thread_group tgroup;
 	bool is_desktop = false;
 	bool is_viewer  = false;
 	bool is_service = false;
+	bool im_is_admin = false;
+	int  is_32_or_64_bit_system = 0;
+	
+	wchar_t *my_exe_file_name = nullptr;
+	unsigned char startup_parametr_PASS_ENCR[32];
+	void _SetProcessDPIAware();
 
 	PROXY_LIST *proxy_list = nullptr;
 
@@ -30,9 +37,13 @@ public:
 
 	HINSTANCE hInstance = 0;
 	DWORD global_my_proc_id = 0;
-
+	void get_programm_version();
+	void getRealWindowsVersion();
+	void set_startup_paramert_pr(wchar_t *p);
 
 	void get_all_parametrs(HINSTANCE hInstance_);
+
+	int  OsMajorVersion = 0, OsMinorVersion = 0;
 
 	APPLICATION_ATTRIBUTES();
 };

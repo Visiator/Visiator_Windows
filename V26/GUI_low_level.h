@@ -45,6 +45,10 @@ public:
 
 	void rectangle(int x, int y, int w, int h, unsigned int color);
 
+	void fill_rectangle(int x, int y, int w, int h, unsigned int color, int transparent);
+	void paint_tri_1_close(int x, int y, unsigned int color);
+	void paint_tri_1_open(int x, int y, unsigned int color);
+
 	void change_size(HWND hw, int w_, int h_);
 	void invalidate();
 	void Paint();

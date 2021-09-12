@@ -131,6 +131,7 @@
     <ClCompile Include="APPLICATION_ATTRIBUTES.cpp" />
     <ClCompile Include="CRYPTO.cpp" />
     <ClCompile Include="DESKTOP.cpp" />
+    <ClCompile Include="EVENT_QUEUE.cpp" />
     <ClCompile Include="FONT.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="GUI_Element.cpp" />
@@ -141,12 +142,14 @@
     <ClCompile Include="SCREEN.cpp" />
     <ClCompile Include="TEXTURA.cpp" />
     <ClCompile Include="tools.cpp" />
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.cpp" />
     <ClCompile Include="VIEWER.cpp" />
     <ClCompile Include="VIEWER_small_top_panel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h" />
     <ClInclude Include="DESKTOP.h" />
+    <ClInclude Include="EVENT_QUEUE.h" />
     <ClInclude Include="FONT.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="GUI_Element.h" />
@@ -157,6 +160,7 @@
     <ClInclude Include="SCREEN.h" />
     <ClInclude Include="TEXTURA.h" />
     <ClInclude Include="tools.h" />
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.h" />
     <ClInclude Include="VIEWER.h" />
     <ClInclude Include="VIEWER_small_top_panel.h" />
   </ItemGroup>

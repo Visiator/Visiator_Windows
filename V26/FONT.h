@@ -26,6 +26,8 @@ public:
 	int  text_width(const wchar_t *txt);
 	void paintAAA(GUI_low_level *low_level, int x, int y, const wchar_t *txt, uint32_t color_, int cursor_position, bool is_pass);
 
+	int  paint_text_in_width(GUI_low_level *low_level, int x, int y, int max_w, wchar_t *text, unsigned int color);
+
 	void load_from_buffer(uint8_t *buf, int buf_size);
 
 	FONT();

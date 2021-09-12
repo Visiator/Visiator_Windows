@@ -234,3 +234,88 @@ void GUI_low_level::line_v(int x, int y, int h, uint32_t color) {
 
 	}
 }
+
+void GUI_low_level::fill_rectangle(int x, int y, int w, int h, unsigned int color, int transparent) {
+
+	if (w == 0 || h == 0) return;
+
+	unsigned int *qq, *q, old_color, new_color; // zz,
+	if (y < 0) {
+		h += y;
+		y = 0;
+	}
+	if (x < 0) {
+		w += x;
+		x = 0;
+	}
+	if (w < 0) return;
+	if (y + h > window_h) {
+		h = window_h - y;
+		if (h < 0) return;
+	}
+	q = buf + x + y * window_w;
+	if (x + w > window_w) { w = window_w - x; };
+	for (int i = 0; i < h; i++) {
+		qq = q;
+		for (int j = 0; j < w; j++) {
+			//set_pix(x + j, y + i, color);
+
+			old_color = *qq;
+
+			new_color = transparent_color(old_color, color, transparent);
+
+
+
+			*qq = new_color;
+			qq++;
+		};
+		q += window_w;
+	}
+};
+
+void GUI_low_level::paint_tri_1_close(int x, int y, unsigned int color) {
+	if (y + 10 >= window_h) return;
+	if (x < 0) return;
+	if (x + 9 >= window_w) return;
+	if (y + 9 >= window_w) return;
+
+	//fill_rectangle(x, y, _element_icon_w, _element_icon_w, 0xffffff, 255);
+
+	unsigned int *qq;
+	qq = buf + x + (y + 4) * window_w + 4;
+	qq++; *qq++ = color; *qq = color;  qq += window_w - 1;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 1;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 1;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 1;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 3;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 3;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 3;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 3;
+	qq++; *qq++ = color;  *qq = color;
+}
+
+void GUI_low_level::paint_tri_1_open(int x, int y, unsigned int color) {
+	if (y >= window_h) return;
+	if (x < 0) return;
+	if (x + _element_icon_w >= window_w) return;
+	if (y + _element_icon_w >= window_h) return;
+
+	//fill_rectangle(x, y, _element_icon_w, _element_icon_w, 0xffffff, 255);
+
+	unsigned int *qq;
+	qq = buf + x + (y + 6) * window_w + 3;
+
+	*qq++ = color; *qq++ = color; qq += window_w - 2;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 1;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 1;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 1;
+	*qq++ = color; *qq++ = color; *qq = color; qq += window_w - 1;
+
+	*qq = color; *qq++ = color;  qq -= window_w + 2;
+	*qq++ = color; *qq++ = color; *qq = color; qq -= window_w + 1;
+	*qq++ = color; *qq++ = color; *qq = color; qq -= window_w + 1;
+	*qq++ = color; *qq++ = color; *qq = color; qq -= window_w + 1;
+	*qq++ = color; *qq++ = color; *qq = color; qq -= window_w + 1;
+	*qq++ = color; *qq++ = color;
+}
+

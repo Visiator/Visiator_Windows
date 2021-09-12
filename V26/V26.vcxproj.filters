@@ -60,6 +60,12 @@
     <ClCompile Include="NET_SERVER_SESSION.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EVENT_QUEUE.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -102,6 +108,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NET_SERVER_SESSION.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EVENT_QUEUE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

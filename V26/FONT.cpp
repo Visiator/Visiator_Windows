@@ -140,3 +140,27 @@ void FONT::paintAAA(GUI_low_level *low_level, int x, int y, const wchar_t *txt, 
 		ww += bukva[0].paintAAA(low_level, x + ww, y, color_, show_cursor);
 	};
 }
+
+int FONT::paint_text_in_width(GUI_low_level *low_level, int x, int y, int max_w, wchar_t *text, unsigned int color) {
+	if (text == NULL) return 0;
+	int i, w, ww;
+
+	i = 0;
+	ww = 0;
+	while (text[i] != 0) {
+
+		w = bukva[wchar_to_ascii(text[i])].w;
+
+		if (ww + w >= max_w) {
+			return ww;
+		};
+
+		ww += w;
+
+		x += bukva[wchar_to_ascii(text[i])].paintAAA(low_level, x, y, color, false);
+		i++;
+	}
+
+	return ww;
+};
+
