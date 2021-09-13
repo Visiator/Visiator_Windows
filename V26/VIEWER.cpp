@@ -116,8 +116,13 @@ void VIEWER::RUN_VIEWER(uint8_t *str_partner_id_, uint8_t *pass_encrypted_length
 	int i;
 
 	i = 0;
-	while (i < 16 && pass_encrypted_length32_[i] != 0) {
+	while (i < 32 && pass_encrypted_length32_[i] != 0) {
 		pass_encripted[i] = pass_encrypted_length32_[i];
+		i++;
+	}
+
+	i = 0;
+	while (i < 16 && pass_no_encrypted_length32_[i] != 0) {
 		pass_no_encripted[i] = pass_no_encrypted_length32_[i];
 		i++;
 	}
@@ -964,7 +969,7 @@ LRESULT VIEWER::WM_RBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	return 0;
 };
 LRESULT VIEWER::WM_PAINT_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
-
+	/*
 	char ss[300];
 	ss[0] = 0;
 	if (net_client_session != nullptr) {
@@ -974,8 +979,9 @@ LRESULT VIEWER::WM_PAINT_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	}
 	else {
 		//sprintf__s_c(ss, 290, "null", "");
-	}
+	}*/
 
+	/*
 	if (view_mode == VIEW_MODE_NOCONNECT) {
 
 		gui->low_level->fill_color(0xeeeeee);
@@ -986,17 +992,12 @@ LRESULT VIEWER::WM_PAINT_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 		InvalidateRect(hw, NULL, FALSE);
 		return 0;
-	}
+	}*/
 
-	gui->low_level->fill_color(0x33FF33);
+	gui->low_level->fill_color(0xeeeeee);
 
 	gui->Paint();
-	char ww[500];
-	ww[0] = 'S';
-	ww[1] = 0;
-	if (net_client_session != nullptr) {
-		sprintf_s(ww, 450, " r=%lld s=%lld ", net_client_session->recv__counter, net_client_session->send__countern);
-	}
+	
 	/* 2021 09
 	gui->low_level->paint_text(0, 50 - 1, 50 - 1, 500, 30, ww, 0, 0, -1);
 	gui->low_level->paint_text(0, 50 + 1, 50 - 1, 500, 30, ww, 0, 0, -1);

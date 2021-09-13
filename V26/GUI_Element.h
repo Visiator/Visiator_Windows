@@ -75,6 +75,7 @@ public:
 
 	void clean();
 	void Paint(GUI_low_level *low_level);
+	void Pain_VIEWER(GUI_low_level *low_level);
 
 	void load_BMP_from_resource(int id_normal, int id_hover, int id_pressed);
 

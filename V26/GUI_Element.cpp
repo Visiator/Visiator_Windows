@@ -9,6 +9,10 @@ extern VIEWER  *viewer;
 
 extern FONT *font[10];
 
+CHESS_SHADOW chess_shadow;
+
+void show_mouse_pointer(unsigned int *v1, unsigned int color, unsigned int window_w, int ww, int hh);
+
 GUI_Element::GUI_Element(int type_, int x_, int y_, int w_, int h_,  uint32_t color_) {
 	clean();
 	type = type_;
@@ -85,15 +89,26 @@ void GUI_Element::Paint(GUI_low_level *low_level) {
 		wchar_t ss[500];
 		ss[0] = 0;
 		
-		if (viewer->prepare_pass_tik >= 0 && viewer->prepare_pass_tik < 20) {
-			wsprintf(ss, L"prepare pass %d", viewer->prepare_pass_tik);
+		if (viewer->view_mode == VIEW_MODE_NOCONNECT) {
+
+			if (viewer->prepare_pass_tik >= 0 && viewer->prepare_pass_tik < 20) {
+				wsprintf(ss, L"prepare pass %d", viewer->prepare_pass_tik);
+			}
+			else {
+				swprintf_s(ss, 450, L"R=%lld S=%lld", viewer->net_client_session->recv__counter, viewer->net_client_session->send__countern);
+			}
+
+			font[0]->paintAAA(low_level, 300 / 2 - font[0]->text_width(ss) / 2, 80, ss, 0x999999, -1, false);
+			font[1]->paintAAA(low_level, 300 / 2 - font[1]->text_width(L"123-456-321") / 2, 55, L"123-456-321", 0x999999, -1, false);
+
 		}
 		else {
-			swprintf_s(ss, 450, L"R=%lld S=%lld", viewer->net_client_session->recv__counter, viewer->net_client_session->send__countern);
-		}
+			if (viewer->view_mode == VIEW_MODE_NOCONNECT) {
 
-		font[0]->paintAAA(low_level, 300/2 - font[0]->text_width(ss)/2, 80, ss, 0x999999, -1, false);
-		font[1]->paintAAA(low_level, 300/2 - font[1]->text_width(L"123-456-321")/2, 55, L"123-456-321", 0x999999, -1, false);
+			}
+		}
+		Pain_VIEWER(low_level);
+
 		return;
 	}
 
@@ -251,4 +266,389 @@ void GUI_Element::char_keyup(int msg, int wp, int lp) {
 
 PASS_EYE::PASS_EYE() {
 
+}
+
+
+void GUI_Element::Pain_VIEWER(GUI_low_level *low_level) {
+	SCREEN_LIGHT  *screen;	// *scr_fullsize_, *scr_resized,
+
+	if (viewer == NULL || viewer->screen_light_from_server_fullsize == NULL) return;
+
+	/*if (viewer->screen_light_from_server_resized->resized_w == low_level->window_w &&
+		viewer->screen_light_from_server_resized->resized_h == low_level->window_h) {
+		screen = viewer->screen_light_from_server_resized;
+	}
+	else {
+		screen = viewer->screen_light_from_server_fullsize;
+	}*/
+
+	screen = viewer->screen_light_from_server_fullsize;
+	screen->lock_READ(1000);
+
+
+
+
+	if (screen->w == 0) {
+
+		screen->unlock_READ(1001);
+
+		if (font != NULL) {
+
+			/* 2021 09
+			if (viewer->prepare_status.txt != NULL && viewer->prepare_status.txt[0] != 0) {
+				font->paint_text(1, 1, low_level->window_w, low_level->window_h, viewer->prepare_status.c_str(), 0xbe6100, 1, -1);
+				if (viewer->net_client_session != NULL) {
+					font->paint_text(1, 30, low_level->window_w, low_level->window_h, viewer->net_client_session->n_status.c_str(), 0xbe6100, 1, -1);
+				}
+			}
+			else {
+				if (viewer->net_client_session != NULL) {
+					font->paint_text(1, 1, low_level->window_w, low_level->window_h, viewer->net_client_session->n_status.c_str(), 0xbe6100, 1, -1);
+				}
+			};
+			*/
+		};
+
+		return;
+	};
+	if (screen->w > 0) {
+
+		int x, xx, y, yy;
+		int dx, dy, ww, hh, i;
+		unsigned int *v, val, v_idx;
+		float xxx, yyy, dd;
+		unsigned int *sscr_buf;
+		int window_w;
+
+		if (viewer->view_mode == VIEW_MODE_STRETCH) {
+
+			if (viewer->screen_light_from_server_resized->is_lock_READ == false
+				&& viewer->screen_light_from_server_resized->resized_w == low_level->window_w
+				&& viewer->screen_light_from_server_resized->resized_h == low_level->window_h
+				) {
+				screen->unlock_READ(1002);
+
+				screen = viewer->screen_light_from_server_resized;
+				screen->lock_READ(2000);
+
+
+				if (low_level->window_w < screen->resized_w) xx = low_level->window_w; else xx = screen->resized_w;
+				if (low_level->window_h < screen->resized_h) yy = low_level->window_h; else yy = screen->resized_h;
+
+				dd = (float)screen->resized_w / (float)low_level->window_w;
+
+				dx = 0;
+				dy = 0;
+
+				ww = low_level->window_w;
+				hh = low_level->window_h;
+				yyy = 0;
+				v = screen->get_buf();
+
+				window_w = low_level->window_w;
+
+				for (y = 0; y < hh && (int)yyy + dx < screen->h; y++) {
+
+					sscr_buf = low_level->buf + y * window_w;
+
+					xxx = 0;
+					for (x = 0; x < ww; x++) {
+
+						v_idx = ((int)yyy + dy)*screen->w + (int)xxx + dx;
+
+						val = v[v_idx];
+
+						*sscr_buf++ = val;
+
+						//low_level->set_pixx(x, y, val);
+						xxx += dd;
+					}
+					yyy += dd;
+				};
+
+				// рисуем курсор мыши
+
+				if (screen->_itis_user_move_mouse_ == 200) {
+					if (viewer->aspect_h != 0 && viewer->aspect_w != 0) {
+
+						if (screen->mouse_y >= 0 && screen->mouse_y < 0xffff &&
+							screen->mouse_x >= 0 && screen->mouse_x < 0xffff) {
+
+							yyy = (float)screen->mouse_y / viewer->aspect_h;
+							xxx = (float)screen->mouse_x / viewer->aspect_w;
+
+							unsigned int *v1;
+
+							v1 = low_level->buf + (int)yyy * window_w + (int)xxx;
+
+							show_mouse_pointer(v1, 0xff00ff, window_w, low_level->window_w - (int)xxx, (int)(low_level->window_h - (int)yyy));
+
+						};
+
+					};
+				};
+			}
+			else {
+
+				if (low_level->window_w < screen->w) xx = low_level->window_w; else xx = screen->w;
+				if (low_level->window_h < screen->h) yy = low_level->window_h; else yy = screen->h;
+
+				dd = (float)screen->w / (float)low_level->window_w;
+
+				dx = 0;
+				dy = 0;
+
+				ww = low_level->window_w;
+				hh = low_level->window_h;
+				yyy = 0;
+				v = screen->get_buf();
+
+
+
+				window_w = low_level->window_w;
+
+
+				for (y = 0; y < hh && (int)yyy + dx < screen->h; y++) {
+
+					sscr_buf = low_level->buf + y * window_w;
+
+					xxx = 0;
+					for (x = 0; x < ww; x++) {
+
+						v_idx = ((int)yyy + dy)*screen->w + (int)xxx + dx;
+
+						val = v[v_idx];
+
+						*sscr_buf++ = val;
+
+						//low_level->set_pixx(x, y, val);
+						xxx += dd;
+					}
+					yyy += dd;
+				};
+			};
+			screen->unlock_READ(1010);
+			return;
+		};
+
+		int k, o, j;
+		unsigned int *sh;
+
+		if (viewer->view_mode == VIEW_MODE_FULLSCREEN) {
+			//low_level->fill_color(0xffff00);
+
+			if (chess_shadow.len != low_level->window_w) chess_shadow.set_size(low_level->window_w);
+
+			//int step1_size_h = 0, step1_size_w = 0;
+			//int step2_size_h = 0, step21_size_w = 0, step22_size_x = 0, step22_size_w = 0;
+			//int step3_size_h, step3_size_w;
+
+			viewer->step1_size_h = (low_level->window_h - screen->h) / 2; if (viewer->step1_size_h < 0) viewer->step1_size_h = 0;
+			viewer->step1_size_w = low_level->window_w; //if (step1_size_w > screen->w) step1_size_w = screen->w;
+
+			viewer->step2_size_h = screen->h; if (viewer->step2_size_h > low_level->window_h) viewer->step2_size_h = low_level->window_h;
+
+			viewer->step21_size_w = (low_level->window_w - screen->w) / 2; if (viewer->step21_size_w < 0) viewer->step21_size_w = 0;
+
+			viewer->step22_size_x = viewer->step21_size_w + screen->w;
+			viewer->step22_size_w = low_level->window_w - viewer->step22_size_x;
+
+			viewer->step3_size_h = low_level->window_h - screen->h - viewer->step1_size_h;
+			viewer->step3_size_w = low_level->window_w;
+
+
+			window_w = low_level->window_w;
+
+			y = 0;
+
+			k = 0;
+			o = 0;
+			for (i = 0; i < viewer->step1_size_h; i++) {
+
+				if (o == 0) { sh = chess_shadow.line_0; }
+				else { sh = chess_shadow.line_2; }
+
+				sscr_buf = low_level->buf + y * window_w;
+
+				for (j = 0; j < viewer->step1_size_w; j++) {
+					*sscr_buf++ = *sh++;	//low_level->set_pixx(j, y, *sh++);			
+				};
+
+				y++;
+
+				k++;
+				if (k > 5) {
+					k = 0;
+					o++;
+					if (o > 1) o = 0;
+				}
+			}
+
+			for (i = 0; i < viewer->step2_size_h; i++) {
+				if (o == 0) { sh = chess_shadow.line_0; }
+				else { sh = chess_shadow.line_2; }
+
+				sscr_buf = low_level->buf + y * window_w;
+
+				for (j = 0; j < viewer->step21_size_w; j++) {
+					*sscr_buf++ = sh[j];// low_level->set_pixx(j, y, sh[j]); 
+				};
+
+				sscr_buf = low_level->buf + y * window_w + viewer->step22_size_x;
+
+				for (j = 0; j < viewer->step22_size_w; j++) {
+					*sscr_buf++ = sh[j + viewer->step22_size_x];
+					//low_level->set_pixx(j + step22_size_x, y, sh[j + step22_size_x]);
+				};
+				y++;
+
+				k++;
+				if (k > 5) {
+					k = 0;
+					o++;
+					if (o > 1) o = 0;
+				}
+			}
+
+			for (i = 0; i < viewer->step3_size_h; i++) {
+				if (o == 0) { sh = chess_shadow.line_0; }
+				else { sh = chess_shadow.line_2; }
+
+				sscr_buf = low_level->buf + y * window_w;
+
+				for (j = 0; j < viewer->step3_size_w; j++) {
+					*sscr_buf++ = *sh++;
+					//low_level->set_pixx(j, y, *sh++);
+				};
+
+				y++;
+
+				k++;
+				if (k > 5) {
+					k = 0;
+					o++;
+					if (o > 1) o = 0;
+				}
+			}
+
+			/////////////////////////
+			//screen->unlock();
+			//return;
+			/////////////////////////
+
+
+			hh = low_level->window_h;
+			if (hh > screen->h) hh = screen->h;
+
+			ww = low_level->window_w;
+			if (ww > screen->w) ww = screen->w;
+
+			if ((hh - viewer->delta_y) <= screen->h) {
+
+				y = 0;
+				while (y < hh) {
+
+					sscr_buf = low_level->buf + (y + viewer->step1_size_h) * window_w + viewer->step21_size_w;
+
+					v = screen->get_buf();
+					v += (y - viewer->delta_y) * screen->w - viewer->delta_x;
+					x = 0;
+					while (x < ww) {
+						*sscr_buf++ = *v;
+						//low_level->set_pixx(x+ step21_size_w, y+ step1_size_h, *v);
+
+						v++;
+						x++;
+					}
+
+					y++;
+				}
+
+			}
+			else {
+				//send_udp("WTF?");
+			}
+
+		};
+		screen->unlock_READ(1011);
+		return;
+
+	}
+	screen->unlock_READ(1012);
+	return;
+
+
+
+}
+
+void show_mouse_pointer(unsigned int *v1, unsigned int color, unsigned int window_w, int ww, int hh) {
+	int i;
+	unsigned int *v2;
+
+	if (ww > 13 && hh > 19) {
+		v2 = v1;
+		for (i = 0; i < 19; i++) {
+			*v1 = color;
+			v1 += window_w;
+
+			if (i < 13) {
+				*v2 = color;
+				v2 += window_w + 1;
+			};
+		}
+
+		for (i = 0; i < 7; i++) {
+			*v1 = color;
+			v1 -= (window_w - 1);
+
+			*v2 = color;
+			v2--;
+		}
+		return;
+	}
+
+	if (ww > 7 && hh > 7) {
+		v2 = v1;
+		for (i = 0; i < 7; i++) {
+			*v1 = color;
+			v1 += window_w;
+
+			if (i < 7) {
+				*v2 = color;
+				v2 += window_w + 1;
+			};
+		}
+
+		for (i = 0; i < 7; i++) {
+			//*v1 = color;
+			//v1 -= (window_w - 1);
+
+			*v2 = color;
+			v2--;
+		}
+		return;
+	}
+
+	if (ww > 3 && hh > 3) {
+		v2 = v1;
+		for (i = 0; i < 3; i++) {
+			*v1 = color;
+			v1 += window_w;
+
+			if (i < 3) {
+				*v2 = color;
+				v2 += window_w + 1;
+			};
+		}
+
+		for (i = 0; i < 3; i++) {
+			//*v1 = color;
+			//v1 -= (window_w - 1);
+
+			*v2 = color;
+			v2--;
+		}
+		return;
+	}
+	*v1 = color;
 }

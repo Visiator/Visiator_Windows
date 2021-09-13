@@ -341,8 +341,8 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 }
 
 void NET_CLIENT_SESSION::set_partner_pass_and_id(uint64_t partner_id_, uint8_t *partner_pass_encripted_len32) {
-	for (int i = 0; i < 32; i++) partner_pass_encripted[i] = 0;
-	for (int i = 0; i < 16; i++) {
+	
+	for (int i = 0; i < 32; i++) {
 		partner_pass_encripted[i] = partner_pass_encripted_len32[i];
 	}
 	partner_id = partner_id_;

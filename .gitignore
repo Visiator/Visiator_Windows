@@ -4,3 +4,7 @@ Browse.VC.opendb
 *.obj
 *.exe
 *.tlog
+*.lib
+*.pdb
+Debug
+V26/Debug

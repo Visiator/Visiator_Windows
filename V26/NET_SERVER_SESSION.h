@@ -53,28 +53,28 @@
 
 struct PACKET_LEVEL0
 {
-	uint32_t zero;
-	uint32_t crc32;
-	uint32_t sol;
-	uint32_t packet_type;
-	uint32_t sol2;
+	unsigned int zero;
+	unsigned int crc32;
+	unsigned int sol;
+	unsigned int packet_type;
+	unsigned int sol2;
 	unsigned char body[108];
 };
 struct PACKET_LEVEL1_1002_request // get_proxy_ip
 {
-	uint64_t sub_type; // 101 - просим ip сервера для регистрации нового партнера
+	unsigned long long sub_type; // 101 - просим ip сервера для регистрации нового партнера
 						   // 102 - просим ip сервера для подключения сервера
 						   // 103 - просим ip сервера на котором зареган сервер требуемого партнера
-	uint64_t im_public_id;
-	uint64_t im_private_id;
-	unsigned char  AES_pass[32];
-	unsigned char  body[52];
+	unsigned long long im_public_id;
+	unsigned long long im_private_id;
+	unsigned char AES_pass[32];
+	unsigned char body[52];
 };
 struct PACKET_LEVEL1_1002_responce // get_proxy_ip
 {
-	uint32_t  sub_type;
-	uint32_t  ip4;
-	unsigned char   body[100];
+	unsigned int  sub_type;
+	unsigned int  ip4;
+	unsigned char body[100];
 };
 struct PACKET_LEVEL1_1003_request // register neww partner
 {
@@ -83,43 +83,43 @@ struct PACKET_LEVEL1_1003_request // register neww partner
 };
 struct PACKET_LEVEL1_1003_responce // register neww partner
 {
-	uint64_t public_id;
-	uint64_t private_id;
+	unsigned long long public_id;
+	unsigned long long private_id;
 	unsigned char body[92];
 };
 struct PACKET_LEVEL1_1004_request // server connecting
 {
-	uint64_t my_public_id;
-	uint64_t my_private_id;
-	uint64_t server_ver;
+	unsigned long long my_public_id;
+	unsigned long long my_private_id;
+	unsigned long long server_ver;
 	unsigned char AES_passs[32];
 	unsigned char body[52];
 };
 struct PACKET_LEVEL1_1004_responce // server connecting
 {
-	uint64_t result;
+	unsigned long long result;
 	unsigned int  key;
 	unsigned int  current_visiator_exe_ver;
 	unsigned char body[92];
 };
 struct PACKET_LEVEL1_1005_request // client connecting
 {
-	uint64_t client_public_id;
-	uint64_t client_private_id;
-	uint64_t client_ver;
-	uint64_t partner_public_id;
+	unsigned long long client_public_id;
+	unsigned long long client_private_id;
+	unsigned long long client_ver;
+	unsigned long long partner_public_id;
 	unsigned char AES_passs[32];
 	unsigned char body[44];
 };
 struct PACKET_LEVEL1_1005_responce // client connecting
 {
-	uint64_t result;
+	unsigned long long result;
 	unsigned int  key;
 	unsigned char body[96];
 };
 struct PACKET_LEVEL1_1006_responce // server connecting
 {
-	uint64_t result;
+	unsigned long long result;
 	unsigned int  sol;
 	unsigned char body[96];
 };
@@ -155,6 +155,25 @@ struct PACKET_LEVEL1_1007_responce
 	unsigned int  result;
 	unsigned int  is_prem;
 	unsigned char body[72];
+};
+struct PACKET_LEVEL1_1008_request // get exe file
+{
+	unsigned int file_type; // 201 - visiator.exe 
+	unsigned int fragment_idx;
+	unsigned long long im_public_id;
+	unsigned long long im_private_id;
+	unsigned char AES_pass[32];
+	unsigned int  sol;
+	unsigned char body[52];
+
+};
+struct PACKET_LEVEL1_1008_responce {
+	unsigned int sub_type;
+	unsigned int fragment_idx;
+	unsigned int fragment_size;
+	unsigned int fragment_crc;
+	unsigned int file_ver;
+	unsigned char body[1088];
 };
 
 

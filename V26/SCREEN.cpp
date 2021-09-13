@@ -376,13 +376,13 @@ void init_decode_color2(void) {
 	for (i = 1; i <= 127; i++) {
 		r = i & 0x07; 
 		if (r == 0) r = 0x000000;
-		if (r == 1) r = 0x000024;
-		if (r == 2) r = 0x000049;
-		if (r == 3) r = 0x00006D;
-		if (r == 4) r = 0x000092;
-		if (r == 5) r = 0x0000B6;
-		if (r == 6) r = 0x0000DB;
-		if (r == 7) r = 0x0000FF;
+		if (r == 1) r = 0x240000;
+		if (r == 2) r = 0x490000;
+		if (r == 3) r = 0x6D0000;
+		if (r == 4) r = 0x920000;
+		if (r == 5) r = 0xB60000;
+		if (r == 6) r = 0xDB0000;
+		if (r == 7) r = 0xFF0000;
 
 		g = i & 0x18; g = g >> 3;
 		if (g == 0) g = 0x000000;
@@ -392,9 +392,9 @@ void init_decode_color2(void) {
 
 		b = i & 0x60; b = b >> 5;
 		if (b == 0) b = 0x000000;
-		if (b == 1) b = 0x550000;
-		if (b == 2) b = 0xAA0000;
-		if (b == 3) b = 0xff0000;
+		if (b == 1) b = 0x000055;
+		if (b == 2) b = 0x0000AA;
+		if (b == 3) b = 0x0000ff;
 
 		decode_color_matrix_G7C223[i] = r | g | b;
 
