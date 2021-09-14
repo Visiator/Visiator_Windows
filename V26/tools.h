@@ -184,5 +184,17 @@ int my_big_send(unsigned int socket_, unsigned char *buf, int len, unsigned long
 int my_big_recv(unsigned int socket_, unsigned char *buf, int len, unsigned long long *recv_counter);
 void hexstr_to_char16_w(wchar_t *hstr, unsigned char *buf);
 bool check_run_as_service();
+BOOL RunAsAdmin(HWND hWnd, LPTSTR lpFile, LPTSTR lpParameters);
+bool check_service_pass_is_set();
+bool load_service_pass_hash16(unsigned char *pass_hash16);
+bool PASS_IS_EMPTY(unsigned char *PASS);
+bool check_mutex(wchar_t *mutex_name);
+void Load_private_id_and_public_id_from_SERVICE_registry(unsigned long long *public_id, unsigned long long *private_id);
+void generate_ID_to_text(wchar_t *txt_, unsigned long long local_id_);
+bool my_copyfile(wchar_t *source_file, wchar_t *dest_file);
+
+bool my_FileExists(wchar_t *fname);
+bool my_DirectoryExists(wchar_t *fname);
+bool my_CreateDirectory(wchar_t *path);
 
 

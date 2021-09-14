@@ -78,6 +78,12 @@ public:
 	void mouse_right_button_down(int mx, int my);
 	void mouse_right_button_up(int mx, int my);
 
+	void send_CtrlAltDel();
+	void send_Change_LNG();
+	
+	void char_keydown(int msg, int wp, int lp);
+	void char_keyup(int msg, int wp, int lp);
+
 	bool need_send_delete_cancel = false;
 	void add_to_low_level_buffer(unsigned char *buf, int size);
 	DWORD last_set_need_set_mouse = 0;

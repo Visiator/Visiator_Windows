@@ -185,3 +185,14 @@ void APPLICATION_ATTRIBUTES::set_startup_paramert_pr(wchar_t *p) {
 	//send_udp2(p);
 	hexstr_to_char16_w(p, startup_parametr_PASS_ENCR);
 }
+void APPLICATION_ATTRIBUTES::set_service_public_id(unsigned long long val) {
+	service_public_id = val;
+	if (gui_service_public_id != nullptr) {
+		wchar_t ss[500];
+		generate_ID_to_text(ss, service_public_id);
+		gui_service_public_id->set_text(ss);
+	}
+}
+void APPLICATION_ATTRIBUTES::set_service_private_id(unsigned long long val) {
+	service_private_id = val;
+}

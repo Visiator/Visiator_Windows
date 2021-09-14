@@ -63,7 +63,7 @@ public:
 	void EXECUTE();
 
 	int view_mode = VIEW_MODE_NOCONNECT;
-	void set_view_mode(int new_mode);
+	//void set_view_mode(int new_mode);
 	void change_view_mode(int p);
 
 	DWORD last_change_delta_xy = 0;

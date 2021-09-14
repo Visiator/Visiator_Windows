@@ -17,16 +17,19 @@ NET_CLIENT_SESSION::~NET_CLIENT_SESSION() {
 }
 
 void NET_CLIENT_SESSION::mouse_left_button_down(int mx, int my) {
-
+	out_event_queue.addd(0, WM_LBUTTONDOWN__, (uint16_t)mx, (uint16_t)my, "5");
 }
+
 void NET_CLIENT_SESSION::mouse_left_button_up(int mx, int my) {
-
+	out_event_queue.addd(0, WM_LBUTTONUP__, (uint16_t)mx, (uint16_t)my, "5");
 }
+
 void NET_CLIENT_SESSION::mouse_right_button_down(int mx, int my) {
-
+	out_event_queue.addd(0, WM_RBUTTONDOWN__, (uint16_t)mx, (uint16_t)my, "5");
 }
-void NET_CLIENT_SESSION::mouse_right_button_up(int mx, int my) {
 
+void NET_CLIENT_SESSION::mouse_right_button_up(int mx, int my) {
+	out_event_queue.addd(0, WM_RBUTTONUP__, (uint16_t)mx, (uint16_t)my, "5");
 }
 void NET_CLIENT_SESSION::get_statistic(char *ss, int ss_max_size_) {
 
@@ -34,11 +37,22 @@ void NET_CLIENT_SESSION::get_statistic(char *ss, int ss_max_size_) {
 
 }
 void NET_CLIENT_SESSION::mouse_move(int mx, int my) {
-
+	//out_event_queue.add(0, 5555, mx, my, "5");
+	need_set_mouse_x = mx;
+	need_set_mouse_y = my;
 }
 void NET_CLIENT_SESSION::mouse_whell(int msg, int wp, int lp) {
-
+	out_event_queue.addd(0, (uint16_t)msg, (uint16_t)wp, (uint16_t)lp, "6");
 }
+
+void NET_CLIENT_SESSION::char_keydown(int msg, int wp, int lp) {
+	out_event_queue.addd(0, (uint16_t)msg, (uint16_t)wp, (uint16_t)lp, "5");
+}
+
+void NET_CLIENT_SESSION::char_keyup(int msg, int wp, int lp) {
+	out_event_queue.addd(0, (uint16_t)msg, (uint16_t)wp, (uint16_t)lp, "5");
+}
+
 
 void NET_CLIENT_SESSION::EXECUTE() {
 
@@ -1253,4 +1267,11 @@ void NET_CLIENT_SESSION::increase_llow_level_buffer_read(int add_size) {
 	llow_level_buffer_read = q;
 	llow_level_buffer_read_max_count = ss;
 }
+void NET_CLIENT_SESSION::send_CtrlAltDel() {
+	out_event_queue.addd(0, event_ctrl_alt_del, 1, 1, "eq 25");
+}
+void NET_CLIENT_SESSION::send_Change_LNG() {
+	out_event_queue.addd(0, WM_KEYDOWN, 0, 0x80, "eq 25");
+}
+
 

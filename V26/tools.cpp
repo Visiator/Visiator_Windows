@@ -2880,4 +2880,272 @@ void hexstr_to_char16_w(wchar_t *hstr, unsigned char *buf) {
 		//send_udp2(ss);
 	}
 }
+BOOL RunAsAdmin(HWND hWnd, LPTSTR lpFile, LPTSTR lpParameters)
+{
+	wchar_t xxx[500];
 
+	my_strcpy(xxx, lpFile);
+	my_strcat(xxx, L" ");
+	my_strcat(xxx, lpParameters);
+
+	SHELLEXECUTEINFO   sei;
+	ZeroMemory(&sei, sizeof(sei));
+
+	sei.cbSize = sizeof(SHELLEXECUTEINFOW);
+	sei.hwnd = hWnd;
+	sei.fMask = SEE_MASK_FLAG_DDEWAIT | SEE_MASK_FLAG_NO_UI;
+	sei.lpVerb = L"runas";
+	sei.lpFile = lpFile;
+	sei.lpParameters = lpParameters;
+	sei.nShow = SW_SHOWNORMAL;
+
+	if (!ShellExecuteEx(&sei))
+	{
+		//printf("Error: ShellExecuteEx failed 0x%x\n", GetLastError());
+		return FALSE;
+	}
+	//DWORD exit_code;
+	//aCode: = 777;
+	//WaitForSingleObject(sei.hProcess, INFINITE);
+	//exit_code = 777;
+	//GetExitCodeProcess( sei.hProcess, &exit_code);
+
+
+	return TRUE;
+}
+bool check_service_pass_is_set() {
+
+	unsigned char pp[16];
+
+	bool r;
+	r = load_service_pass_hash16(pp);
+
+	return r;
+}
+bool load_service_pass_hash16(unsigned char *pass_hash16) {
+
+	for (int i = 0; i < 16; i++) pass_hash16[i] = 0;
+
+	HKEY hkey;
+
+	hkey = 0;
+	RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"Software\\VisiatorService", 0, KEY_READ | KEY_WRITE | 0x0100, &hkey);
+	if (hkey == 0) {
+		//send_udp("error10 load service pass");
+		return false;
+	}
+
+	DWORD size;
+	DWORD type;
+
+	size = 16;
+	type = REG_BINARY;
+	if (RegQueryValueEx(hkey, L"pswd", 0, &type, (BYTE *)pass_hash16, &size) != 0) {
+		return false;
+	};
+
+	if (size != 16) return false;
+
+	RegCloseKey(hkey);
+
+	//RestartService();
+
+	return true;
+};
+bool PASS_IS_EMPTY(unsigned char *PASS) {
+	if (PASS == NULL) return true;
+	int i, digit;
+
+	digit = 0;
+
+	for (i = 0; i < 16; i++) {
+		if (PASS[i] != 0) digit++;
+	}
+
+	if (digit == 0) return true;
+
+	return false;
+}
+bool check_mutex(wchar_t *mutex_name) {
+
+	bool rr = false;
+
+
+	HANDLE mutex;
+
+	mutex = CreateMutex(NULL, FALSE, mutex_name);
+
+	DWORD result;
+	result = WaitForSingleObject(mutex, 0);
+
+	if (result == WAIT_OBJECT_0) {
+		rr = true;
+	}
+	else {
+		rr = false;
+	}
+
+
+	CloseHandle(mutex);
+
+	return rr;
+
+}
+
+void Load_private_id_and_public_id_from_SERVICE_registry(unsigned long long *public_id, unsigned long long *private_id) {
+
+	//send_udp("Load_private_id_and_public_id_from_SERVICE_registry()...");
+
+	*public_id = 0;
+	*private_id = 0;
+
+	if (REG_CHECK_EXISTS_KEY_and_check_permissions(HKEY_LOCAL_MACHINE, L"Software\\VisiatorService") == false) {
+		//s_edit_pass->set_label("save error");
+	}
+
+	LONG r;
+	HKEY hkey;
+
+	hkey = 0;
+	r = RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"Software\\VisiatorService", 0, KEY_READ | KEY_WRITE | 0x0100, &hkey);
+	if (hkey == 0) {
+		r = RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"Software\\VisiatorService", 0, L"", REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS | 0x0100, NULL, &hkey, NULL);
+	};
+	if (hkey == 0) {
+		//send_udp("Load_private_id_and_public_id_from_SERVICE_registry() error1");
+		return;
+	}
+
+	unsigned long long pu, pv;
+
+	DWORD size;
+	DWORD type;
+
+
+	size = 8;
+	type = REG_BINARY;
+	if (RegQueryValueEx(hkey, L"private_id", 0, &type, (BYTE *)&pv, &size) != 0) {
+		pv = 0;
+	};
+	size = 8;
+	type = REG_BINARY;
+	if (RegQueryValueEx(hkey, L"public_id", 0, &type, (BYTE *)&pu, &size) != 0) {
+		pu = 0;
+	};
+	RegCloseKey(hkey);
+
+	if (pu != 0 && pv != 0) {
+		*public_id = pu;
+		*private_id = pv;
+
+		/*if (app_attributes.is_desktop) {
+			app_attributes.set_desktop_public_id(*public_id);
+			app_attributes.set_desktop_private_id(*private_id);
+		};*/
+		if (app_attributes.is_service) {
+			app_attributes.set_service_public_id(*public_id);
+			app_attributes.set_service_private_id(*private_id);
+		};
+
+	}
+
+	//char ss[500];
+	//sprintf__s_ull_ull(ss, 150, "public_id = %llu , private_id = %llu ", *public_id, *private_id);
+	//send_udp(ss);
+	//send_udp("Load_private_id_and_public_id_from_SERVICE_registry() finish");
+
+}
+
+void generate_ID_to_text(wchar_t *txt_, unsigned long long local_id_) {
+	unsigned short *i16, i1, i2, i3;
+	i16 = (unsigned short *)&local_id_;
+	i1 = i16[0];
+	i2 = i16[1];
+	i3 = i16[2];
+	txt_[0] = 0;
+
+	swprintf_s(txt_, 45, L"%03d-%03d-%03d", i1, i2, i3);
+
+
+};
+
+bool my_copyfile(wchar_t *source_file, wchar_t *dest_file) {
+	if (source_file == NULL || dest_file == NULL) return false;
+
+	//send_udp((wchar_t *)L"copyfile ", source_file, dest_file);
+
+	if (my_FileExists(dest_file)) {
+		if (DeleteFile(dest_file) == 0) {
+			SetFileAttributes(dest_file, FILE_ATTRIBUTE_NORMAL);
+			DeleteFile(dest_file);
+		}
+
+		if (my_FileExists(dest_file)) {
+			//send_udp(L"delete file error", dest_file);
+			return false;
+		}
+	};
+	BOOL r;
+
+
+	//send_udp("copy file ...");
+	r = CopyFile(source_file, dest_file, true);
+	//if(r) send_udp("+"); else send_udp("-");
+	// GetSystemWow64Directory
+	// %windir%\Sysnative вместо %windir%\System32 .
+	// GetSystemDirectory
+	// GetSystemWindowsDirectory
+	// GetSystemWow64Directory
+	// GetWindowsDirectory
+
+
+	return r;
+}
+bool my_FileExists(wchar_t *fname) {
+	DWORD fa = GetFileAttributes(fname);
+
+	if (fa == INVALID_FILE_ATTRIBUTES) return false;
+
+	return true;
+
+	/*WIN32_FIND_DATA wfd;
+	HANDLE hFind = ::FindFirstFile(fname, &wfd);
+	if (INVALID_HANDLE_VALUE != hFind) {
+		// Если этого не сделать то произойдет утечка ресурсов
+		::FindClose(hFind);
+		return true;
+	}
+	return false;*/
+}
+
+bool my_DirectoryExists(wchar_t *fname) {
+	//send_udp2(L"my_DirectoryExists ~~ ", fname);
+
+	DWORD fa = GetFileAttributes(fname);
+	if (fa == INVALID_FILE_ATTRIBUTES) return false;
+
+	if ((fa & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY) {
+		return true;
+	}
+
+	return false;
+}
+
+bool my_CreateDirectory(wchar_t *path) {
+	if (my_DirectoryExists(path) == false) {
+		try
+		{
+			CreateDirectory(path, NULL);
+		}
+		catch (...) {
+			return false;
+		}
+		if (my_DirectoryExists(path) == false) {
+			return false;
+		}
+		return true;
+	}
+
+	return true;
+
+}

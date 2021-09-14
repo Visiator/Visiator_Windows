@@ -140,6 +140,7 @@
     <ClCompile Include="NET_CLIENT_SESSION.cpp" />
     <ClCompile Include="NET_SERVER_SESSION.cpp" />
     <ClCompile Include="SCREEN.cpp" />
+    <ClCompile Include="SERVICE.cpp" />
     <ClCompile Include="TEXTURA.cpp" />
     <ClCompile Include="tools.cpp" />
     <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="NET_SERVER_SESSION.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SCREEN.h" />
+    <ClInclude Include="SERVICE.h" />
     <ClInclude Include="TEXTURA.h" />
     <ClInclude Include="tools.h" />
     <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.h" />

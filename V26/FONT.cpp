@@ -107,7 +107,9 @@ void FONT::load_from_buffer(unsigned char *buf, int buf_size) {
 	};
 
 };
-
+int FONT::text_height() {
+	return bukva['$'].h;
+}
 int FONT::text_width(const wchar_t *txt) {
 	int i, ww;
 	i = 0;

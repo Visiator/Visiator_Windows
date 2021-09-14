@@ -42,7 +42,8 @@ public:
 		, *edit_autorun_pass = nullptr
 		, *indicator_incoming = nullptr
 		, *indicator_outgoing = nullptr
-		, *indicator_autorun = nullptr;
+		, *indicator_autorun = nullptr
+		, *message_box = nullptr;
 
 	void RUN();
 	void init_gui();
@@ -147,7 +148,7 @@ public:
 	LRESULT WM_DRAWCLIPBOARD_(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 	LRESULT WM_CHANGECBCHAIN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 
-	
+	void show_message_box(wchar_t *message, int background_color);
 
 	void char_keydown(int msg, int wp, int lp, wchar_t *wbuffer);
 	void char_keyup(int msg, int wp, int lp);

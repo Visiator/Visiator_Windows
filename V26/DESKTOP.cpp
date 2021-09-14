@@ -3,9 +3,13 @@
 #include "GUI.h"
 #include "GUI_low_level.h"
 #include "CRYPTO.h"
+#include "SERVICE.h"
 
 #define _window_w 250
 #define _window_h 344
+
+#define green 1
+#define red 2
 
 
 extern APPLICATION_ATTRIBUTES app_attributes;
@@ -163,13 +167,36 @@ void mouse_press_checkbox_autorun(int mx, int my) {
 		&& mx < desktop->checkbox_autorun->x + desktop->checkbox_autorun->w
 		&& my >= desktop->checkbox_autorun->y
 		&& my < desktop->checkbox_autorun->y + desktop->checkbox_autorun->h) {
+
+		if (app_attributes.im_is_admin == false) {
+
+			RunAsAdmin(0, app_attributes.my_exe_file_name, L"edit_autorun_on"); // edit_autorun_pass
+			set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
+			return;
+		}
+
+		if (check_service_pass_is_set() == false) {
+
+			desktop->show_message_box(L"Please set a password!", red);
+
+			return;
+		}
+
+
 		if (desktop->checkbox_autorun->is_mouse_pressed == false) {
 			desktop->checkbox_autorun->set_mouse_pressed(true);
 			desktop->gui->invalidate();
+
+			ServiceUnInstallLocal();
+			ServiceInstallLocal();
+
 		}
 		else {
 			desktop->checkbox_autorun->set_mouse_pressed(false);
 			desktop->gui->invalidate();
+
+			ServiceUnInstallLocal();
+			
 		}
 	}
 }
@@ -296,6 +323,14 @@ void DESKTOP::init_gui() {
 	indicator_autorun = gui->add_element(GUI_Element_Type_indicator, 64, 168, 165, 32, 0xffffff);
 	indicator_autorun->parent = panel_autorun;
 	indicator_autorun->is_visible = false;
+
+
+	int msg_b_w = 220, msg_b_h = 50;
+
+	message_box = gui->add_element(GUI_Element_MESSAGE_BOX, _window_w / 2 - msg_b_w / 2, _window_h / 2 - msg_b_h / 2 + 5, msg_b_w, msg_b_h, 0xff00ff);
+	message_box->cursor_position = 190;
+	message_box->set_text(L"message 123");
+	message_box->is_visible = true;
 }
 
 void DESKTOP::calc_start_size(int &x, int &y, int &w, int &h) {
@@ -1137,4 +1172,14 @@ void DESKTOP::char_(int msg, int wp, int lp) {
 	}
 	gui->char_(low_level, msg, wp, lp);
 	***/
+}
+
+void DESKTOP::show_message_box(wchar_t *message, int background_color) {
+	if (app_attributes.modal_process == 0) {
+		message_box->set_text(message);
+		if (background_color == green) message_box->color = 0x005500;
+		if (background_color == red)   message_box->color = 0x333377;
+		app_attributes.modal_process = MODAL_PROCESS_show_message_box1_1;
+
+	};
 }

@@ -24,6 +24,7 @@ public:
 
 	std::map <int, BUKVA> bukva;
 	int  text_width(const wchar_t *txt);
+	int  text_height();
 	void paintAAA(GUI_low_level *low_level, int x, int y, const wchar_t *txt, uint32_t color_, int cursor_position, bool is_pass);
 
 	int  paint_text_in_width(GUI_low_level *low_level, int x, int y, int max_w, wchar_t *text, unsigned int color);

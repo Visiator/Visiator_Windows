@@ -10,10 +10,16 @@
 #undef _WINSOCKAPI_
 
 #include <boost/thread.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 
 #include "tools.h"
+#include "GUI_Element.h"
+
+// message box
+#define MODAL_PROCESS_show_message_box1_1  108
+#define MODAL_PROCESS_show_message_box1_2  109
+
 
 class APPLICATION_ATTRIBUTES
 {
@@ -25,10 +31,17 @@ public:
 	bool is_service = false;
 	bool im_is_admin = false;
 	int  is_32_or_64_bit_system = 0;
-	
+	int  modal_process = 0;
+
 	wchar_t *my_exe_file_name = nullptr;
 	unsigned char startup_parametr_PASS_ENCR[32];
 	void _SetProcessDPIAware();
+
+	unsigned long long desktop_public_id = 0, desktop_private_id = 0, service_public_id = 0, service_private_id = 0;
+	GUI_Element *gui_desktop_public_id = nullptr, *gui_service_public_id = nullptr, *gui_service_connection_status = nullptr, *gui_service_VISIATOR_status = nullptr;
+
+	void set_service_public_id(unsigned long long val);
+	void set_service_private_id(unsigned long long val);
 
 	PROXY_LIST *proxy_list = nullptr;
 

@@ -15,6 +15,7 @@
 #define GUI_Element_Type_viewer 5
 #define GUI_Element_Type_viewer_small_top_panel 6
 #define GUI_Element_Type_transfer_dialog 7
+#define GUI_Element_MESSAGE_BOX 8
 
 class SCREEN_LIGHT;
 class TRANSFER_DIALOG2;
@@ -39,7 +40,7 @@ public:
 	void set_text(wchar_t *txt_);
 
 	GUI_Element *parent = nullptr;
-
+	
 	
 	bool is_visible = true;
 	bool is_active = false;
@@ -76,6 +77,7 @@ public:
 	void clean();
 	void Paint(GUI_low_level *low_level);
 	void Pain_VIEWER(GUI_low_level *low_level);
+	void Pain_MESSAGE_BOX(GUI_low_level *low_level);
 
 	void load_BMP_from_resource(int id_normal, int id_hover, int id_pressed);
 

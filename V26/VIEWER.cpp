@@ -467,18 +467,18 @@ void VIEWER::change_view_mode(int p) {
 }
 
 void VIEWER::char_keydown(int msg, int wp, int lp) {
-	// 2021 09 if (net_client_session != NULL) net_client_session->char_keydown(msg, wp, lp);
+	if (net_client_session != NULL) net_client_session->char_keydown(msg, wp, lp);
 }
 
 void VIEWER::char_keyup(int msg, int wp, int lp) {
-	// 2021 09 if (net_client_session != NULL) net_client_session->char_keyup(msg, wp, lp);
+	if (net_client_session != NULL) net_client_session->char_keyup(msg, wp, lp);
 }
 
 void VIEWER::send_CtrlAltDel() {
-	// 2021 09 if (net_client_session != NULL) net_client_session->send_CtrlAltDel();
+	if (net_client_session != NULL) net_client_session->send_CtrlAltDel();
 }
 void VIEWER::send_Change_LNG() {
-	// 2021 09 if (net_client_session != NULL) net_client_session->send_Change_LNG();
+	if (net_client_session != NULL) net_client_session->send_Change_LNG();
 }
 
 LRESULT VIEWER::WM_SETFOCUS_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
@@ -1213,7 +1213,7 @@ LRESULT VIEWER::WM_KEYDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	//send_udp("WM_KEYDOWN_");
 
-	/* 2021 09
+	
 	SHORT ctrl_key_state, shift_state, alt_state;
 
 	if (viewer->prepare_pass_tik <= 20) {
@@ -1234,11 +1234,11 @@ LRESULT VIEWER::WM_KEYDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		};
 	};
 
-	if (file_transfer_dialog_IS_ACTIVE()) {
+	/* 2021 09 if (file_transfer_dialog_IS_ACTIVE()) {
 		file_transfer_dialog->char_keydown(low_level, msg, wp, lp);
 		return 0;
-	};
-	*/
+	}; */
+	
 
 	char_keydown(msg, wp, lp);
 
@@ -1284,6 +1284,7 @@ void VIEWER::EXECUTE() {
 			};
 
 			if (prepare_pass_tik == 20) {
+				prepare_pass_tik++;
 				net_client_session->set_partner_pass_and_id(partner_id, pass_no_encripted);
 				EXECUTE_is_run = false;
 				return;

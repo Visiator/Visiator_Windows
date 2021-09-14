@@ -31,6 +31,7 @@
 #include "APPLICATION_ATTRIBUTES.h"
 #include "DESKTOP.h"
 #include "VIEWER.h"
+#include "SERVICE.h"
 
 #include <boost/lambda/lambda.hpp>
 
@@ -44,6 +45,7 @@ bool GLOBAL_STOP = false;
 APPLICATION_ATTRIBUTES app_attributes;
 DESKTOP  *desktop = nullptr;
 VIEWER *viewer = nullptr;
+SERVICE *service = nullptr;
 
 void WinMain_finish();
 
@@ -71,6 +73,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	cmd_line.decode((char *)lpCmdLine);
 	*/
 
+	/***
 	unsigned char partner_id[32];
 	unsigned char pass_encripted[32];
 	unsigned char pass_no_encripted[32];
@@ -78,18 +81,17 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	zero_unsigned_char(pass_encripted, 32);
 	zero_unsigned_char(pass_no_encripted, 32);
 
-	my_strcpy(partner_id, (unsigned char *)"239231241");
-	                                
-
+	my_strcpy(partner_id, (unsigned char *)"239231241");                               
 	my_strcpy(pass_no_encripted, (unsigned char *)"Bara*}Oke");
 
 	viewer = new VIEWER();
 	viewer->RUN_VIEWER(partner_id, pass_encripted, pass_no_encripted);
+	***/
 
-	/***
+	
 	if (desktop == NULL) desktop = new DESKTOP();
 	desktop->RUN();
-	***/
+	
 
 	WinMain_finish();
 	return 0;
