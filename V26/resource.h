@@ -32,6 +32,7 @@
 #define IDB__BMP__pass_eye_open         10026
 #define IDF_FONT0                       20000
 #define IDF_FONT1                       20001
+#define IDF_FONT2                       20002
 
 // Next default values for new objects
 // 

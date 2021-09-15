@@ -111,6 +111,7 @@ void mouse_unpress_btn_outgoing_connect(int mx, int my) {
 }
 
 void mouse_press_btn_save_pass(int mx, int my) {
+	// SAVE PASSWORD autorun
 	if (desktop->btn_save_pass->is_visible == false) return;
 	if (desktop->btn_save_pass->parent != nullptr && desktop->btn_save_pass->parent->is_visible == false) return;
 
@@ -119,8 +120,12 @@ void mouse_press_btn_save_pass(int mx, int my) {
 		&& my >= desktop->btn_save_pass->y
 		&& my < desktop->btn_save_pass->y + desktop->btn_save_pass->h) {
 		if (desktop->btn_save_pass->is_mouse_pressed == false) {
+			
 			desktop->btn_save_pass->set_mouse_pressed(true);
+			
 			desktop->gui->invalidate();
+
+			//desktop->show_message_box(L"password set", green);
 		}
 	}
 }
@@ -330,7 +335,7 @@ void DESKTOP::init_gui() {
 	message_box = gui->add_element(GUI_Element_MESSAGE_BOX, _window_w / 2 - msg_b_w / 2, _window_h / 2 - msg_b_h / 2 + 5, msg_b_w, msg_b_h, 0xff00ff);
 	message_box->cursor_position = 190;
 	message_box->set_text(L"message 123");
-	message_box->is_visible = true;
+	message_box->is_visible = false;
 }
 
 void DESKTOP::calc_start_size(int &x, int &y, int &w, int &h) {
@@ -492,6 +497,9 @@ void DESKTOP::autorun_pass_encrypted_START() {
 void DESKTOP::autorun_pass_encrypted_FINISH() {
 	indicator_autorun->is_visible = false;
 	edit_autorun_pass->is_visible = true;
+
+	show_message_box(L"password set", green);
+
 	if (gui != nullptr) gui->invalidate();
 
 }
@@ -1108,7 +1116,7 @@ LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 		}
 	};
-
+	***/
 
 	if (app_attributes.modal_process == MODAL_PROCESS_show_message_box1_1) {
 		if (message_box->is_visible == false) message_box->is_visible = true;
@@ -1118,7 +1126,7 @@ LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 			app_attributes.modal_process = MODAL_PROCESS_show_message_box1_2;
 			message_box->cursor_position = 4000;
 		}
-		invalidate();
+		gui->invalidate();
 	}
 	if (app_attributes.modal_process == MODAL_PROCESS_show_message_box1_2) {
 		if (message_box->is_visible == false) message_box->is_visible = true;
@@ -1128,11 +1136,11 @@ LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 			app_attributes.modal_process = 0;
 			message_box->is_visible = false;
 		}
-		invalidate();
+		gui->invalidate();
 	}
 
 
-	***/
+	
 
 	return 0;
 };
@@ -1179,6 +1187,7 @@ void DESKTOP::show_message_box(wchar_t *message, int background_color) {
 		message_box->set_text(message);
 		if (background_color == green) message_box->color = 0x005500;
 		if (background_color == red)   message_box->color = 0x333377;
+		message_box->is_visible = true;
 		app_attributes.modal_process = MODAL_PROCESS_show_message_box1_1;
 
 	};

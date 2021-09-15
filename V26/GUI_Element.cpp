@@ -675,7 +675,7 @@ void GUI_Element::Pain_MESSAGE_BOX(GUI_low_level *low_level) {
 
 	pp = cursor_position;
 	if (pp < 0) pp = 0;
-	if (pp > 255) pp = 190;
+	if (pp > 255) pp = 230;
 
 	low_level->fill_rectangle(x + ddx, y + ddy, w, h, color, pp); //  edit_cursor_position - это празрачность в данном контексте
 
@@ -689,15 +689,22 @@ void GUI_Element::Pain_MESSAGE_BOX(GUI_low_level *low_level) {
 	*/
 	FONT *fnt;
 
-	fnt = font[0];
+	fnt = font[2];
 
 	if (fnt != NULL && text.length() > 0) {
-		RECT r;
+		/* RECT r;
 		r.left = x;
 		r.top = y;
 		r.right = x + w;
-		r.bottom = y + h;
-		fnt->paintAAA(low_level, x + ddx + w/2 - fnt->text_width(text.c_str())/2, y + ddy+h/2-fnt->text_height()/2, text.c_str(), 0xffffff, -1, false);
+		r.bottom = y + h; */
+
+		//fnt->paintAAA(low_level, x + ddx + w/2 - fnt->text_width(text.c_str())/2, y + ddy+h/2-fnt->text_height()/2, text.c_str(), 0xffffff, -1, false);
+		
+		
+		//fnt->paint_dummy(low_level, x+1 + ddx + w / 2 - fnt->text_width(text.c_str()) / 2, y +1+ ddy + h / 2 - fnt->text_height() / 2, text.c_str(), 0x0);
+		//fnt->paint_dummy(low_level, x-1 + ddx + w / 2 - fnt->text_width(text.c_str()) / 2, y -1+ ddy + h / 2 - fnt->text_height() / 2, text.c_str(), 0x0);
+
+		fnt->paint_dummy(low_level, x + ddx + w / 2 - fnt->text_width(text.c_str()) / 2, y + ddy + h / 2 - fnt->text_height() / 2, text.c_str(), 0xffffff);
 	};
 
 }

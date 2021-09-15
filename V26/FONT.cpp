@@ -21,6 +21,57 @@ BUKVA::BUKVA(int idx_, int w_, int h_, uint8_t *buf_) {
 	};
 
 }
+BUKVA::BUKVA(int idx_, int w_, int h_, uint8_t *buf_, int v2) {
+	idx = idx_;
+	w = w_;
+	h = h_;
+
+	buf_size = w * h + 1;
+	buf = new uint8_t[buf_size];// , start_id + 332);
+
+	int i = 0;
+	while (i < w*h) {
+		buf[i] = buf_[i];
+		i++;
+	};
+
+}
+
+int BUKVA::paint_dummy(GUI_low_level *low_level, int x, int y, uint32_t color) {
+
+	if (buf == NULL) return 0;
+
+
+	unsigned int *v;
+	int i, j, d;
+
+	for (j = 0; j < h; j++) {
+		v = low_level->buf;
+		//d = low_level->window_h - 1 - y - j;
+		d = y + j;
+		if (d >= 0) {
+			d *= low_level->window_w;
+			d += x;
+			
+			v += d;
+
+			//v = scr_buf + (scr_h - 1 - y - j)*scr_w + x;
+
+			for (i = 0; i < w; i++)
+			{
+				if (buf[i + j * w] == '1') {
+					*v++ = color;
+				}
+				else {
+					v++;// = 0xff0099;
+				}
+				//low_level_gui->set_pixx(i + x, j + y, get_color(i, j));
+				//low_level_gui->set_pixx(i + x, j + y, 255);
+			};
+		};
+	};
+	return w;
+}
 
 int BUKVA::paintAAA(GUI_low_level *low_level, int x, int y, uint32_t color, bool show_cursor) {
 	if (buf == NULL)
@@ -121,6 +172,18 @@ int FONT::text_width(const wchar_t *txt) {
 	return ww;
 }
 
+void FONT::paint_dummy(GUI_low_level *low_level, int x, int y, const wchar_t *txt, uint32_t color_) {
+	int i, ww;
+	i = 0;
+	ww = 0;
+	while (txt[i] != 0) {
+		
+		ww += bukva[wchar_to_ascii(txt[i])].paint_dummy(low_level, x + ww, y, color_);
+				
+		i++;
+	}
+}
+
 void FONT::paintAAA(GUI_low_level *low_level, int x, int y, const wchar_t *txt, uint32_t color_, int cursor_position, bool is_pass) {
 	bool show_cursor;
 	int i, ww;
@@ -166,3 +229,36 @@ int FONT::paint_text_in_width(GUI_low_level *low_level, int x, int y, int max_w,
 	return ww;
 };
 
+int FONT::load_dummy(unsigned char *buf, int buf_size) {
+
+	/* 2021 09 int ii, jj, w, h;
+	ii = 0;
+	jj = 0;
+	while (ii < buf_size) {
+		w = buf[ii++];
+		h = buf[ii++];
+		bukva[jj].addbuffer(low_lvl, w, h, &(buf[ii]), start_id);
+		jj++;
+		ii += w * h;
+	};*/
+
+	int i, jj, w, h, kk;
+	i = 0;
+	jj = 0;
+	while (i < buf_size) {
+		//kk = buf[i++];
+		w = buf[i++];
+		h = buf[i++];
+
+		bukva.insert({ jj , BUKVA(jj, w, h, &(buf[i]), 2) });
+
+		//bukva.insert(std::pair<int, BUKVA>(jj,   (jj, w, h)));
+
+		//bukva[jj].addbuffer(w, h, &(buf[i]));
+		//bukva[jj].idx = jj;
+		jj++;
+		i += w * h;
+	};
+
+	return buf_size;
+}
