@@ -88,6 +88,16 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	viewer->RUN_VIEWER(partner_id, pass_encripted, pass_no_encripted);
 	***/
 
+	if (app_attributes.is_service) {
+		//send_udp("is_service");
+		RUN_SERVICE();
+		//send_udp("service is stoped");
+
+		WinMain_finish();
+
+		return 0;
+	};
+
 	
 	if (desktop == NULL) desktop = new DESKTOP();
 	desktop->RUN();

@@ -16,6 +16,22 @@ extern APPLICATION_ATTRIBUTES app_attributes;
 extern bool GLOBAL_STOP;
 extern DESKTOP *desktop;
 
+#define COLOR_service_not_set 0xffffff
+#define COLOR_service_set_not_run 0xaaaaaa
+#define COLOR_service_set_and_run 0x0399DD
+
+
+bool func_edit_begin_autorun_pass() {
+
+	if (app_attributes.im_is_admin == false) {
+		RunAsAdmin(0, app_attributes.my_exe_file_name, L"edit_autorun_pass"); // edit_autorun_pass
+		set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
+		return false;
+	}
+
+	return true;
+}
+
 LRESULT CALLBACK MainWinProcDesktop(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 
 void mouse_press_close(int mx, int my) {
@@ -314,6 +330,7 @@ void DESKTOP::init_gui() {
 	edit_autorun_pass->is_password = true;
 	edit_autorun_pass->pass_eye.eye = new TEXTURA(10025);
 	edit_autorun_pass->pass_eye.eye_open = new TEXTURA(10026);
+	edit_autorun_pass->func__edit_begin_autorun_pass = func_edit_begin_autorun_pass;
 
 	edit_autorun_id->name = L"edit_autorun_id";
 	edit_autorun_pass->name = L"edit_autorun_pass";
@@ -336,6 +353,8 @@ void DESKTOP::init_gui() {
 	message_box->cursor_position = 190;
 	message_box->set_text(L"message 123");
 	message_box->is_visible = false;
+
+	check_service_is_set_run_pass();
 }
 
 void DESKTOP::calc_start_size(int &x, int &y, int &w, int &h) {
@@ -486,19 +505,44 @@ void DESKTOP::outgoing_pass_encrypted_FINISH() {
 
 
 void DESKTOP::autorun_pass_encrypted_START() {
+	if (edit_autorun_pass == nullptr) {
+		autorun_pass_encrypted_FINISH(false);
+		return;
+	}
+	if (edit_autorun_pass->text.length() < 8) {
+		autorun_pass_encrypted_FINISH(false);
+		show_message_box(L"Too short password", red);
+		return;
+	}
+
+	if (REG_CHECK_EXISTS_KEY_and_check_permissions(HKEY_LOCAL_MACHINE, L"Software\\VisiatorService") == false) {
+		// message box NOT PERMISSION !
+		show_message_box(L"no access rights", red);
+		return;
+	};
+
 	indicator_autorun->cursor_position = 0;
 	indicator_autorun->is_visible = true;
 	edit_autorun_pass->is_visible = false;
 	if (gui != nullptr) gui->invalidate();
+	app_attributes.modal_process = 10000;
 	need_encrypt_autorun_pass = true;
 
 }
 
-void DESKTOP::autorun_pass_encrypted_FINISH() {
+void DESKTOP::autorun_pass_encrypted_FINISH(bool result_) {
 	indicator_autorun->is_visible = false;
 	edit_autorun_pass->is_visible = true;
 
-	show_message_box(L"password set", green);
+	
+
+	if (result_ == true) {
+		show_message_box(L"password set", green);
+	};
+
+	if (app_attributes.modal_process == 10000) {
+		app_attributes.modal_process = 0;
+	}
 
 	if (gui != nullptr) gui->invalidate();
 
@@ -548,6 +592,8 @@ void DESKTOP::EXECUTE() {
 
 		if (need_encrypt_autorun_pass) {
 			need_encrypt_autorun_pass = false;
+
+			for (i = 0; i < 32; i++) autorun_pass_encrypted[i] = 0;
 			for (i = 0; i < 16; i++) autorun_pass_encrypted[i] = autorun_pass[i];
 			for (i = 0; i < 20; i++) {
 				if (GLOBAL_STOP != false) { EXECUTE_is_run = false; return; };
@@ -557,7 +603,18 @@ void DESKTOP::EXECUTE() {
 				indicator_autorun->cursor_position++;
 				if (gui != nullptr) gui->invalidate();
 			}
-			autorun_pass_encrypted_FINISH();
+
+			//--------------------------------------------------------------------
+
+			save_service_pass_hash16( autorun_pass_encrypted );
+
+			restart_service();
+
+			desktop->check_service_is_set_run_pass();
+
+			//--------------------------------------------------------------------
+
+			autorun_pass_encrypted_FINISH(true);
 		}
 
 		boost::this_thread::sleep(SleepTime);
@@ -680,7 +737,7 @@ LRESULT DESKTOP::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 };
 
 LRESULT DESKTOP::WM_KEYUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
-
+	if (app_attributes.modal_process != 0) { return DefWindowProc(hw, msg, wp, lp); };
 	return 0;
 };
 LRESULT DESKTOP::WM_SYSKEYDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
@@ -730,6 +787,8 @@ LRESULT DESKTOP::WM_NCHITTEST_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 LRESULT DESKTOP::WM_CHAR_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
+	if (app_attributes.modal_process != 0) { return DefWindowProc(hw, msg, wp, lp); };
+
 	/*** 2021
 	if (app_attributes.modal_process != 0) {
 		return DefWindowProc(hw, msg, wp, lp);
@@ -741,6 +800,8 @@ LRESULT DESKTOP::WM_CHAR_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 };
 
 LRESULT DESKTOP::WM_KEYDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
+
+	if (app_attributes.modal_process != 0) { return DefWindowProc(hw, msg, wp, lp); };
 
 	wchar_t wbuffer[8];
 	BYTE lpKeyState[256];
@@ -804,6 +865,7 @@ LRESULT DESKTOP::WM_RBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	return 0;
 };
 LRESULT DESKTOP::WM_RBUTTONDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
+	if (app_attributes.modal_process != 0) { return DefWindowProc(hw, msg, wp, lp); };
 
 	return 0;
 };
@@ -913,6 +975,8 @@ LRESULT DESKTOP::WM_LBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 };
 
 LRESULT DESKTOP::WM_LBUTTONDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
+
+	if (app_attributes.modal_process != 0) { return DefWindowProc(hw, msg, wp, lp); };
 
 	int mx, my;
 
@@ -1025,6 +1089,8 @@ LRESULT DESKTOP::WM_NCMOUSEMOVE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 };
 LRESULT DESKTOP::WM_MOUSEMOVE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
+	if (app_attributes.modal_process != 0) { return DefWindowProc(hw, msg, wp, lp); };
+
 	int mx, my;
 
 	mx = (int)LOWORD(lp);
@@ -1118,6 +1184,13 @@ LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	};
 	***/
 
+	if (last_check_pass_for_autorun + 5000 < GetTickCount()) {
+		last_check_pass_for_autorun = GetTickCount();
+
+		check_service_is_set_run_pass();
+
+	}
+
 	if (app_attributes.modal_process == MODAL_PROCESS_show_message_box1_1) {
 		if (message_box->is_visible == false) message_box->is_visible = true;
 		message_box->cursor_position += 20; // это празрачность в данной контексте
@@ -1186,9 +1259,46 @@ void DESKTOP::show_message_box(wchar_t *message, int background_color) {
 	if (app_attributes.modal_process == 0) {
 		message_box->set_text(message);
 		if (background_color == green) message_box->color = 0x005500;
-		if (background_color == red)   message_box->color = 0x333377;
+		if (background_color == red)   message_box->color = 0x773333;
 		message_box->is_visible = true;
 		app_attributes.modal_process = MODAL_PROCESS_show_message_box1_1;
 
 	};
+}
+
+void DESKTOP::check_service_is_set_run_pass() {
+
+	if (check_service_pass_is_set()) {
+		//desktop->autorun_pass->set_label(L"Password already set");
+	}
+	else {
+		//desktop->autorun_pass->set_label(L"Need to set password");
+	}
+
+	int v;
+
+	v = get_service_VISIATOR_status(); // получим статус службы 0-не установлена, 1-установлена но не запущена, 2-запущена
+
+	if (v == 0) {
+		edit_autorun_id->text_color = COLOR_service_not_set;
+		//desktop->autorun_label_1->label_color = COLOR_service_not_set;
+		//desktop->autorun_label_2->label_color = COLOR_service_not_set;
+		//if (desktop->check_box_key->x == 10 && app_attributes.modal_process == 0) desktop->check_box_key->x = 0;
+		checkbox_autorun->is_mouse_pressed = false;
+	}
+	if (v == 1) {
+		edit_autorun_id->text_color = COLOR_service_set_not_run;
+		//desktop->autorun_label_1->label_color = COLOR_service_set_not_run;
+		//desktop->autorun_label_2->label_color = COLOR_service_set_not_run;
+		//if (desktop->check_box_key->x == 0 && app_attributes.modal_process == 0) desktop->check_box_key->x = 10;
+		checkbox_autorun->is_mouse_pressed = true;
+	}
+	if (v == 2) {
+		edit_autorun_id->text_color = COLOR_service_set_and_run;
+		//desktop->autorun_label_1->label_color = COLOR_service_set_and_run;
+		//desktop->autorun_label_2->label_color = COLOR_service_set_and_run;
+		//if (desktop->check_box_key->x == 0 && app_attributes.modal_process == 0) desktop->check_box_key->x = 10;
+		checkbox_autorun->is_mouse_pressed = true;
+	}
+	gui->invalidate();
 }

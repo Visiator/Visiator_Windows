@@ -80,7 +80,10 @@ public:
 	void outgoing_pass_encrypted_FINISH();
 
 	void autorun_pass_encrypted_START();
-	void autorun_pass_encrypted_FINISH();
+	void autorun_pass_encrypted_FINISH(bool result_);
+
+	DWORD last_check_pass_for_autorun = 0;
+	void  check_service_is_set_run_pass();
 
 	// thread для encrypt out pass
 	/* bool  EXECUTE_encrypt_out_pass_thread_is_run = false;

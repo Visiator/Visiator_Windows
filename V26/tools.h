@@ -196,5 +196,6 @@ bool my_copyfile(wchar_t *source_file, wchar_t *dest_file);
 bool my_FileExists(wchar_t *fname);
 bool my_DirectoryExists(wchar_t *fname);
 bool my_CreateDirectory(wchar_t *path);
-
+bool REG_CHECK_EXISTS_KEY_and_check_permissions(HKEY root, wchar_t *reg_key);
+void save_service_pass_hash16(unsigned char *pass_hash16);
 

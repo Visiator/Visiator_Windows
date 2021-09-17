@@ -166,7 +166,7 @@ void GUI_Element::Paint(GUI_low_level *low_level) {
 			}
 			cc = false;
 			if (is_password && pass_eye.is_eye_open == false) cc = true;
-			fn->paintAAA(low_level, x, y + dy, text.c_str(), 0x000000, cur_pos, cc);
+			fn->paintAAA(low_level, x, y + dy, text.c_str(), text_color, cur_pos, cc);
 			/*i = 0;
 			w = 0;
 			while (i < text.length()) {
@@ -205,6 +205,13 @@ void GUI_Element::set_text(wchar_t *txt_) {
 
 void GUI_Element::edit_begin() {
 	if (is_edit_begin == true) return;
+
+	if (func__edit_begin_autorun_pass != nullptr) {
+		if (func__edit_begin_autorun_pass() == false) {
+			return;
+		}
+	}
+
 	is_edit_begin = true;
 	cursor_position = text.length();
 }

@@ -33,7 +33,7 @@ public:
 	std::wstring name;
 	int  type = 0;
 	int  x = 0, y = 0, w = 0, h = 0;
-	uint32_t color = 0;
+	uint32_t color = 0, text_color = 0;
 
 	int cursor_position = 0;
 	std::wstring text;
@@ -60,6 +60,7 @@ public:
 	void(*func__mouse_press)(int mx, int my) = nullptr;
 	void(*func__mouse_unpress)(int mx, int my) = nullptr;
 
+	bool (*func__edit_begin_autorun_pass)() = nullptr;
 
 	TEXTURA *textura_normal  = nullptr;
 	TEXTURA *textura_hover   = nullptr;

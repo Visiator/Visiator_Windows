@@ -2600,13 +2600,13 @@ int SERVICE___START(wchar_t *service_name) {
 	if (!schService) { CloseServiceHandle(schSCManager);		return -11; }
 
 	r = StartService(schService, 0, 0);
-	int cc;
-	cc = 0;
-	while (r != 1 && cc < 4 && GLOBAL_STOP == false) {
-		my_Slip(1000);
-		r = StartService(schService, 0, 0);
-		cc++;
-	}
+	//int cc;
+	//cc = 0;
+	//while (r != 1 && cc < 4 && GLOBAL_STOP == false) {
+		//my_Slip(1000);
+		//r = StartService(schService, 0, 0);
+		//cc++;
+	//}
 
 	CloseServiceHandle(schService);
 	CloseServiceHandle(schSCManager);

@@ -3161,3 +3161,24 @@ bool my_CreateDirectory(wchar_t *path) {
 	return true;
 
 }
+
+
+void save_service_pass_hash16(unsigned char *pass_hash16) {
+
+	HKEY hkey;
+
+	hkey = 0;
+	RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"Software\\VisiatorService", 0, KEY_READ | KEY_WRITE | 0x0100, &hkey);
+	if (hkey == 0) {
+		//send_udp("error11 to save pass");
+		return;
+	}
+	DWORD rr;
+
+	rr = RegSetValueEx(hkey, L"pswd", 0, REG_BINARY, (BYTE *)&(pass_hash16[0]), 16);
+
+	RegCloseKey(hkey);
+
+	//RestartService();
+
+};
