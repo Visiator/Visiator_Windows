@@ -126,6 +126,7 @@ void ServiceMain(DWORD argc, LPTSTR *argv)
 	if (!UpdateServiceStatus(SERVICE_RUNNING, NO_ERROR, 0, 0, 0)) { return; }
 
 	if (service == NULL) { service = new SERVICE(); }
+
 	service->RUN();
 
 	/*if (!StartServiceThread()) {
@@ -1093,8 +1094,11 @@ void SERVICE::RUN() {
 
 	save_in_registry_last_run_ver_and_date();
 	
-	start_INDICATOR_THREAD();
+	if (pipes_server_pool == nullptr) pipes_server_pool = new PIPES_SERVER_POOL();
+	pipes_server_pool->RUN();
 
+	/* 2021 09
+	start_INDICATOR_THREAD();
 	start_PIPE_CONTROL_THREAD();
 	start_PIPE_WRITE_INFO_THREAD();
 	start_PIPE_MASTER_THREAD();
@@ -1102,7 +1106,7 @@ void SERVICE::RUN() {
 	start_MAIN_THREAD();
 	
 	start_SEND_INFO_to_INDICATOR_EXECUTE();
-
+	***/
 	// send_udp("SERVICE::RUN() finish");
 }
 

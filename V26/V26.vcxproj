@@ -139,6 +139,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NET_CLIENT_SESSION.cpp" />
     <ClCompile Include="NET_SERVER_SESSION.cpp" />
+    <ClCompile Include="PIPES_SERVER_POOL.cpp" />
     <ClCompile Include="SCREEN.cpp" />
     <ClCompile Include="SERVICE.cpp" />
     <ClCompile Include="TEXTURA.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="GUI_low_level.h" />
     <ClInclude Include="NET_CLIENT_SESSION.h" />
     <ClInclude Include="NET_SERVER_SESSION.h" />
+    <ClInclude Include="PIPES_SERVER_POOL.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="SCREEN.h" />
     <ClInclude Include="SERVICE.h" />

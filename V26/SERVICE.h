@@ -9,6 +9,8 @@
 #include <stdio.h>
 #undef _WINSOCKAPI_
 
+#include "PIPES_SERVER_POOL.h"
+
 #define packet_type_PING_MASTER_to_AGENT 100
 #define packet_type_REQUEST_SCREEN_one_byte 101
 #define packet_type_RESPONCE_SCREEN_one_byte 102
@@ -81,6 +83,8 @@ void RUN_SERVICE(void);
 class SERVICE
 {
 public:
+
+	PIPES_SERVER_POOL *pipes_server_pool = nullptr;
 
 	bool is_sync_clipboards = false; // нужно автоматически снхронизировать clipboard между сервером и клиентом (или не нужно)
 
