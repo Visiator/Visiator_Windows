@@ -25,6 +25,8 @@
 
 #include "SCREEN.h"
 
+#include <boost/thread.hpp>
+
 #define view_visiator_com "view.visiator.com"
 #define SERVER_PORT 443
 
@@ -44,6 +46,24 @@
 #define _Caption_h 28
 
 //unsigned long long gg;
+
+class CMDLINE
+{
+private:
+	int  param_max_count;
+	int  param_max_len;
+	char param[10][100];
+
+public:
+	int  count;
+	bool first_param_is_ID();
+	bool compare_param_by_no(int idx, const char *value);
+	char *get_param_by_no(int idx);
+	void decode(char *p);
+	void Clean(void);
+	CMDLINE(void);
+};
+
 
 class KEY_PRESSED
 {
@@ -107,6 +127,8 @@ public:
 void init_crit_section();
 void enter_crit(int id);
 void leave_crit(int id);
+
+void sudp(char *p);
 
 void sprintf__s_c_c_ui(char *s, int s_len, char *format, char *v1, char *v2, unsigned int v3);
 void sprintf__s_i_c_c_ull_ull(char *s, int len, char *format, int v1, char *v2, char *v3, unsigned long long v4, unsigned long long v5);
@@ -240,5 +262,6 @@ void init_encode_color_matrix_all();
 unsigned int decode_mouse_cursor_type(unsigned long long p);
 void ChangeKeyboardLayout_into_local_console();
 
-
+char upper_char(char p);
+wchar_t upper_char(wchar_t p);
 

@@ -17,12 +17,24 @@ AGENT::~AGENT() {
 
 void AGENT::RUN() {
 
+	sudp("AGENT::RUN()");
+
+	app_attributes.is_agent = true;
+
 	init_encode_color_matrix_all();
 
 	thread_EXECUTE_control = app_attributes.tgroup.create_thread( boost::bind(&AGENT::EXECUTE_control, this) );
 
 	thread_EXECUTE_read_write = app_attributes.tgroup.create_thread( boost::bind(&AGENT::EXECUTE_read_write, this) );
+	
+	boost::posix_time::milliseconds SleepTime(100);
 
+	while (GLOBAL_STOP == false) {
+
+		//r = my_pipe.read_service_info(&service_info);
+
+		boost::this_thread::sleep(SleepTime);
+	}
 
 }
 
@@ -145,6 +157,12 @@ void AGENT::EXECUTE_read_write() {
 			exec_event_in_to_session(ev->session_no, ev->event_type, ev->global_type, ev->msg, ev->wparam, ev->lparam); // 1
 		}
 
+		if (flag == false && packet_recv->packet_size == 128 && packet_recv->packet_type == packet_type_PING_MASTER_to_AGENT) {
+			flag = true;
+
+			PIPE_SLAVE_EXECUTE_2_____FINAL_PING();
+
+		};
 
 		if (flag == false) {
 			//send_udp2("PIPE_SLAVE_EXECUTE_2() не опознанный запрос  GLOBAL_STOP = true;");
@@ -321,3 +339,37 @@ void AGENT::PIPE_SLAVE_EXECUTE_2_____FINAL_REQUEST_EVENT(MASTER_AGENT_PACKET_HEA
 	//send_udp("receive EVENT from service");
 }
 
+void AGENT::PIPE_SLAVE_EXECUTE_2_____FINAL_PING() {
+	bool x;
+	DWORD w;
+
+	unsigned char *w_buf_2 = NULL;
+
+
+	w_buf_2 = new unsigned char[sizeof_MASTER_AGENT_PACKET_HEADER];
+
+
+	MASTER_AGENT_PACKET_HEADER *packet_send;
+
+
+
+	packet_send = (MASTER_AGENT_PACKET_HEADER *)w_buf_2;
+
+
+	//***********************************************************************************************
+	// write 128 (2)
+	zero_unsigned_char(w_buf_2, sizeof_MASTER_AGENT_PACKET_HEADER);
+	packet_send->packet_size = sizeof_MASTER_AGENT_PACKET_HEADER;
+	packet_send->packet_type = packet_type_PONG_MASTER_to_AGENT;
+
+	x = write_pipe(pipe_AGENT, w_buf_2, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_SLAVE_pipe_TIMEOUT);
+	if (x == false) {
+		//send_udp("PIPE_SLAVE_EXECUTE_2() (2) x == false  GLOBAL_STOP = true;");
+		delete[] w_buf_2;
+		EXECUTE_read_write_is_run = false;
+		set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
+		return;
+	}
+
+	delete[] w_buf_2;
+}

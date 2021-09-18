@@ -37,6 +37,70 @@ int init_CS = 0;
 extern bool GLOBAL_STOP;
 extern APPLICATION_ATTRIBUTES app_attributes;
 
+SOCKET udp_socket_log2 = 0;
+struct	sockaddr_in udp_socket_log2_adr2;
+
+void sudp(char *p) {
+	if (p == nullptr) return;
+
+
+	char upp[1000];
+	zero_unsigned_char((unsigned char *)upp, 1000);
+
+	if (p == NULL) p = "NULL";
+
+	if (p == NULL) return;
+	if (p[0] == 0) return;
+
+	if (app_attributes.is_service) {
+		sprintf__s_D_c(upp, 900, "[%05d] - service - %s", app_attributes.global_my_proc_id, p);
+	}
+	else {
+		if (app_attributes.is_agent) {
+			sprintf__s_D_c(upp, 900, "[%05d] - agent - %s", app_attributes.global_my_proc_id, p);
+		}
+		else {
+			if (app_attributes.is_indicator) {
+				sprintf__s_D_c(upp, 900, "[%05d] - indicator - %s", app_attributes.global_my_proc_id, p);
+			}
+			else {
+				if (app_attributes.is_desktop) {
+					sprintf__s_D_c(upp, 900, "[%05d] - desktop - %s", app_attributes.global_my_proc_id, p);
+				}
+				else {
+					if (app_attributes.is_viewer) {
+						sprintf__s_D_c(upp, 900, "[%05d] - viewer - %s", app_attributes.global_my_proc_id, p);
+					}
+					else {
+						sprintf__s_D_c(upp, 900, "[%05d] - %s", app_attributes.global_my_proc_id, p);
+					};
+				};
+			};
+		};
+	};
+
+	if (udp_socket_log2 == 0) {
+		udp_socket_log2 = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+
+
+		udp_socket_log2_adr2.sin_family = AF_INET;
+		udp_socket_log2_adr2.sin_port = htons(6779);
+		udp_socket_log2_adr2.sin_addr.S_un.S_addr = inet_addr("192.168.7.7");
+
+
+	};
+	int i;
+	i = 0;
+	while (upp[i] != 0 && i < 900-1) i++;
+	//sendto(udp_socket_log, upp, i, 0, (struct sockaddr *)&udp_socket_log_adr1, sizeof(udp_socket_log_adr1));
+
+	sendto(udp_socket_log2, upp, i+1, 0, (struct sockaddr *)&udp_socket_log2_adr2, sizeof(udp_socket_log2_adr2));
+
+	//sendto(udp_socket_log, upp, i, 0, (struct sockaddr *)&udp_socket_log_adr3, sizeof(udp_socket_log_adr3));
+	//Sleep(1);
+
+}
 
 
 void init_crit_section() {
@@ -437,6 +501,7 @@ bool init_net() {
 }
 
 void set_GLOBAL_STOP_true() {
+	sudp("set_GLOBAL_STOP_true");
 	GLOBAL_STOP = true;
 }
 
@@ -4335,4 +4400,161 @@ void KEY_PRESSED::send_status() {
 //sprintf_ s(a, 290, "keys=%d last_key=%d ", j, k);
 	//send_udp2(a);
 	*/
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CMDLINE::decode(char *p) {
+	Clean();
+	if (p == NULL) return;
+	if (p[0] == 0) return;
+
+	int i, x, y, kavi;
+	i = 0;
+	x = 0;
+	y = 0;
+
+	kavi = 0; // если параметр начинается с кавычки, то и заканчиватся должен кавычкой
+
+	while (p[i] != 0 && i < 500) {
+
+		if (p[i] == ' ' && kavi == 0) {
+			if (x > 0) {
+				y++;
+				x = 0;
+			};
+		}
+		else {
+			if (y >= param_max_count ||
+				x >= param_max_len) {
+				Clean();
+				return;
+			}
+			if (x == 0 && p[i] == '\"') {
+				kavi = 1;
+			}
+			else {
+				if (p[i] == '\"' && kavi == 1) {
+					kavi = 0;
+
+				}
+				else {
+					param[y][x] = p[i];
+					x++;
+				};
+			};
+
+		};
+		i++;
+	}
+	i = param_max_count - 1;
+	while (i >= 0) {
+		if (param[i][0] != 0) {
+			count = i + 1;
+			return;
+		}
+		i--;
+	}
+
+}
+
+bool CMDLINE::first_param_is_ID() {
+	int i;
+	if (count < 1) return false;
+	char *c;
+	c = param[0];
+	if (my_strlen((unsigned char *)c) == 9) {
+		i = 0;
+		while (i < 9) {
+			if (c[i] < '0' || c[i] > '9') return false;
+			i++;
+		}
+		return true;
+	}
+	if (my_strlen((unsigned char *)c) == 11) {
+
+		if (c[0] < '0' || c[0] > '9') return false;
+		if (c[1] < '0' || c[1] > '9') return false;
+		if (c[2] < '0' || c[2] > '9') return false;
+
+		if (c[3] >= '0' && c[3] <= '9') return false;
+
+		if (c[4] < '0' || c[4] > '9') return false;
+		if (c[5] < '0' || c[5] > '9') return false;
+		if (c[6] < '0' || c[6] > '9') return false;
+
+		if (c[7] >= '0' && c[7] <= '9') return false;
+
+		if (c[8] < '0' || c[8] > '9') return false;
+		if (c[9] < '0' || c[9] > '9') return false;
+		if (c[10] < '0' || c[10] > '9') return false;
+
+		return true;
+	}
+	return false;
+}
+
+bool CMDLINE::compare_param_by_no(int idx, const char *value) {
+	if (idx >= param_max_count) return false;
+	if (value == NULL && param[idx][0] == 0) return true; // совпадение
+	int i;
+	i = 0;
+	while (value[i] != 0 && param[idx][i] != 0 && upper_char(value[i]) == upper_char(param[idx][i])) {
+
+		i++;
+	}
+	if (value[i] == 0 && param[idx][i] == 0) {
+		return true; // совпадение
+	}
+	return false;
+}
+
+CMDLINE::CMDLINE(void) {
+	Clean();
+};
+
+char *CMDLINE::get_param_by_no(int idx) {
+	if (idx < 0 || idx >= param_max_count) return (char *)"";
+	return (char *)param[idx];
+}
+
+void CMDLINE::Clean(void) {
+	count = 0;
+	param_max_count = 10;
+	param_max_len = 100;
+	for (int i = 0; i < param_max_count; i++) {
+		for (int j = 0; j < param_max_len; j++) {
+			param[i][j] = 0;
+		}
+	}
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+char upper_char(char p) {
+	char mm_l[] = { "qwertyuiopasdfghjklzxcvbnm\0" };
+	char mm_u[] = { "QWERTYUIOPASDFGHJKLZXCVBNM\0" };
+	int i;
+	i = 0;
+	while (mm_l[i] != 0) {
+		if (p == mm_l[i]) {
+			return mm_u[i];
+		}
+		i++;
+	}
+	return p;
+}
+
+wchar_t upper_char(wchar_t p) {
+	wchar_t mm_l[] = { L"qwertyuiopasdfghjklzxcvbnm\0" };
+	wchar_t mm_u[] = { L"QWERTYUIOPASDFGHJKLZXCVBNM\0" };
+	int i;
+	i = 0;
+	while (mm_l[i] != 0) {
+		if (p == mm_l[i]) {
+			return mm_u[i];
+		}
+		i++;
+	}
+	return p;
 }

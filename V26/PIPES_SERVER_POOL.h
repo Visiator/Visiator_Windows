@@ -5,6 +5,8 @@
 #include <boost/thread.hpp>
 
 #define packet_type_PING_MASTER_to_AGENT 100
+#define packet_type_PONG_MASTER_to_AGENT 10000
+
 #define packet_type_REQUEST_SCREEN_one_byte 101
 #define packet_type_RESPONCE_SCREEN_one_byte 102
 #define packet_type_REQUEST_STOP_AGENT 103
@@ -50,14 +52,38 @@ struct MASTER_AGENT_PACKET_HEADER_event
 class PIPES_SERVER_POOL
 {
 public:
-	// Обмен между сервером и агентом:
+	// Обмен между мастером и подчиненным (клиентом):
+	
+	// Первый поток создает канал (pipe) и вызывает функцию ConnectNamedPipe. Эта функция блокирует поток и ждет когда подключится клиент.
+	// когда клиент подключился, поток выставляет переменную client_is_connected = true переходит в бесконечный цикл.
+	
+	// 
+
 	// Производится в виде транзакций. Сервер посылает запрос и ждет ответ от агента. Если агент завис и не отвечает, эту ситуацию 
-	// обработает отдельный поток.
+	// обработает отдельный поток и разорвет соединение.
 	// В отдельном потоке контролируется подключение к pipe
 
-	// отдельный поток для контроля зависших транзакций
+	// отдельный поток для контроля зависших транзакций по таймауту
+	
+
+	//*****************************************************
+	// отдельный канал для основной связи с агентом. Запрос от агента экрана и передача агенту нажатых клавишь и мыши
+	// когда агент подключился к мастеру, канал все время остается открытым
 	
 	HANDLE pipe_master_to_agent = 0;
+	
+	boost::thread* thread_EXECUTE_MASTER_AGENT_reconnect_pipe = nullptr;
+	void                  EXECUTE_MASTER_AGENT_reconnect_pipe();
+	bool                  EXECUTE_MASTER_AGENT_reconnect_pipe_is_run = false;
+	bool MASTER_is_use = false;
+
+
+	//
+	//*****************************************************
+
+
+
+	
 	HANDLE pipe_master_to_indicator = 0;
 
 	// поток control
@@ -67,12 +93,7 @@ public:
 	void EXECUTE_control();
 	bool MASTER_AGENT_connected = false;
 
-	// блок SERVER<->AGENT
-	boost::thread* thread_EXECUTE_MASTER_AGENT_reconnect_pipe = nullptr;
-	void                  EXECUTE_MASTER_AGENT_reconnect_pipe();
-	bool                  EXECUTE_MASTER_AGENT_reconnect_pipe_is_run = false;
-	bool MASTER_is_use = false;
-
+	
 	bool send_ping_from_MASTER_to_AGENT();
 
 	void RUN();

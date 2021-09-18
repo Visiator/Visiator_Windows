@@ -552,8 +552,9 @@ void DESKTOP::autorun_pass_encrypted_FINISH(bool result_) {
 
 void DESKTOP::EXECUTE() {
 
+	bool r;
 	AGENT *aa;
-
+	/*
 	PIPES_SERVER_POOL *ss;
 
 	ss = new PIPES_SERVER_POOL();
@@ -567,8 +568,8 @@ void DESKTOP::EXECUTE() {
 		//Sleep(100);
 	}
 
-	ss->send_ping_from_MASTER_to_AGENT();
-
+	r = ss->send_ping_from_MASTER_to_AGENT();
+	*/
 	int i, j, k;
 
 	EXECUTE_is_run = true;

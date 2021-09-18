@@ -27,7 +27,7 @@ bool UpdateServiceStatus(DWORD dwCurrentState, DWORD dwWin32ExitCode, DWORD dwSe
 
 void KillService(void)
 {
-	//send_udp("KillService");
+	sudp("KillService");
 	nServiceRunning = false;
 	SetEvent(killServiceEvent);
 	UpdateServiceStatus(SERVICE_STOPPED, NO_ERROR, 0, 0, 0);
@@ -35,26 +35,39 @@ void KillService(void)
 
 
 bool UpdateServiceStatus(DWORD dwCurrentState, DWORD dwWin32ExitCode, DWORD dwServiceSpecificExitCode, DWORD dwCheckPoint, DWORD dwWaitHint) {
-	//send_udp("UpdateServiceStatus()");
+	sudp("UpdateServiceStatus()");
 	SERVICE_STATUS nServiceStatus;
 	nServiceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
 	nServiceStatus.dwCurrentState = dwCurrentState;
-	if (dwCurrentState == SERVICE_START_PENDING) { nServiceStatus.dwControlsAccepted = 0; }
-	else { nServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN; }
-	if (dwServiceSpecificExitCode == 0) { nServiceStatus.dwWin32ExitCode = dwWin32ExitCode; }
-	else { nServiceStatus.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR; }
+	
+	if (dwCurrentState == SERVICE_START_PENDING) { 
+		nServiceStatus.dwControlsAccepted = 0; 
+	}
+	else { 
+		nServiceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_SHUTDOWN; 
+	}
+
+	if (dwServiceSpecificExitCode == 0) { 
+		nServiceStatus.dwWin32ExitCode = dwWin32ExitCode; 
+	}
+	else { 
+		nServiceStatus.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR; 
+	}
+	
 	nServiceStatus.dwServiceSpecificExitCode = dwServiceSpecificExitCode;
 	nServiceStatus.dwCheckPoint = dwCheckPoint;
 	nServiceStatus.dwWaitHint = dwWaitHint;
 
+	sudp("u1");
 	if (!SetServiceStatus(nServiceStatusHandle, &nServiceStatus)) 
 	{ 
-		
+		sudp("u2");
 		KillService();	
+		sudp("u3");
 		return false; 
 	}
 	else {
-		
+		sudp("u4");
 		return true;
 	};
 }
@@ -62,19 +75,19 @@ bool UpdateServiceStatus(DWORD dwCurrentState, DWORD dwWin32ExitCode, DWORD dwSe
 
 void ServiceCtrlHandler(DWORD nControlCode)
 {
-	//send_udp("ServiceCtrlHandler()");
+	sudp("ServiceCtrlHandler()");
 	BOOL success;
 	switch (nControlCode)
 	{
 	case SERVICE_CONTROL_SHUTDOWN:
-		//send_udp("ServiceCtrlHandler( SERVICE_CONTROL_SHUTDOWN )");
+		sudp("ServiceCtrlHandler( SERVICE_CONTROL_SHUTDOWN )");
 		break;
 	case SERVICE_CONTROL_STOP:
-		//send_udp("ServiceCtrlHandler( SERVICE_CONTROL_STOP ) GLOBAL_STOP = true");
+		sudp("ServiceCtrlHandler( SERVICE_CONTROL_STOP ) GLOBAL_STOP = true");
 
 		service->interaction_with_agent_STOP_AGENT();
 
-		//send_udp("***********************************");
+		sudp("***********************************");
 
 		set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
 		for (int i = 0; i < 100; i++) {
@@ -91,8 +104,11 @@ void ServiceCtrlHandler(DWORD nControlCode)
 
 			Sleep(500);*/
 		}
+		sudp("1");
 		nServiceCurrentStatus = SERVICE_STOP_PENDING;
+		sudp("2");
 		success = UpdateServiceStatus(SERVICE_STOP_PENDING, NO_ERROR, 0, 1, 3000);
+		sudp("3");
 
 		return;
 	default:
@@ -115,14 +131,22 @@ void ServiceCtrlHandler(DWORD nControlCode)
 
 void ServiceMain(DWORD argc, LPTSTR *argv)
 {
-	//send_udp("ServiceMain()");
+	sudp("ServiceMain()");
+
 	nServiceStatusHandle = RegisterServiceCtrlHandler(strServiceName, (LPHANDLER_FUNCTION)ServiceCtrlHandler);
+	
 	if (!nServiceStatusHandle) { return; }
+	
 	if (!UpdateServiceStatus(SERVICE_START_PENDING, NO_ERROR, 0, 1, 3000)) { return; }
+	
 	killServiceEvent = CreateEvent(0, TRUE, FALSE, 0);
+	
 	if (killServiceEvent == NULL) { return; }
+	
 	if (!UpdateServiceStatus(SERVICE_START_PENDING, NO_ERROR, 0, 2, 1000)) { return; }
+	
 	nServiceCurrentStatus = SERVICE_RUNNING;
+	
 	if (!UpdateServiceStatus(SERVICE_RUNNING, NO_ERROR, 0, 0, 0)) { return; }
 
 	if (service == NULL) { service = new SERVICE(); }
@@ -137,13 +161,15 @@ void ServiceMain(DWORD argc, LPTSTR *argv)
 	else {
 		send_udp("r2");
 	}*/
+	sudp("ServiceMain...");
 	WaitForSingleObject(killServiceEvent, INFINITE);
+	sudp("ServiceMain end");
 	CloseHandle(killServiceEvent);
 }
 
 
 void RUN_SERVICE(void) {
-	//send_udp("RUN_SERVICE begin");
+	sudp("RUN_SERVICE begin");
 
 	//my_pipe.start_service_write_info_pipe();
 	//my_pipe.start_MASTER_pipe();
@@ -159,7 +185,7 @@ void RUN_SERVICE(void) {
 		//send_udp("RUN_SERVICE end 2");
 		return;
 	}
-	//send_udp("RUN_SERVICE end");
+	sudp("RUN_SERVICE end");
 }
 
 
@@ -1094,16 +1120,20 @@ void SERVICE::RUN() {
 
 	save_in_registry_last_run_ver_and_date();
 	
-	if (pipes_server_pool == nullptr) pipes_server_pool = new PIPES_SERVER_POOL();
-	pipes_server_pool->RUN();
+	thread_EXECUTE = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::EXECUTE, this));
+
+	//if (pipes_server_pool == nullptr) pipes_server_pool = new PIPES_SERVER_POOL();
+	//pipes_server_pool->RUN();
+
+
 
 	/* 2021 09
 	start_INDICATOR_THREAD();
 	start_PIPE_CONTROL_THREAD();
 	start_PIPE_WRITE_INFO_THREAD();
-	start_PIPE_MASTER_THREAD();
+	start_PIPE_MASTER_THREAD(); // service->PIPE_MASTER_THREAD_EXECUTE();  --->  CreateNamedPipe(...) , ConnectNamedPipe(...) ждем когда подключитсмя клиент
 	start_PIPE_INDICATOR_EXECUTE();
-	start_MAIN_THREAD();
+	start_MAIN_THREAD(); // service->MAIN_THREAD_EXECUTE(); ---> LOAD_ID_or_REGISTER() , LOAD_PASS() , START_NET_POOL();
 	
 	start_SEND_INFO_to_INDICATOR_EXECUTE();
 	***/
@@ -2751,4 +2781,19 @@ void SERVICE::INDICATOR_SAY_clipboard_is_changed() {
 	//send_udp2("INDICATOR_SAY_clipboard_is_changed()");
 	// 2021 09 if(session_pool != NULL) session_pool->INDICATOR_SAY_clipboard_is_changed();
 
+}
+
+void SERVICE::EXECUTE() {
+	EXECUTE_is_run = true;
+
+	boost::posix_time::milliseconds SleepTime(10);
+
+	while (GLOBAL_STOP == false) {
+
+		boost::this_thread::sleep(SleepTime);
+	}
+
+	EXECUTE_is_run = false;
+
+	KillService();
 }

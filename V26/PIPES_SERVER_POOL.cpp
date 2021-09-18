@@ -184,8 +184,13 @@ bool PIPES_SERVER_POOL::send_ping_from_MASTER_to_AGENT() {
 					return false;
 				};
 
+				if (server_agent_packet_header_responce.packet_type == packet_type_PONG_MASTER_to_AGENT) {
+					MASTER_is_use = false;
+					return true;
+				}
+
 				MASTER_is_use = false;
-				return true;
+				return false;
 			}
 		}
 	}

@@ -146,6 +146,7 @@
     <ClCompile Include="SERVICE.cpp" />
     <ClCompile Include="TEXTURA.cpp" />
     <ClCompile Include="tools.cpp" />
+    <ClCompile Include="TOTAL_CONTROL.cpp" />
     <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.cpp" />
     <ClCompile Include="VIEWER.cpp" />
     <ClCompile Include="VIEWER_small_top_panel.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="SERVICE.h" />
     <ClInclude Include="TEXTURA.h" />
     <ClInclude Include="tools.h" />
+    <ClInclude Include="TOTAL_CONTROL.h" />
     <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.h" />
     <ClInclude Include="VIEWER.h" />
     <ClInclude Include="VIEWER_small_top_panel.h" />

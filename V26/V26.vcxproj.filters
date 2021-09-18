@@ -78,6 +78,9 @@
     <ClCompile Include="KERNEL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TOTAL_CONTROL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -138,6 +141,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="KERNEL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TOTAL_CONTROL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -21,15 +21,17 @@
 #define MODAL_PROCESS_show_message_box1_2  109
 
 
+
 class APPLICATION_ATTRIBUTES
 {
 public:
 	int VER = 0;
 	boost::thread_group tgroup;
-	bool is_desktop = false;
-	bool is_viewer  = false;
-	bool is_service = false;
-	bool is_agent   = false;
+	bool is_desktop   = false;
+	bool is_viewer    = false;
+	bool is_service   = false;
+	bool is_agent     = false;
+	bool is_indicator = false;
 
 	bool im_is_admin = false;
 	int  is_32_or_64_bit_system = 0;
@@ -52,6 +54,9 @@ public:
 
 	HINSTANCE hInstance = 0;
 	DWORD global_my_proc_id = 0;
+	DWORD agent_process_id = 0;
+	DWORD indicator_process_id = 0;
+
 	void get_programm_version();
 	void getRealWindowsVersion();
 	void set_startup_paramert_pr(wchar_t *p);

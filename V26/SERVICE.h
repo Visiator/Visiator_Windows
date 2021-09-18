@@ -195,8 +195,16 @@ public:
 
 	void save_in_registry_last_run_ver_and_date();
 
+	//*****************************************************************************
+	// 2021 09
+	boost::thread* thread_EXECUTE = nullptr;
+	bool EXECUTE_is_run = false;
+	void EXECUTE();
+
 	void RUN();
-	
+	//
+	//*****************************************************************************
+
 
 	char *packet_send_event = NULL, *packet_recv_event = NULL;
 	void send_event_in_to_session(int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam);

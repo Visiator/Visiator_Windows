@@ -33,6 +33,8 @@
 #include "VIEWER.h"
 #include "SERVICE.h"
 #include "KERNEL.h"
+#include "AGENT.h"
+#include "TOTAL_CONTROL.h"
 
 #include <boost/lambda/lambda.hpp>
 
@@ -48,6 +50,9 @@ DESKTOP  *desktop = nullptr;
 VIEWER *viewer = nullptr;
 SERVICE *service = nullptr;
 KERNEL kernel;
+CMDLINE cmd_line;
+AGENT *agent = nullptr;
+TOTAL_CONTROL *total_control = nullptr;
 
 void WinMain_finish();
 
@@ -59,10 +64,19 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	
 	if (init_net() == false) { return -1; }
 
-	app_attributes.get_all_parametrs(hInstance);
+	
 
+	app_attributes.get_all_parametrs(hInstance);
+	
+	sudp("start");
+
+	cmd_line.decode((char *)lpCmdLine);
 	
 	load_fonts();
+
+	total_control = new TOTAL_CONTROL();
+	total_control->start_EXECUTE();
+
 	/*
 	thread_list = new ALL_THREAD_LIST();
 
@@ -90,12 +104,34 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	viewer->RUN_VIEWER(partner_id, pass_encripted, pass_no_encripted);
 	***/
 
+	//--------------------------------------------------------------------------------------------------------
+	// AGENT
+
+	if (cmd_line.count == 1 && cmd_line.compare_param_by_no(0, "agent")) {
+
+		/*if (service == NULL) { service = neww SERVICE(); }
+		service->RUN();*/
+
+		if (agent == NULL) { agent = new AGENT(); };
+
+		agent->RUN();
+
+		WinMain_finish();
+
+		sudp("AGENT finish");
+
+		return 0;
+	}
+
+
 	if (app_attributes.is_service) {
 		//send_udp("is_service");
 		RUN_SERVICE();
 		//send_udp("service is stoped");
 
 		WinMain_finish();
+
+		sudp("SERVICE finish");
 
 		return 0;
 	};
@@ -104,6 +140,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	if (desktop == NULL) desktop = new DESKTOP();
 	desktop->RUN();
 	
+	sudp("DESKTOP finish");
 
 	WinMain_finish();
 	return 0;
