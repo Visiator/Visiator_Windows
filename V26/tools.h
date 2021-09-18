@@ -264,4 +264,5 @@ void ChangeKeyboardLayout_into_local_console();
 
 char upper_char(char p);
 wchar_t upper_char(wchar_t p);
+void Disconnect_Named_Pipe(HANDLE pipe, char *info);
 

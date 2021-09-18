@@ -3075,7 +3075,7 @@ bool check_mutex(wchar_t *mutex_name) {
 
 void Load_private_id_and_public_id_from_SERVICE_registry(unsigned long long *public_id, unsigned long long *private_id) {
 
-	//send_udp("Load_private_id_and_public_id_from_SERVICE_registry()...");
+	//sudp("Load_private_id_and_public_id_from_SERVICE_registry()...");
 
 	*public_id = 0;
 	*private_id = 0;
@@ -3093,7 +3093,7 @@ void Load_private_id_and_public_id_from_SERVICE_registry(unsigned long long *pub
 		r = RegCreateKeyEx(HKEY_LOCAL_MACHINE, L"Software\\VisiatorService", 0, L"", REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS | 0x0100, NULL, &hkey, NULL);
 	};
 	if (hkey == 0) {
-		//send_udp("Load_private_id_and_public_id_from_SERVICE_registry() error1");
+		//sudp("Load_private_id_and_public_id_from_SERVICE_registry() error1");
 		return;
 	}
 
@@ -3132,8 +3132,8 @@ void Load_private_id_and_public_id_from_SERVICE_registry(unsigned long long *pub
 
 	//char ss[500];
 	//sprintf__s_ull_ull(ss, 150, "public_id = %llu , private_id = %llu ", *public_id, *private_id);
-	//send_udp(ss);
-	//send_udp("Load_private_id_and_public_id_from_SERVICE_registry() finish");
+	//sudp(ss);
+	//sudp("Load_private_id_and_public_id_from_SERVICE_registry() finish");
 
 }
 
@@ -4557,4 +4557,23 @@ wchar_t upper_char(wchar_t p) {
 		i++;
 	}
 	return p;
+}
+
+void Disconnect_Named_Pipe(HANDLE pipe, char *info) {
+	char ss[100];
+	if (info != nullptr && info[0] != 0) {
+		if (info[0] == '1' && info[1] == 0) {
+
+		}
+		else {
+			sprintf__s_c(ss, 90, "Disconnect_Named_Pipe() - %s ", info);
+			sudp(ss);
+		};
+	}
+	else {
+		sudp("Disconnect_Named_Pipe() - nullptr");
+	}
+	//send_udp2("+++1 ", (int)pipe);
+	DisconnectNamedPipe(pipe);
+	//send_udp2("+++2");
 }

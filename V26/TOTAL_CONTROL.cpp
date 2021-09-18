@@ -1,10 +1,11 @@
 #include "tools.h"
 #include "TOTAL_CONTROL.h"
 #include "APPLICATION_ATTRIBUTES.h"
+#include "SERVICE.h"
 
 extern APPLICATION_ATTRIBUTES app_attributes;
 extern bool GLOBAL_STOP;
-
+extern SERVICE *service;
 
 TOTAL_CONTROL::TOTAL_CONTROL() {
 
@@ -62,6 +63,17 @@ void TOTAL_CONTROL::send_udp_SERVICE() {
 		add(ss, "global_my_proc_id", app_attributes.global_my_proc_id);
 		add(ss, "agent_process_id", app_attributes.agent_process_id);
 		add(ss, "indicator_process_id", app_attributes.indicator_process_id);
+
+		if (service != nullptr) {
+			add(ss, "service->EXECUTE_is_run", service->EXECUTE_is_run);			
+			add(ss, "service->EXECUTE_main_MASTER_AGENT_is_run", service->EXECUTE_main_MASTER_AGENT_is_run);
+			add(ss, "service->pipe_MASTER_is_open", service->pipe_MASTER_is_open);
+			add(ss, "service->MASTER_is_agent_connected", service->MASTER_is_agent_connected);
+
+			
+		};
+
+		//EXECUTE_main_MASTER_AGENT_is_run
 
 		/*
 		add(ss, "SERVICE_ServiceExecutionThread", SERVICE_ServiceExecutionThread);
@@ -138,7 +150,7 @@ void TOTAL_CONTROL::EXECUTE() {
 
 	while (GLOBAL_STOP == false) {
 
-		send_udp_SERVICE();
+		if(app_attributes.is_service) send_udp_SERVICE();
 
 		for (int i = 0; i < 10; i++) {
 

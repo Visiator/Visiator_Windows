@@ -86,7 +86,7 @@ public:
 	void SET_last_agent_active(char *info);
 
 	HANDLE pipe_write_service_info = 0;
-	HANDLE pipe_master = 0;
+	//HANDLE pipe_master = 0;
 	HANDLE pipe_indicator = 0;
 
 	bool is_run_MAIN_THREAD = false;
@@ -197,11 +197,21 @@ public:
 
 	//*****************************************************************************
 	// 2021 09
+
+	//*****************************************************
+	// Thread для основного потока (reconnect) MASTER<->AGENT
+	boost::thread* thread_EXECUTE_main_MASTER_AGENT = nullptr;
+	bool EXECUTE_main_MASTER_AGENT_is_run = false;
+	void EXECUTE_main_MASTER_AGENT();
+
+
+	// MAIN Thread
 	boost::thread* thread_EXECUTE = nullptr;
 	bool EXECUTE_is_run = false;
-	void EXECUTE();
-
+	void EXECUTE(); // MAIN Thread
 	void RUN();
+	HANDLE pipe_MASTER = 0;
+	bool pipe_MASTER_is_open = false;
 	//
 	//*****************************************************************************
 

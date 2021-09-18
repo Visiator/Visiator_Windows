@@ -2073,7 +2073,7 @@ void SERVICE::SET_last_agent_active(char *info) {
 	
 }
 void SERVICE::LOAD_ID_or_REGISTER() {
-	// send_udp("LOAD_ID()");
+	
 	Load_private_id_and_public_id_from_SERVICE_registry(&PUBLIC_ID, &PRIVATE_ID);
 
 	if (PUBLIC_ID == 0) {
@@ -2784,9 +2784,46 @@ void SERVICE::INDICATOR_SAY_clipboard_is_changed() {
 }
 
 void SERVICE::EXECUTE() {
+
+	// 2021 09 
+	
+	// MAIN Thread
+
 	EXECUTE_is_run = true;
 
 	boost::posix_time::milliseconds SleepTime(10);
+
+	//sudp("LOAD_ID_or_REGISTER()...");
+
+	while (GLOBAL_STOP == false) {
+
+		if (PUBLIC_ID == 0 || PRIVATE_ID == 0) {
+			LOAD_ID_or_REGISTER();
+		}
+		else {
+			break;
+		}
+
+		boost::this_thread::sleep(SleepTime);
+	};
+
+	//sudp("LOAD_ID_or_REGISTER() ok");
+
+	while (GLOBAL_STOP == false) {
+
+		if (PASS_IS_EMPTY(PASS)) {
+			LOAD_PASS();
+		}
+		else {
+			break;
+		}
+
+		boost::this_thread::sleep(SleepTime);
+	};
+
+	if(GLOBAL_STOP == false) thread_EXECUTE_main_MASTER_AGENT = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::EXECUTE_main_MASTER_AGENT, this));
+
+	//sudp("LOAD_PASS() ok");
 
 	while (GLOBAL_STOP == false) {
 
@@ -2796,4 +2833,104 @@ void SERVICE::EXECUTE() {
 	EXECUTE_is_run = false;
 
 	KillService();
+}
+
+void SERVICE::EXECUTE_main_MASTER_AGENT() {
+
+	// Thread для основного потока (reconnect) MASTER<->AGENT
+
+	EXECUTE_main_MASTER_AGENT_is_run = true;
+
+	SECURITY_DESCRIPTOR sd;
+	SECURITY_ATTRIBUTES sa;
+
+	InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+	SetSecurityDescriptorDacl(&sd, TRUE, NULL, FALSE);
+
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.lpSecurityDescriptor = &sd;
+	sa.bInheritHandle = TRUE;
+
+	if (MASTER_is_pipe_open == false) {
+		//send_udp("create master pipe...");
+
+		pipe_MASTER = CreateNamedPipe(L"\\\\.\\pipe\\$visiator_master$", PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, PIPE_TYPE_BYTE | PIPE_WAIT, 1, 1000000, 1000000, 500, &sa);// NMPWAIT_USE_DEFAULT_WAIT, NULL);
+
+		if (pipe_MASTER == INVALID_HANDLE_VALUE) {
+			pipe_MASTER = 0;
+			sudp("pipe_MASTER == INVALID_HANDLE_VALUE");
+
+			set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
+		};
+		sudp("MASTER_is_pipe_open = true    <---------------------------------------------- ");
+		pipe_MASTER_is_open = true;
+	}
+
+	BOOL x;
+
+
+	boost::posix_time::milliseconds SleepTime(10);
+
+	while (GLOBAL_STOP == false) {
+
+
+		sudp("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     MASTER pipe connect...");
+
+		x = ConnectNamedPipe(pipe_MASTER, NULL);
+
+		//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 2;
+
+		if (x == TRUE) {
+			sudp("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     MASTER_is_agent_connected = true");
+
+			//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 3;
+
+			SET_last_agent_active("connect MASTER");
+
+			MASTER_is_agent_connected = true;
+
+			while (GLOBAL_STOP == false && MASTER_is_agent_connected == true) {
+
+				//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_2++;
+
+				//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 4;
+
+				boost::this_thread::sleep(SleepTime);
+			};
+
+			//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 5;
+
+			if (MASTER_is_agent_connected == true) {
+
+				//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 6;
+
+				enter_crit(29);
+				MASTER_is_agent_connected = false;
+				leave_crit(29);
+
+				
+
+				Disconnect_Named_Pipe(pipe_MASTER, "p master 1");
+
+				//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 7;
+
+			}
+
+		};
+
+		//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 8;
+
+		sudp("master 4    <----------------------------------------------");
+		boost::this_thread::sleep(SleepTime);
+		sudp("master 100    <----------------------------------------------");
+
+		
+	}
+
+	
+
+	EXECUTE_main_MASTER_AGENT_is_run = false;
+
+	Disconnect_Named_Pipe(pipe_MASTER, "c1");
+
 }
