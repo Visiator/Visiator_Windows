@@ -2,7 +2,7 @@
 #include "KERNEL.h"
 #include "tools.h"
 #include "Application_Attributes.h"
-#include "mem.h"
+//#include "mem.h"
 
 extern APPLICATION_ATTRIBUTES app_attributes;
 
@@ -198,7 +198,7 @@ DWORD KERNEL::scan_winlogon_pid_for_active_session(void) {
 		pProcesses = (PSYSTEM_PROCESSES)(((LPBYTE)pProcesses)
 			+ pProcesses->NextEntryDelta);
 	};
-	send_udp("scan_winlogon_pid_for_active_session() winlogon not found!");
+	//send_udp("scan_winlogon_pid_for_active_session() winlogon not found!");
 	return 0;
 }
 
@@ -272,11 +272,11 @@ bool KERNEL::kill_process_by_pid(DWORD pid) {
 DWORD KERNEL::my_spawnl(DWORD pid, wchar_t *cmd, wchar_t *p1, wchar_t *p2, wchar_t *p3) {
 	wchar_t paramerts[1500];
 	my_strcpy(paramerts, p1);
-	my_strcat(paramerts, 1450, L" \"");
-	my_strcat(paramerts, 1450, p2);
-	my_strcat(paramerts, 1450, L"\" \"");
-	my_strcat(paramerts, 1450, p3);
-	my_strcat(paramerts, 1450, L"\"");
+	my_strcat(paramerts, L" \"");
+	my_strcat(paramerts, p2);
+	my_strcat(paramerts, L"\" \"");
+	my_strcat(paramerts, p3);
+	my_strcat(paramerts, L"\"");
 	return my_spawnl(pid, cmd, paramerts);
 }
 
@@ -293,8 +293,8 @@ DWORD KERNEL::my_spawnl(DWORD pid, wchar_t *cmd, wchar_t *paramerts) {
 
 	wchar_t prm[1500];
 	my_strcpy(prm, cmd);
-	my_strcat(prm, 1450, L" ");
-	my_strcat(prm, 1450, paramerts);
+	my_strcat(prm, L" ");
+	my_strcat(prm, paramerts);
 
 	DWORD pp;
 	BOOL rr;
@@ -305,21 +305,21 @@ DWORD KERNEL::my_spawnl(DWORD pid, wchar_t *cmd, wchar_t *paramerts) {
 	ZeroMemory(&proc_info, sizeof(PROCESS_INFORMATION));
 
 
-	send_udp("OpenProcess...", pid);
+	//send_udp("OpenProcess...", pid);
 	hh = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 	if (hh == NULL) {
-		send_udp("OpenProcess err "); 
+		//send_udp("OpenProcess err "); 
 		return 0;
 	};
 
 	HANDLE       hToken = NULL;
-	send_udp("OpenProcessToken...");
+	//send_udp("OpenProcessToken...");
 	if (OpenProcessToken(hh, TOKEN_ALL_ACCESS, &hToken) == FALSE) {
-		send_udp("OpenProcessToken err");
+		//send_udp("OpenProcessToken err");
 		return 0;
 	}
 	if (hToken == NULL) {
-		send_udp("hToken == NULL");
+		//send_udp("hToken == NULL");
 		return 0;
 	}
 
@@ -352,7 +352,7 @@ DWORD KERNEL::my_spawnl(DWORD pid, wchar_t *cmd, wchar_t *paramerts) {
 		&startup_info,
 		&proc_info);
 	if (rr == FALSE) {
-		send_udp("CreateProcessAsUser err");
+		//send_udp("CreateProcessAsUser err");
 
 		return 0;
 	}
@@ -363,7 +363,7 @@ DWORD KERNEL::my_spawnl(DWORD pid, wchar_t *cmd, wchar_t *paramerts) {
 
 	CloseHandle(hToken);
 
-	send_udp( "CreateProcessAsUser OK ", pp);
+	//send_udp( "CreateProcessAsUser OK ", pp);
 
 	return pp;
 }

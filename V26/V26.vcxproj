@@ -128,6 +128,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AGENT.cpp" />
     <ClCompile Include="APPLICATION_ATTRIBUTES.cpp" />
     <ClCompile Include="CRYPTO.cpp" />
     <ClCompile Include="DESKTOP.cpp" />
@@ -136,6 +137,7 @@
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="GUI_Element.cpp" />
     <ClCompile Include="GUI_low_level.cpp" />
+    <ClCompile Include="KERNEL.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NET_CLIENT_SESSION.cpp" />
     <ClCompile Include="NET_SERVER_SESSION.cpp" />
@@ -149,6 +151,7 @@
     <ClCompile Include="VIEWER_small_top_panel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AGENT.h" />
     <ClInclude Include="APPLICATION_ATTRIBUTES.h" />
     <ClInclude Include="DESKTOP.h" />
     <ClInclude Include="EVENT_QUEUE.h" />
@@ -156,6 +159,7 @@
     <ClInclude Include="GUI.h" />
     <ClInclude Include="GUI_Element.h" />
     <ClInclude Include="GUI_low_level.h" />
+    <ClInclude Include="KERNEL.h" />
     <ClInclude Include="NET_CLIENT_SESSION.h" />
     <ClInclude Include="NET_SERVER_SESSION.h" />
     <ClInclude Include="PIPES_SERVER_POOL.h" />

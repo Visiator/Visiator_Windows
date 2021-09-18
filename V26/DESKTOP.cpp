@@ -4,6 +4,7 @@
 #include "GUI_low_level.h"
 #include "CRYPTO.h"
 #include "SERVICE.h"
+#include "AGENT.h"
 
 #define _window_w 250
 #define _window_h 344
@@ -550,6 +551,23 @@ void DESKTOP::autorun_pass_encrypted_FINISH(bool result_) {
 
 
 void DESKTOP::EXECUTE() {
+
+	AGENT *aa;
+
+	PIPES_SERVER_POOL *ss;
+
+	ss = new PIPES_SERVER_POOL();
+
+	ss->RUN();
+
+	aa = new AGENT();
+	aa->RUN();
+
+	while (ss->MASTER_AGENT_connected == false) {
+		//Sleep(100);
+	}
+
+	ss->send_ping_from_MASTER_to_AGENT();
 
 	int i, j, k;
 

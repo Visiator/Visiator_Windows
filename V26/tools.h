@@ -45,6 +45,30 @@
 
 //unsigned long long gg;
 
+class KEY_PRESSED
+{
+public:
+	int key[1000][2];
+	int mouse_l_press_ = 0;
+	int mouse_r_press_ = 0;
+
+	void mouse_l_press();
+	void mouse_l_unpress();
+	void mouse_r_press();
+	void mouse_r_unpress();
+
+	void key_press(int global_type, int v);
+	void key_unpress(int global_type, int v);
+
+	void send_status();
+
+	void unpress_all_pressed_keys();
+
+	KEY_PRESSED();
+	//~KEY_PRESSED();
+};
+
+
 class PROXY_element {
 public:
 	//int idx;
@@ -198,4 +222,23 @@ bool my_DirectoryExists(wchar_t *fname);
 bool my_CreateDirectory(wchar_t *path);
 bool REG_CHECK_EXISTS_KEY_and_check_permissions(HKEY root, wchar_t *reg_key);
 void save_service_pass_hash16(unsigned char *pass_hash16);
+
+char *decode_pipe_error(DWORD err);
+bool write_pipe(HANDLE pipe, void *buf, int need_write_size, DWORD *write_size, DWORD *write_pipe_TIMEOUT);
+bool read_pipe(HANDLE pipe, void *buf, int need_read_size, DWORD *read_size, DWORD *read_pipe_TIMEOUT, char *info);
+
+bool get_screenshot(SCREEN_LIGHT_one_byte *screen);
+bool CHECK_DESKTOP();
+bool exec_event_in_to_session(int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam);
+
+void set_mouse_cursor_from_local_console(unsigned int mx, unsigned my);
+void key_unpress_into_local_console(int global_type, WORD vk, WORD scan);
+void key_press_into_local_console(int global_type, WORD vk, WORD scan);
+DWORD decode_KEYEVENTF_EXTENDEDKEY(DWORD vk);
+int  get_KeyboardLocation();
+void init_encode_color_matrix_all();
+unsigned int decode_mouse_cursor_type(unsigned long long p);
+void ChangeKeyboardLayout_into_local_console();
+
+
 

@@ -11,8 +11,12 @@
 
 #define ACE_NAME_SIZE 1500
 
-
+extern KERNEL kernel;
 extern FONT *font[10];
+
+unsigned char *encode_color_matrix_onebyte = nullptr;
+unsigned char *encode_color_matrix_5_in_8  = nullptr;
+unsigned char *encode_color_matrix_6_in_8  = nullptr;
 
 
 void fatal_error(const char *s) {
@@ -3182,3 +3186,1153 @@ void save_service_pass_hash16(unsigned char *pass_hash16) {
 	//RestartService();
 
 };
+
+char d_ss[500];
+char *decode_pipe_error(DWORD err) {
+	if (err == ERROR_IO_PENDING) return "ERROR_IO_PENDING";
+	if (err == ERROR_INVALID_USER_BUFFER) return "ERROR_INVALID_USER_BUFFER";
+	if (err == ERROR_NOT_ENOUGH_MEMORY) return "ERROR_NOT_ENOUGH_MEMORY";
+	if (err == ERROR_OPERATION_ABORTED) return "ERROR_OPERATION_ABORTED";
+	if (err == ERROR_NOT_ENOUGH_QUOTA) return "ERROR_NOT_ENOUGH_QUOTA";
+	if (err == ERROR_INSUFFICIENT_BUFFER) return "ERROR_INSUFFICIENT_BUFFER";
+	if (err == ERROR_NOACCESS) return "ERROR_NOACCESS";
+	if (err == ERROR_BROKEN_PIPE) return "ERROR_BROKEN_PIPE";
+	if (err == ERROR_PIPE_NOT_CONNECTED) return "ERROR_PIPE_NOT_CONNECTED";
+	if (err == ERROR_NO_DATA) return "ERROR_NO_DATA";
+	if (err == ERROR_INVALID_HANDLE) return "ERROR_INVALID_HANDLE";
+
+
+	zero_unsigned_char((unsigned char *)d_ss, 500);
+	sprintf__s_D(d_ss, 290, " err=%d ", err);
+	return d_ss;
+}
+bool write_pipe(HANDLE pipe, void *buf, int need_write_size, DWORD *write_size, DWORD *write_pipe_TIMEOUT) {
+
+	*write_size = 0;
+
+	if (buf == NULL) {
+		//send_udp2("write_pipe() buf == NULL");
+		return false;
+	}
+	DWORD err;
+	BOOL x;
+	char ss[300];
+
+	//sprintf_ s(ss, 290, "write_pipe()... %d ", need_write_size);
+	//send_udp(ss);
+
+	*write_pipe_TIMEOUT = GetTickCount();
+
+	x = WriteFile(pipe, buf, need_write_size, write_size, NULL);
+
+	*write_pipe_TIMEOUT = 0;
+
+	if (x == FALSE) {
+		err = GetLastError();
+		//sprintf__s_c_D(ss, 290, "write_pipe() error [%s] w=%d ", decode_pipe_error(err), *write_size);
+		//send_udp2(ss);
+	}
+	else {
+		if (*write_size != need_write_size) {
+			//sprintf_s(ss, 290, "write_pipe() *write_size != need_write_size w=%d need=%d ", *write_size, need_write_size);
+			//send_udp(ss);
+		}
+		else {
+			//sprintf_ s(ss, 290, "write_pipe() OK *write_size == need_write_size w=%d need=%d ", *write_size, need_write_size);
+			//send_udp(ss);
+		}
+	}
+
+	return x;
+}
+
+bool read_pipe(HANDLE pipe, void *buf, int need_read_size, DWORD *read_size, DWORD *read_pipe_TIMEOUT, char *info) {
+
+	*read_size = 0;
+
+	if (buf == NULL) {
+		//send_udp2("read_pipe() buf == NULL");
+		return false;
+	}
+	DWORD err;
+	BOOL x;
+	char ss[300];
+
+	//sprintf_ s(ss, 290, "read_pipe()... %d ", need_read_size);
+	//send_udp(ss);
+
+	*read_pipe_TIMEOUT = GetTickCount();
+	unsigned char *q;
+
+	int read_commit;
+
+	q = (unsigned char *)buf;
+
+	read_commit = 0;
+	while (read_commit < need_read_size) {
+
+
+		//sprintf_ s(ss, 290, "ReadFile()... need-comm=%d comm=%d ", need_read_size - read_commit , read_commit);
+		//send_udp(ss);
+
+		x = ReadFile(pipe, q + read_commit, need_read_size - read_commit, read_size, NULL);
+		if (x == FALSE) {
+			err = GetLastError();
+			sprintf__s_c_D_c(ss, 290, "read_pipe() x==FALSE error=[%s] read_size=%d info=%s ", decode_pipe_error(err), *read_size, info);
+			//send_udp2(ss);
+			return false;
+		}
+		else {
+			if (*read_size == 0) {
+				//sprintf_ s(ss, 290, "read_pipe() x==TRUE *read_size == 0 info=%s need=%d read=%d ", info, need_read_size, *read_size);
+				//send_udp(ss);
+
+			}
+			else {
+				read_commit += *read_size;
+			}
+		}
+	};
+	*read_pipe_TIMEOUT = 0;
+
+
+	return true;
+}
+
+int BitBlt_fail = 0;
+BITMAPINFO *bitmap_1 = nullptr;
+bool get_screenshot(SCREEN_LIGHT_one_byte *screen) {
+
+	if (screen == NULL) {
+		fatal_error("get_screenshot() screen == NULL");
+		return false;
+	}
+	// screen_id
+	DWORD dt1, dt2, dt3, oo; // , dt100
+
+	int g_nWidth;
+	int g_nHeight;
+	int g_nColorMode;
+	int g_nPlanes;
+	//int g_nBitCount;
+	int g_nSizePalette;
+
+	HDC g_hdcScreen;
+
+	HBITMAP hbitmap = 0; // , hb
+	HGDIOBJ hold_bitmap;
+
+
+	HDC hdc2;
+
+	//char ss[300];
+
+	void *bbb;
+	bbb = NULL;
+
+
+
+	dt1 = GetTickCount();
+
+	hdc2 = ::CreateCompatibleDC(NULL); //::DeleteDC(hdc2);
+	g_hdcScreen = GetDC(NULL); //ReleaseDC(NULL, g_hdcScreen);
+
+
+	//g_nWidth = GetDeviceCaps(g_hdcScreen, HORZRES);
+	//g_nHeight = GetDeviceCaps(g_hdcScreen, VERTRES);
+	g_nWidth = GetDeviceCaps(g_hdcScreen, DESKTOPHORZRES);
+	g_nHeight = GetDeviceCaps(g_hdcScreen, DESKTOPVERTRES);
+
+	g_nColorMode = GetDeviceCaps(g_hdcScreen, BITSPIXEL);
+	g_nPlanes = GetDeviceCaps(g_hdcScreen, PLANES);
+	g_nSizePalette = GetDeviceCaps(g_hdcScreen, SIZEPALETTE);
+
+	if (bitmap_1 == NULL) {
+		bitmap_1 = (BITMAPINFO *)new unsigned char[ sizeof(BITMAPINFO) + sizeof(RGBQUAD) * 256 ]; //neew(sizeof(BITMAPINFO) + sizeof(RGBQUAD) * 256, bitmap);
+	}
+
+	bitmap_1->bmiHeader.biSize = sizeof(bitmap_1->bmiHeader);
+	bitmap_1->bmiHeader.biWidth = g_nWidth;
+	bitmap_1->bmiHeader.biHeight = g_nHeight;
+	bitmap_1->bmiHeader.biPlanes = 1;
+	bitmap_1->bmiHeader.biBitCount = (WORD)g_nColorMode;
+	bitmap_1->bmiHeader.biCompression = BI_RGB;
+	bitmap_1->bmiHeader.biSizeImage = g_nWidth * 4 * g_nHeight;
+	bitmap_1->bmiHeader.biClrUsed = 0;
+	bitmap_1->bmiHeader.biClrImportant = 0;
+
+	g_nSizePalette = GetDeviceCaps(g_hdcScreen, SIZEPALETTE);
+
+	/*if (g_nColorMode == 8 && g_nSizePalette == 256) {
+		if (get_system_pallete_256(g_hdcScreen) == false) {
+
+			//return;
+		}
+	}*/
+
+
+	if (bbb == NULL) {
+
+	};
+	hbitmap = ::CreateDIBSection(hdc2, bitmap_1, DIB_RGB_COLORS, (void **)&bbb, NULL, 0x0); // DeleteObject(hbitmap);
+	hold_bitmap = ::SelectObject(hdc2, hbitmap);
+
+
+	if (screen->header.w != g_nWidth || screen->header.h != g_nHeight) {
+		screen->set_new_size_(g_nWidth, g_nHeight);
+	};
+
+	dt2 = GetTickCount();
+
+	if (BitBlt(hdc2, 0, 0, g_nWidth, g_nHeight, g_hdcScreen, 0, 0, SRCCOPY | 0x40000000))
+	{
+
+		BitBlt_fail = 0;
+		oo = 1;
+	}
+	else {
+		char ss[200];
+		DWORD err;
+		err = GetLastError();
+
+		if (err == ERROR_ACCESS_DENIED) {
+			//send_udp("ERROR_ACCESS_DENIED");
+		}
+		else {
+
+			//sprintf__s_D(ss, 90, "ERR = %d ", err);
+			//send_udp(ss);
+		};
+
+		BitBlt_fail++;
+		if (BitBlt_fail > 15 && app_attributes.is_agent == true) set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
+		screen->set_new_size_(0, 0);
+		// 2019 10 TODO ! fill_color_onebyte_buf(2);
+
+		//int err = GetLastError();
+		//send_udp("~ ~ ~ ~ ~ ~ ~ ~ BitBlt ERROR! ");
+		return false;
+	}
+
+	dt3 = GetTickCount();
+
+	unsigned char *ee;
+	unsigned int *z, *zz, zzz;
+	int jj, y, x; // fe
+
+	ee = screen->get_buf_one_byte();
+
+
+	if (g_nColorMode == 32) {
+
+		z = (unsigned int *)bbb;
+		jj = 0;
+		for (y = 0; y < g_nHeight; y++)
+		{
+			zz = &(z[(g_nHeight - 1 - y)*g_nWidth]);
+			for (x = 0; x < g_nWidth; x++)
+			{
+				zzz = *zz & 0xffffff;
+				//zzz = 0xffffff;
+
+				*ee = encode_color_matrix_onebyte[zzz];//++ 
+				//*ee = __color_multibit_G7C223_(v[j + 2], v[j + 1], v[j + 0]);
+				//if (*ee == 0xfe) fe++;
+				ee++;
+				zz++;
+
+			};
+		};
+
+	};
+
+	unsigned short *z16, *zz16;
+
+	if (g_nColorMode == 16) {
+
+		z16 = (unsigned short *)bbb;
+		jj = 0;
+
+		unsigned int g16, b16, r16;
+
+		for (y = 0; y < g_nHeight; y++)
+		{
+			/*
+			zz = &(z[(g_nHeight - 1 - y)*g_nWidth]);
+			for (x = 0; x < g_nWidth; x++)
+			{
+				zzz = *zz & 0xffffff;
+				*ee = encode_color_matrix_onebyte[zzz];//++ __color_multibit_G7C223_(v[j + 2], v[j + 1], v[j + 0]);
+				ee++;
+				zz++;
+
+			};
+			*/
+			zz16 = &(z16[(g_nHeight - 1 - y)*g_nWidth]);
+			for (x = 0; x < g_nWidth; x++)
+			{
+				//f800 07e0 001f
+
+
+				zzz = *zz16 & 0xffff;
+
+				b16 = 0;
+				g16 = 0;
+				r16 = 0;
+
+				b16 = zzz & 0x001f;
+				g16 = zzz & 0x03e0;
+				r16 = zzz & 0x7c00;
+
+				g16 = g16 >> 5;
+				r16 = r16 >> 10;
+
+				b16 = encode_color_matrix_5_in_8[b16];
+				g16 = encode_color_matrix_5_in_8[g16];
+				r16 = encode_color_matrix_5_in_8[r16];
+
+
+				g16 = g16 << 8;
+				r16 = r16 << 16;
+
+
+
+
+
+				zzz = r16 | b16 | g16;
+
+				//zzz = r16;
+
+				//if (zzz != 0) zzzz++;
+
+				*ee = encode_color_matrix_onebyte[zzz];//++ __color_multibit_G7C223_(v[j + 2], v[j + 1], v[j + 0]);
+				ee++;
+				zz16++;
+
+			};
+		};
+
+	};
+
+	unsigned char *z8, *zz8;// , *v;
+
+
+	int zzzz = 0;
+	unsigned int r8, g8, b8;
+	if (g_nColorMode == 24) {
+
+		z8 = (unsigned char *)bbb;
+		jj = 0;
+		for (y = 0; y < g_nHeight; y++)
+		{
+			zz8 = &(z8[(g_nHeight - 1 - y)*g_nWidth * 3]);
+			for (x = 0; x < g_nWidth; x++)
+			{
+				r8 = *zz8 & 0xff; zz8++;
+				g8 = *zz8 & 0xff; zz8++;
+				b8 = *zz8 & 0xff; zz8++;
+
+				zzz = *zz8 & 0xffffff;
+
+				g8 = g8 << 8;
+				b8 = b8 << 16;
+
+				zzz = r8 | b8 | g8;
+
+				*ee = encode_color_matrix_onebyte[zzz];
+				//*ee = __color_multibit_G7C223_(v[j + 2], v[j + 1], v[j + 0]);
+				ee++;
+
+
+			};
+		};
+
+	};
+
+
+
+	::SelectObject(hdc2, hold_bitmap);
+	DeleteObject(hbitmap);
+
+	ReleaseDC(NULL, g_hdcScreen);
+	::DeleteDC(hdc2);
+
+
+	//dt100 = GetTickCount();
+	//sprintf_ s(ss, 290, "%d - %d - %d = %d ", dt2-dt1, dt3-dt2, dt100-dt3, dt100 - dt1);
+	//send_udp(ss);
+
+	screen->header.keyboard_location = get_KeyboardLocation();
+	//POINT p;
+	//GetCursorPos(&p);
+
+	//screen->header.mouse_x = (unsigned short)p.x;
+	//screen->header.mouse_y = (unsigned short)p.y;
+
+
+
+
+	CURSORINFO cursor_info;
+	cursor_info.cbSize = sizeof(CURSORINFO);
+
+	if (GetCursorInfo(&cursor_info) == TRUE) {
+		screen->header.mouse_x = (unsigned short)cursor_info.ptScreenPos.x;
+		screen->header.mouse_y = (unsigned short)cursor_info.ptScreenPos.y;
+
+
+
+		screen->header.mouse_cursor_type_id = decode_mouse_cursor_type((unsigned long long)cursor_info.hCursor);
+
+		//sprintf_ s( a, 290, "%d:%d hCursor = %d id=%d ", cursor_info.ptScreenPos.x, cursor_info.ptScreenPos.y, (unsigned int)cursor_info.hCursor, screen->header.mouse_cursor_type_id);
+		//send_udp2(a);
+
+	}
+	else {
+		screen->header.mouse_x = -1;
+		screen->header.mouse_y = -1;
+		screen->header.mouse_cursor_type_id = -1;
+	}
+
+
+
+
+
+
+	return true;
+}
+
+bool CHECK_DESKTOP() {
+	//send_udp("AGENT::CHECK_DESKTOP()");
+	BOOL rr, result;
+	wchar_t cc1[500];
+	wchar_t cc2[500];
+	//wchar_t usid[5500];
+	DWORD ll;
+	HDESK hThreadDesktop = GetThreadDesktop(GetCurrentThreadId());
+
+	result = false;
+
+	ll = 500;
+	rr = GetUserObjectInformation(hThreadDesktop, UOI_NAME, cc1, ll, &ll);
+	if (rr == 0) { //send_udp("return 1"); return false; 
+	};
+	//send_udp(L"cc1 = ", cc1);
+	HDESK hInputDesktop = OpenInputDesktop(0, false, MAXIMUM_ALLOWED);
+	/*
+		DESKTOP_CREATEMENU |
+		DESKTOP_CREATEWINDOW |
+		DESKTOP_ENUMERATE |
+		DESKTOP_HOOKCONTROL |
+		DESKTOP_WRITEOBJECTS |
+		DESKTOP_READOBJECTS |
+		DESKTOP_SWITCHDESKTOP |
+		GENERIC_WRITE);*/
+
+	ll = 500;
+	rr = GetUserObjectInformation(hInputDesktop, UOI_NAME, cc2, ll, &ll);
+	if (rr == 0) { //send_udp("return 2"); 
+		return false; };
+
+	//send_udp(L"cc2 = ", cc2);
+
+	if (my_strcmp(cc1, cc2) != 0) {
+		//send_udp2("SWICTH DESKTOP ");
+		SetThreadDesktop(hInputDesktop);
+
+		//if (app_attributes.is_agent) total_control.AGENT_SWICTH_DESKTOP++;
+
+		result = false;
+
+	}
+	else {
+		//send_udp2("DESKTOP is OK ");// , cc1);
+		result = true;
+	}
+
+	CloseDesktop(hInputDesktop);
+
+	//send_udp("CHECK_DESKTOP() end");
+
+	/*
+	BOOL rr;
+	wchar_t cc[500];
+	DWORD ll;
+	ll = 500;
+
+	HWINSTA w_stan;
+	w_stan = GetProcessWindowStation();
+	ll = 500;
+	rr = GetUserObjectInformation(w_stan, UOI_NAME, cc, ll, &ll);
+	if (rr == 0) {
+		send_udp(L"GetProcessWindowStation() error!");
+	}
+	else {
+		send_udp(L"WindowStation=", cc);
+	};
+
+	// . . . . . . . . . . . . . . . . .
+
+	HDESK hThreadDesktop = GetThreadDesktop(GetCurrentThreadId());
+	ll = 500;
+	rr = GetUserObjectInformation(hThreadDesktop, UOI_NAME, cc, ll, &ll);
+	if (rr == 0) {
+		send_udp(L"GetThreadDesktop() error!");
+	}
+	else {
+		send_udp(L"GetThreadDesktop=", cc);
+	};
+	// . . . . . . . . . . . . . . . . . .
+
+	HDESK hInputDesktop = OpenInputDesktop(0, false,
+		DESKTOP_CREATEMENU |
+		DESKTOP_CREATEWINDOW |
+		DESKTOP_ENUMERATE |
+		DESKTOP_HOOKCONTROL |
+		DESKTOP_WRITEOBJECTS |
+		DESKTOP_READOBJECTS |
+		DESKTOP_SWITCHDESKTOP |
+		GENERIC_WRITE);
+
+	ll = 500;
+	rr = GetUserObjectInformation(hInputDesktop, UOI_NAME, cc, ll, &ll);
+	if (rr == 0) {
+		send_udp(L"OpenInputDesktop() error!");
+	}
+	else {
+		send_udp(L"OpenInputDesktop=", cc);
+	};
+
+	send_udp(L"WTSGetActiveConsoleSessionId()=", WTSGetActiveConsoleSessionId());
+	*/
+
+	return result;
+}
+
+KEY_PRESSED key_pressed;
+bool exec_event_in_to_session(int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam) {
+
+
+	//char ss[500];
+	//ss[0] = 0;
+
+	//sprintf_ s(ss, 490, "SCREEN::exec_event_in_to_session %X %X %X %X %X ", event_type, global_type, msg, wparam, lparam);
+
+	//send_udp(ss);
+
+	//send_udp("exec_event_in_to_session() LOCAL ddff ", global_type);
+
+	if (msg == 15 && wparam == 1 && lparam == 1) {
+		//send__udp("CAD Detected F ! pid = ", app_attributes.global_my_proc_id);
+		//2019+ 
+		kernel.CAD();
+		return true;
+	}
+
+	if (msg == 16 && wparam == 1 && lparam == 1 && global_type == 0 && event_type == 20025) {
+		//send_udp("request CLIPBOARD detected! exec_event_in_to_session ", event_type);
+
+		//send_my_CLIPBOARD_to_client();
+
+		return true;
+	}
+
+	// 2020 03 04
+
+	if (msg == WM_LBUTTONDOWN__) {
+		if (wparam >= 0 && wparam <= 3500 &&
+			lparam >= 0 && lparam <= 3500)
+		{
+			//send_udp("LM down ", wparam, lparam);
+
+			SetCursorPos((int)wparam, (int)lparam);
+			mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN, (DWORD)wparam, (DWORD)lparam, 0, 0); // нажали
+			key_pressed.mouse_l_press();
+		}
+		return true;
+	}
+	if (msg == WM_LBUTTONUP__) {
+		if (wparam >= 0 && wparam <= 3500 &&
+			lparam >= 0 && lparam <= 3500)
+		{
+			//send_udp("LM up ", wparam, lparam);
+			SetCursorPos((int)wparam, (int)lparam);
+			mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP, (DWORD)wparam, (DWORD)lparam, 0, 0); // нажали
+			key_pressed.mouse_l_unpress();
+		}
+		return true;
+	}
+	if (msg == WM_RBUTTONDOWN__) {
+		if (wparam >= 0 && wparam <= 3500 &&
+			lparam >= 0 && lparam <= 3500)
+		{
+			SetCursorPos((int)wparam, (int)lparam);
+			mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTDOWN, (DWORD)wparam, (DWORD)lparam, 0, 0); // нажали
+			key_pressed.mouse_r_press();
+		}
+		return true;
+	}
+	if (msg == WM_RBUTTONUP__) {
+		if (wparam >= 0 && wparam <= 3500 &&
+			lparam >= 0 && lparam <= 3500)
+		{
+			SetCursorPos((int)wparam, (int)lparam);
+			mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTUP, (DWORD)wparam, (DWORD)lparam, 0, 0); // нажали
+			key_pressed.mouse_r_unpress();
+		}
+		return true;
+	}
+
+	if (msg == WM_MOUSEWHEEL__) {
+
+		//send_udp("WM_MOUSEWHEEL__");
+		//mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTUP, wparam, lparam, 0, 0); // нажали
+		POINT p;
+		GetCursorPos(&p);
+
+
+		if (wparam == 1) {
+			mouse_event(MOUSEEVENTF_WHEEL, p.x, p.y, -30, 0);
+		};
+		if (wparam == 2) {
+			mouse_event(MOUSEEVENTF_WHEEL, p.x, p.y, 30, 0);
+		};
+		return true;
+	}
+
+
+
+	if (msg == 5556) {
+		key_pressed.unpress_all_pressed_keys();
+	};
+
+	if (msg == 5555) {
+		//screen_for_client->set_mouse_cursor_into_session(screenflow_from_server_to_client_session_no, mx, my);
+		if (wparam >= 0 && wparam <= 3500 &&
+			lparam >= 0 && lparam <= 3500)
+		{
+			set_mouse_cursor_from_local_console((unsigned int)wparam, (unsigned int)lparam);
+		}
+		return true;
+	}
+
+	if (msg == WM_KEYDOWN && wparam == 0 && lparam == 0x80) {
+		// сменить раскладку клавиатуры
+		ChangeKeyboardLayout_into_local_console();
+		//set_status(L"++++++ D");
+		//key_press_into_local_console((WORD)wparam, 0);
+		return true;
+	}
+	if (msg == WM_CHAR) {
+		//send_udp2("++++++ WM_CHAR ", (WORD)wparam);
+		key_press_into_local_console(global_type, (WORD)wparam, 0);
+		return true;
+	}
+
+	if (msg == WM_KEYDOWN) {
+		//send_udp2("++++++ WM_KEYDOWN ", (WORD)wparam);
+		key_press_into_local_console(global_type, (WORD)wparam, 0);
+		return true;
+	}
+	if (msg == WM_SYSKEYDOWN) {
+		//send_udp2("++++++ WM_SYSKEYDOWN ", (WORD)wparam);
+		key_press_into_local_console(global_type, (WORD)wparam, 0);
+		return true;
+	}
+	if (msg == WM_KEYUP) {
+		//send_udp2("++++++ WM_KEYUP ", (WORD)wparam);
+		key_unpress_into_local_console(global_type, (WORD)wparam, 0);
+		return true;
+	}
+	if (msg == WM_SYSKEYUP) {
+		//send_udp2("++++++ WM_SYSKEYUP ", (WORD)wparam);
+		key_unpress_into_local_console(global_type, (WORD)wparam, 0);
+		return true;
+	}
+
+
+
+	return true;
+}
+
+void set_mouse_cursor_from_local_console(unsigned int mx, unsigned my) {
+	// TODO 2019 11 	last_set_mouse_x = mx;
+	// TODO 2019 11 	last_set_mouse_y = my;
+
+	SetCursorPos(mx, my);
+}
+
+void key_unpress_into_local_console(int global_type, WORD vk, WORD scan) {
+	INPUT ip[10];
+
+	DWORD dd;
+
+	//send_udp("key_unpress_into_local_console ", global_type);
+
+	if (global_type == 0) {
+
+		dd = decode_KEYEVENTF_EXTENDEDKEY(vk);
+
+
+		memset(&ip, 0, sizeof(ip[0]) * 10);
+		ip[0].type = INPUT_KEYBOARD;
+		ip[0].ki.wVk = 0;// vk;
+		ip[0].ki.wScan = (WORD)MapVirtualKey(vk, 0);// scan;
+		ip[0].ki.dwFlags = KEYEVENTF_SCANCODE | dd | KEYEVENTF_KEYUP;
+		//ip[0].ki.time = 0;
+		//ip[0].ki.dwExtraInfo = GetMessageExtraInfo();
+		//send_udp( "(3) SendInput unpress ", vk, MapVirtualKey(vk, 0) );
+		SendInput(1, &(ip[0]), sizeof(INPUT));
+	};
+	if (global_type == 100) {
+
+
+		memset(&ip, 0, sizeof(ip[0]) * 10);
+		ip[0].type = INPUT_KEYBOARD;
+		ip[0].ki.wVk = 0;// vk;
+		ip[0].ki.wScan = vk;// MapVirtualKey(vk, 0);// scan;
+		ip[0].ki.dwFlags = KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP;
+		//ip[0].ki.time = 0;
+		//ip[0].ki.dwExtraInfo = GetMessageExtraInfo();
+		//send_udp("(4) SendInput unpress ", vk, MapVirtualKey(vk, 0) );
+		SendInput(1, &(ip[0]), sizeof(INPUT));
+	};
+
+	key_pressed.key_unpress(global_type, vk);
+}
+
+void key_press_into_local_console(int global_type, WORD vk, WORD scan) {
+	INPUT ip[10];
+	DWORD dd;
+
+	//send_udp("key_press_into_local_console ", global_type);
+
+	if (global_type == 0) {
+
+		dd = decode_KEYEVENTF_EXTENDEDKEY(vk);
+
+		memset(&ip, 0, sizeof(ip[0]) * 10);
+		ip[0].type = INPUT_KEYBOARD;
+		ip[0].ki.wVk = 0;// vk;
+		ip[0].ki.wScan = (WORD)MapVirtualKey(vk, 0);// scan;
+		ip[0].ki.dwFlags = KEYEVENTF_SCANCODE | dd;
+		//ip[0].ki.time = 0;
+		//ip[0].ki.dwExtraInfo = GetMessageExtraInfo();
+		//send_udp("(1) SendInput press ", (DWORD)vk);
+		//send_udp("map = ", MapVirtualKey(vk, 0));
+		SendInput(1, &(ip[0]), sizeof(INPUT));
+	};
+	if (global_type == 100) {
+
+
+		memset(&ip, 0, sizeof(ip[0]) * 10);
+		ip[0].type = INPUT_KEYBOARD;
+		ip[0].ki.wVk = 0;// vk;
+		ip[0].ki.wScan = vk;// MapVirtualKey(vk, 0);// scan;
+		ip[0].ki.dwFlags = KEYEVENTF_SCANCODE;
+		//ip[0].ki.time = 0;
+		//ip[0].ki.dwExtraInfo = GetMessageExtraInfo();
+		//send_udp("(2) 100 SendInput press ", (DWORD)vk);
+		//send_udp("map = ", MapVirtualKey(vk, 0));
+		SendInput(1, &(ip[0]), sizeof(INPUT));
+	};
+
+	key_pressed.key_press(global_type, vk);
+
+}
+
+DWORD decode_KEYEVENTF_EXTENDEDKEY(DWORD vk) {
+
+	/*if (vk == 0x70) return 1;
+	if (vk == 0x71) return 1;
+	if (vk == 0x72) return 1;
+	if (vk == 0x73) return 1;
+	if (vk == 0x74) return 1;
+	if (vk == 0x75) return 1;
+	if (vk == 0x76) return 1;
+	if (vk == 0x77) return 1;
+	if (vk == 0x78) return 1;
+	if (vk == 0x79) return 1;
+	if (vk == 0x7a) return 1;
+	if (vk == 0x7b) return 1;*/
+
+
+	if (vk == 0x21) return 1;
+	if (vk == 0x22) return 1;
+	if (vk == 0x23) return 1;
+	if (vk == 0x24) return 1;
+	if (vk == 0x25) return 1;
+	if (vk == 0x26) return 1;
+	if (vk == 0x27) return 1;
+	if (vk == 0x28) return 1;
+	if (vk == 0x2D) return 1;
+	if (vk == 0x2E) return 1;
+	return 0;
+}
+
+DWORD EnumProc__k0 = 0;
+
+bool __stdcall EnumProc_(HWND hWnd, long serch_pid)
+{
+	DWORD pid, result;
+
+	pid = 0;
+	result = GetWindowThreadProcessId(hWnd, &pid);
+
+
+
+	if (result) {
+		if (pid == serch_pid)//pid == 2000 || pid == 2076 || pid==5452 || pid==9384)
+		{
+
+
+
+			wchar_t className[95];
+			GetClassName(hWnd, className, 95);
+
+			//send_udp(L"EnumProc_ ", className);
+
+			if (my_strcmp(className, L"MSCTFIME UI") == 0) {
+
+				EnumProc__k0 = (DWORD)GetKeyboardLayout(result);
+				//send_udp("detect!!! ", EnumProc_k0, pid);
+			}
+		}
+	}
+	else {
+		return false;
+	}
+	return true;
+}
+
+HMODULE  hmod_kernel32 = nullptr;
+typedef BOOL(WINAPI* GetConsoleKeyboardLayoutNameW_T)(LPWSTR p);
+GetConsoleKeyboardLayoutNameW_T GetConsoleKeyboardLayoutName = nullptr;
+
+typedef BOOL(WINAPI* CancelIoEx_T)(HANDLE h, LPOVERLAPPED lpOverlapped);
+CancelIoEx_T CancelIoEx_ = nullptr;
+
+
+int get_KeyboardLocation()
+{
+	//HKL hh;
+	DWORD pid, console_pid, th1;
+	int r;
+	HWND hw;
+	GUITHREADINFO gg;
+	gg.cbSize = sizeof(GUITHREADINFO);
+
+	if (GetGUIThreadInfo(0, &gg) == FALSE) {
+		return 0;
+	}
+	hw = gg.hwndFocus;// GetForegroundWindow();
+	th1 = GetWindowThreadProcessId(hw, &pid);
+
+	wchar_t classname[250];
+	for (int i = 0; i < 250; i++) classname[i] = 0;
+
+	r = GetClassName(hw, classname, 200);
+
+	if (my_strcmp(classname, L"ConsoleWindowClass") == 0) {
+
+		//send_udp("WIN detect ", app_attributes.OsMajorVersion , pid );
+
+		if (app_attributes.OsMajorVersion >= 10) {
+
+			console_pid = kernel.get_conhost_exe_by_parent_pid(pid);
+
+			if (console_pid != 0) {
+				EnumProc__k0 = 0;
+				EnumWindows((WNDENUMPROC)EnumProc_, console_pid);
+
+				//send_udp("WIN 10 detect ", EnumProc_k0);
+
+				return (int)EnumProc__k0;
+			};
+		}
+		if (app_attributes.OsMajorVersion == 6) { // Windows7
+
+
+			console_pid = kernel.get_conhost_exe_by_time_create(pid);// , &hhh, hw);
+
+			EnumProc__k0 = 0;
+			EnumWindows((WNDENUMPROC)EnumProc_, console_pid);
+
+			//send_udp("WIN 7 detect ", console_pid, EnumProc_k0 );
+
+			return EnumProc__k0;
+		};
+		//console_pid = kernel.get_conhost_exe_by_parent_pid(pid, &hhh, hw);
+		if (app_attributes.OsMajorVersion == 5) { // Windows XP
+
+			AttachConsole(pid);
+
+			if (GetConsoleKeyboardLayoutName == nullptr) {
+				if (hmod_kernel32 == NULL) hmod_kernel32 = LoadLibrary(L"kernel32.dll");
+				GetConsoleKeyboardLayoutName = (GetConsoleKeyboardLayoutNameW_T)GetProcAddress(hmod_kernel32, "GetConsoleKeyboardLayoutNameW");
+			}
+
+			wchar_t cons[105];
+			for (int i = 0; i < 105; i++) cons[i] = 0;
+			GetConsoleKeyboardLayoutName(cons);
+			FreeConsole();
+
+			if (my_strcmp(cons, L"00000409")) return 0x04190419;
+			if (my_strcmp(cons, L"00000419")) return 0x04090409;
+
+			//send_udp(L"cons=[", cons, L"]");
+
+		};
+
+	}
+	return (int)GetKeyboardLayout(th1);
+	//send_udp("get_KeyboardLocation0 ", (int)hh, pid);
+
+};
+
+char __color_3bit__(unsigned char c)
+{
+	if (c < 18) return 0;
+	if (c < 54) return 1;
+	if (c < 91) return 2;
+	if (c < 128) return 3;
+	if (c < 164) return 4;
+	if (c < 220) return 5;
+	if (c <= 243) return 6;
+	return 7;
+};
+char __color_2bit__(unsigned char c)
+{
+	if (c < 32) return 0;
+	if (c < 128) return 1;
+	if (c < 224) return 2;
+	return 3;
+};
+unsigned char __color_multibit_G7C223_(unsigned char r0, unsigned char g0, unsigned char b0)
+{
+
+
+	unsigned char r, g, b, v, max, min;
+	max = 0;
+	if (r0 > max) max = r0;
+	if (g0 > max) max = g0;
+	if (b0 > max) max = b0;
+	min = 255;
+	if (r0 < min) min = r0;
+	if (g0 < min) min = g0;
+	if (b0 < min) min = b0;
+	if (max - min < 15)
+	{
+		g = __color_3bit__(g0);
+		return 0x80 | g;
+	}
+
+	r = __color_3bit__(r0);
+	if (r > 5)
+	{
+		int rr = 11;
+	};
+	g = __color_2bit__(g0);
+	b = __color_2bit__(b0);
+
+	v = ((b << 5) | (g << 3) | (r));
+
+	return v;
+
+};
+
+
+void init_encode_color_matrix_all() {
+
+	//FILE *f;
+	unsigned int i;
+	unsigned char *q;
+
+	if (encode_color_matrix_onebyte != NULL) return;
+
+	encode_color_matrix_onebyte = new unsigned char[0xffffff + 1]; //neew(0xffffff + 1, encode_color_matrix_onebyte, "init_encode_color_matrix_all()");
+
+	/*
+	fopen_s(&f, "enccc.txt", "rb");
+	if (f != NULL) {
+		fread(encode_color_matrix_onebyte, 1, 0xffffff + 1, f);
+		fclose(f);
+	}
+	else {
+	*/
+
+	q = (unsigned char *)&i;
+	for (i = 0; i <= 0xffffff; i++) {
+		encode_color_matrix_onebyte[i] = __color_multibit_G7C223_(q[2], q[1], q[0]);
+	}
+
+	/*
+	fopen_s(&f, "enccc.txt", "wb");
+	if (f != NULL) {
+		fwrite(encode_color_matrix_onebyte, 1, 0xffffff + 1, f);
+		fclose(f);
+	}
+	*/
+	//};
+
+	double k5, k6;
+	k5 = 8.225806452;
+	k6 = 4.047619048;
+
+
+
+	encode_color_matrix_5_in_8 = new unsigned char[32];
+	for (i = 0; i < 32; i++) {
+		encode_color_matrix_5_in_8[i] = (unsigned char)((double)i * (double)k5);
+	}
+
+	encode_color_matrix_6_in_8 = new unsigned char[64];
+	for (i = 0; i < 64; i++) {
+		encode_color_matrix_6_in_8[i] = (unsigned char)((double)i * (double)k6);
+	}
+
+};
+
+unsigned int decode_mouse_cursor_type(unsigned long long p) {
+
+	if (p == 0) return 0;
+	// 	OCR_NORMAL
+
+	if (hCurs_IDC_HAND == 0) load_all_standart_cursor();
+
+	if (p == (unsigned long long)hCurs_IDC_ARROW) return 100;
+	if (p == (unsigned long long)hCurs_IDC_HAND) return 101; // +
+	if (p == (unsigned long long)hCurs_IDC_IBEAM) return 102; // +
+	if (p == (unsigned long long)hCurs_IDC_WAIT) return 103;
+	if (p == (unsigned long long)hCurs_IDC_CROSS) return 104;
+	if (p == (unsigned long long)hCurs_IDC_UPARROW) return 105;
+	if (p == (unsigned long long)hCurs_IDC_SIZE) return 106; // +
+	if (p == (unsigned long long)hCurs_IDC_ICON) return 107;
+	if (p == (unsigned long long)hCurs_IDC_SIZENWSE) return 108; // +
+	if (p == (unsigned long long)hCurs_IDC_SIZENESW) return 109; // +
+	if (p == (unsigned long long)hCurs_IDC_SIZEWE) return 110; // +
+	if (p == (unsigned long long)hCurs_IDC_SIZENS) return 111; // +
+	if (p == (unsigned long long)hCurs_IDC_SIZEALL) return 112; // +
+	if (p == (unsigned long long)hCurs_IDC_NO) return 113;
+	if (p == (unsigned long long)hCurs_IDC_APPSTARTING) return 114;
+
+	return p;
+}
+
+void ChangeKeyboardLayout_into_local_console() {
+	//send_udp("ChangeKeyboardLayout_into_local_console++");
+
+	HWND hWindow;
+	hWindow = GetForegroundWindow();
+
+	PostMessage(hWindow, WM_INPUTLANGCHANGEREQUEST, INPUTLANGCHANGE_FORWARD, 0);
+
+
+	return;
+}
+
+//*************************************************************
+//** KEY_PRESSED
+
+KEY_PRESSED::KEY_PRESSED() {
+	for (int i = 0; i < 1000; i++) {
+		key[i][0] = 0;
+		key[i][1] = 0;
+	}
+
+}
+
+void KEY_PRESSED::mouse_l_press() {
+	mouse_l_press_ = 1;
+}
+void KEY_PRESSED::mouse_l_unpress() {
+	mouse_l_press_ = 0;
+}
+void KEY_PRESSED::mouse_r_press() {
+	mouse_r_press_ = 1;
+}
+void KEY_PRESSED::mouse_r_unpress() {
+	mouse_r_press_ = 0;
+}
+
+void KEY_PRESSED::key_press(int global_type, int v) {
+	int i;
+
+	i = 0;
+	while (i < 1000) {
+		if (key[i][0] == global_type && key[i][1] == v) {
+			return;
+		}
+		i++;
+	}
+
+	i = 0;
+	while (i < 1000) {
+		if (key[i][0] == 0 && key[i][1] == 0) {
+			key[i][0] = global_type;
+			key[i][1] = v;
+			break;
+		}
+		i++;
+	}
+	send_status();
+}
+
+void KEY_PRESSED::key_unpress(int global_type, int v) {
+	int i;
+	i = 0;
+	while (i < 1000) {
+		if (key[i][0] == global_type && key[i][1] == v) {
+			key[i][0] = 0;
+			key[i][1] = 0;
+			break;
+		}
+		i++;
+	}
+
+	send_status();
+}
+
+void KEY_PRESSED::unpress_all_pressed_keys() {
+
+	if (mouse_r_press_ == 1) {
+		mouse_r_press_ = 0;
+		mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTUP, (DWORD)0, (DWORD)0, 0, 0);
+	};
+	if (mouse_l_press_ == 1) {
+		mouse_l_press_ = 0;
+		mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP, (DWORD)0, (DWORD)0, 0, 0);
+	};
+
+	int i;
+	i = 0;
+	while (i < 1000) {
+		if (key[i][0] != 0 || key[i][1] != 0) {
+
+			//send_udp2("UNPRESS ", key[i][1]);
+			key_unpress_into_local_console(key[i][0], key[i][1], 0);
+
+		}
+		i++;
+	}
+}
+
+void KEY_PRESSED::send_status() {
+	/*
+	int i, j, k;
+	i = 0;
+	j = 0;
+	k = 0;
+	while (i < 1000) {
+		if (key[i][0] != 0 || key[i][1] != 0) {
+			j++;
+			k = key[i][1];
+
+		}
+		i++;
+	}
+
+	char a[300];
+//sprintf_ s(a, 290, "keys=%d last_key=%d ", j, k);
+	//send_udp2(a);
+	*/
+}

@@ -29,6 +29,8 @@ public:
 	bool is_desktop = false;
 	bool is_viewer  = false;
 	bool is_service = false;
+	bool is_agent   = false;
+
 	bool im_is_admin = false;
 	int  is_32_or_64_bit_system = 0;
 	int  modal_process = 0;

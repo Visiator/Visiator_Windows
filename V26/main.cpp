@@ -32,6 +32,7 @@
 #include "DESKTOP.h"
 #include "VIEWER.h"
 #include "SERVICE.h"
+#include "KERNEL.h"
 
 #include <boost/lambda/lambda.hpp>
 
@@ -46,6 +47,7 @@ APPLICATION_ATTRIBUTES app_attributes;
 DESKTOP  *desktop = nullptr;
 VIEWER *viewer = nullptr;
 SERVICE *service = nullptr;
+KERNEL kernel;
 
 void WinMain_finish();
 

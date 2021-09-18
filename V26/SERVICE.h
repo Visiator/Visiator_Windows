@@ -41,24 +41,7 @@ int SERVICE___CHECK_STATUS(wchar_t *service_name);
 int  ServiceUnInstallLocal();
 int  ServiceInstallLocal();
 
-struct MASTER_AGENT_PACKET_HEADER_event
-{
-	int session_no;
-	unsigned int event_type;
-	int global_type;
-	//+12
-	unsigned long long msg, wparam, lparam;
-	//+24
 
-	//=36
-};
-
-struct MASTER_AGENT_PACKET_HEADER
-{
-	unsigned int packet_size;
-	unsigned int packet_type;
-	char reserv[120];
-};
 
 #define IT_IS_agent 1
 #define IT_IS_indicator 2

@@ -4,16 +4,46 @@
 
 #include <boost/thread.hpp>
 
+#define packet_type_PING_MASTER_to_AGENT 100
+#define packet_type_REQUEST_SCREEN_one_byte 101
+#define packet_type_RESPONCE_SCREEN_one_byte 102
+#define packet_type_REQUEST_STOP_AGENT 103
+#define packet_type_RESPONCE_STOP_AGENT 104
+
+#define packet_type_REQUEST_EVENT 105
+#define packet_type_RESPONCE_EVENT 106
+
+#define packet_type_REQUEST_CLIPBOARD 107
+#define packet_type_RESPONCE_CLIPBOARD 108
+#define packet_type_SET_CLIPBOARD 109
+
+#define packet_type_SERVICE_INFO 110
+
+
 #define packet_type_PING_SERVER_to_AGENT 100
 #define packet_type_REQUEST_SCREEN 101
 
+#define sizeof_MASTER_AGENT_PACKET_HEADER 128
+#define sizeof_ENCODED_SCREEN_8bit_header 84
 
-struct SERVER_AGENT_PACKET_HEADER
+struct MASTER_AGENT_PACKET_HEADER
 {
-	unsigned int header_size;
+	unsigned int packet_size;
 	unsigned int packet_type;
 	char reserv[128];
 
+};
+
+struct MASTER_AGENT_PACKET_HEADER_event
+{
+	int session_no;
+	unsigned int event_type;
+	int global_type;
+	//+12
+	unsigned long long msg, wparam, lparam;
+	//+24
+
+	//=36
 };
 
 
@@ -27,23 +57,23 @@ public:
 
 	// отдельный поток для контроля зависших транзакций
 	
-	HANDLE pipe_server_to_agent = 0;
-	HANDLE pipe_server_to_indicator = 0;
+	HANDLE pipe_master_to_agent = 0;
+	HANDLE pipe_master_to_indicator = 0;
 
 	// поток control
 	boost::thread* thread_EXECUTE_control = nullptr;
 	bool is_run_thread_control;
 	bool EXECUTE_control_is_run = false;
 	void EXECUTE_control();
-	bool SERVER_AGENT_connected = false;
+	bool MASTER_AGENT_connected = false;
 
 	// блок SERVER<->AGENT
-	boost::thread* thread_EXECUTE_SERVER_AGENT_reconnect_pipe = nullptr;
-	void                  EXECUTE_SERVER_AGENT_reconnect_pipe();
-	bool                  EXECUTE_SERVER_AGENT_reconnect_pipe_is_run = false;
-	bool SERVER_is_use = false;
+	boost::thread* thread_EXECUTE_MASTER_AGENT_reconnect_pipe = nullptr;
+	void                  EXECUTE_MASTER_AGENT_reconnect_pipe();
+	bool                  EXECUTE_MASTER_AGENT_reconnect_pipe_is_run = false;
+	bool MASTER_is_use = false;
 
-	bool send_ping_from_SERVER_to_AGENT();
+	bool send_ping_from_MASTER_to_AGENT();
 
 	void RUN();
 
