@@ -104,6 +104,14 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	viewer->RUN_VIEWER(partner_id, pass_encripted, pass_no_encripted);
 	***/
 
+	if (cmd_line.compare_param_by_no(0, "reinstall")) {
+
+		ServiceUnInstallLocal();
+		ServiceInstallLocal();
+
+		return 0;
+	}
+
 	//--------------------------------------------------------------------------------------------------------
 	// AGENT
 

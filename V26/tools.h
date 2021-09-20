@@ -131,6 +131,7 @@ void leave_crit(int id);
 void sudp(char *p);
 
 void sprintf__s_c_c_ui(char *s, int s_len, char *format, char *v1, char *v2, unsigned int v3);
+void sprintf__s_c_c_ui_ui(char *s, int s_len, char *format, char *v1, char *v2, unsigned int v3, unsigned int v4);
 void sprintf__s_i_c_c_ull_ull(char *s, int len, char *format, int v1, char *v2, char *v3, unsigned long long v4, unsigned long long v5);
 void sprintf__s_D(char *s, int len, char *format, DWORD v1);
 void sprintf__s_i(char *s, int len, char *format, int v1);

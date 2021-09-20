@@ -8,6 +8,8 @@ class TOTAL_CONTROL
 {
 public:
 
+
+
 	SOCKET udp_socket__service = 0;
 	struct sockaddr_in udp_socket_adr__service;
 

@@ -27,7 +27,7 @@ void AGENT::RUN() {
 
 	thread_EXECUTE_read_write = app_attributes.tgroup.create_thread( boost::bind(&AGENT::EXECUTE_read_write, this) );
 	
-	boost::posix_time::milliseconds SleepTime(100);
+	boost::posix_time::milliseconds SleepTime(10);
 
 	while (GLOBAL_STOP == false) {
 
@@ -174,7 +174,7 @@ void AGENT::EXECUTE_read_write() {
 
 		///
 
-		boost::this_thread::sleep(SleepTime);
+		//boost::this_thread::sleep(SleepTime);
 	}
 
 	EXECUTE_read_write_is_run = false;

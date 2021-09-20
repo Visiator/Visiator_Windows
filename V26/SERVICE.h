@@ -201,20 +201,36 @@ public:
 	//*****************************************************
 	// Thread для основного потока (reconnect) MASTER<->AGENT
 	boost::thread* thread_EXECUTE_main_MASTER_AGENT = nullptr;
-	bool EXECUTE_main_MASTER_AGENT_is_run = false;
-	void EXECUTE_main_MASTER_AGENT();
+	bool EXECUTE_main_MASTER_AGENT_reconnect_is_run = false;
+	void EXECUTE_main_MASTER_AGENT_reconnect();
 
+	void RUN();
 
 	// MAIN Thread
 	boost::thread* thread_EXECUTE = nullptr;
 	bool EXECUTE_is_run = false;
-	void EXECUTE(); // MAIN Thread
-	void RUN();
+	void EXECUTE(); // MAIN Thread	
 	HANDLE pipe_MASTER = 0;
 	bool pipe_MASTER_is_open = false;
 	//
 	//*****************************************************************************
 
+	// CONTROL Thread
+	boost::thread* thread_EXECUTE_CONTROL = nullptr;
+	bool EXECUTE_CONTROL_is_run = false;
+	void EXECUTE_CONTROL(); // CONTROL Thread	
+
+
+	// TEST Thread
+	boost::thread* thread_EXECUTE_test = nullptr;
+	bool EXECUTE_test_is_run = false;
+	void EXECUTE_test(); // CONTROL Thread	
+
+	//
+	bool interaction_with_agent_PING();
+	int SERVICE_interaction_with_agent_PING_try = 0;
+	int SERVICE_interaction_with_agent_PING_ok  = 0;
+	
 
 	char *packet_send_event = NULL, *packet_recv_event = NULL;
 	void send_event_in_to_session(int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam);

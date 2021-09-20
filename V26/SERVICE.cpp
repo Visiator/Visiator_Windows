@@ -12,7 +12,7 @@ extern APPLICATION_ATTRIBUTES app_attributes;
 //extern NET_SERVER_SESSION_POOL *session_pool;
 //extern TOTAL_CONTROL total_control;
 
-
+void zero_128_s(MASTER_AGENT_PACKET_HEADER *v);
 
 wchar_t *strServiceName = L"VISIATOR";
 
@@ -1120,7 +1120,9 @@ void SERVICE::RUN() {
 
 	save_in_registry_last_run_ver_and_date();
 	
-	thread_EXECUTE = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::EXECUTE, this));
+	thread_EXECUTE         = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::EXECUTE, this));
+	thread_EXECUTE_CONTROL = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::EXECUTE_CONTROL, this));
+	thread_EXECUTE_test    = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::EXECUTE_test, this));
 
 	//if (pipes_server_pool == nullptr) pipes_server_pool = new PIPES_SERVER_POOL();
 	//pipes_server_pool->RUN();
@@ -1446,7 +1448,7 @@ void SERVICE::lock_interaction_with_INDICATOR() {
 
 void SERVICE::lock_interaction_with_AGENT() {
 
-	/* 2021 09 
+	
 	while (GLOBAL_STOP == false) {
 		if (interaction_with_agent_IN_USE == false) {
 			enter_crit(41);
@@ -1463,7 +1465,7 @@ void SERVICE::lock_interaction_with_AGENT() {
 		}
 	};
 
-	*/
+	
 }
 
 void SERVICE::interaction_with_agent_STOP_AGENT() {
@@ -2821,7 +2823,7 @@ void SERVICE::EXECUTE() {
 		boost::this_thread::sleep(SleepTime);
 	};
 
-	if(GLOBAL_STOP == false) thread_EXECUTE_main_MASTER_AGENT = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::EXECUTE_main_MASTER_AGENT, this));
+	if(GLOBAL_STOP == false) thread_EXECUTE_main_MASTER_AGENT = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::EXECUTE_main_MASTER_AGENT_reconnect, this));
 
 	//sudp("LOAD_PASS() ok");
 
@@ -2835,11 +2837,11 @@ void SERVICE::EXECUTE() {
 	KillService();
 }
 
-void SERVICE::EXECUTE_main_MASTER_AGENT() {
+void SERVICE::EXECUTE_main_MASTER_AGENT_reconnect() {
 
 	// Thread для основного потока (reconnect) MASTER<->AGENT
 
-	EXECUTE_main_MASTER_AGENT_is_run = true;
+	EXECUTE_main_MASTER_AGENT_reconnect_is_run = true;
 
 	SECURITY_DESCRIPTOR sd;
 	SECURITY_ATTRIBUTES sa;
@@ -2929,8 +2931,119 @@ void SERVICE::EXECUTE_main_MASTER_AGENT() {
 
 	
 
-	EXECUTE_main_MASTER_AGENT_is_run = false;
+	EXECUTE_main_MASTER_AGENT_reconnect_is_run = false;
 
 	Disconnect_Named_Pipe(pipe_MASTER, "c1");
+
+}
+
+void SERVICE::EXECUTE_CONTROL() {
+
+	EXECUTE_CONTROL_is_run = true;
+
+	boost::posix_time::milliseconds SleepTime(10);
+
+	while (GLOBAL_STOP == false) {
+
+		boost::this_thread::sleep(SleepTime);
+	}
+
+	EXECUTE_CONTROL_is_run = false;
+}
+
+
+
+void SERVICE::EXECUTE_test() {
+
+	EXECUTE_test_is_run = true;
+
+	boost::posix_time::milliseconds SleepTime(1);
+
+	while (GLOBAL_STOP == false) {
+
+		interaction_with_agent_PING();
+
+		boost::this_thread::sleep(SleepTime);
+	}
+
+	EXECUTE_test_is_run = false;
+}
+
+
+bool SERVICE::interaction_with_agent_PING() {
+
+	MASTER_AGENT_PACKET_HEADER *packet_send;
+	MASTER_AGENT_PACKET_HEADER *packet_recv;
+
+	unsigned char p1[500];
+	unsigned char p2[500];
+
+	packet_send = (MASTER_AGENT_PACKET_HEADER *)&p1[0];
+	packet_recv = (MASTER_AGENT_PACKET_HEADER *)&p2[0];
+
+	zero_128_s(packet_send);
+	zero_128_s(packet_recv);
+
+	if (MASTER_is_agent_connected == false) {
+
+		return false;
+	}
+
+	packet_send->packet_size = 128;
+	packet_send->packet_type = packet_type_PING_MASTER_to_AGENT;
+
+	lock_interaction_with_AGENT(); // там внутри   interaction_with_agent_IN_USE = true;
+	interaction_with_agent_TIMEOUT = GetTickCount();
+
+	//total_control.
+	SERVICE_interaction_with_agent_PING_try++;
+
+	DWORD r, w;
+	bool x;
+
+	x = write_pipe(pipe_MASTER, packet_send, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_MASTER_pipe_TIMEOUT);
+	if (x != true) {
+		//sudp("======> => => => => => => => interaction_with_agent_2() (1--) end ");
+		interaction_with_agent_TIMEOUT = 0;
+		interaction_with_agent_IN_USE = false;
+		
+		enter_crit(29);
+		Disconnect_Named_Pipe(pipe_MASTER, "p ping 1");		
+		MASTER_is_agent_connected = false;
+		leave_crit(29);
+
+		
+
+		//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 102;
+		return false;
+	}
+
+	//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 200;
+
+	//-----------------------------------------------------------------------------
+	// read 128 (2) получаем ответ (заголовок)
+
+	x = read_pipe(pipe_MASTER, packet_recv, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_MASTER_pipe_TIMEOUT, "i2");
+	if (x != true) {
+		//sudp("======> => => => => => => => interaction_with_agent_2() (2--) end ");
+		interaction_with_agent_TIMEOUT = 0;
+		interaction_with_agent_IN_USE = false;
+		//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 202;
+		return false;
+	}
+	if (packet_recv->packet_type == packet_type_PONG_MASTER_to_AGENT) {
+		SERVICE_interaction_with_agent_PING_ok++;
+	};
+
+	//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 300;
+
+	//send_udp("======> => => => => => => => interaction_with_agent_2() (100) end\r\n");
+
+	interaction_with_agent_TIMEOUT = 0;
+	interaction_with_agent_IN_USE = false;
+
+	//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 400;
+	
+	return true;
 
 }

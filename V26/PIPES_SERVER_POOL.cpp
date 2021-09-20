@@ -159,7 +159,7 @@ bool PIPES_SERVER_POOL::send_ping_from_MASTER_to_AGENT() {
 				zero_128_s(&server_agent_packet_header);
 
 				server_agent_packet_header.packet_size = 128;
-				server_agent_packet_header.packet_type = packet_type_PING_SERVER_to_AGENT;
+				server_agent_packet_header.packet_type = packet_type_PING_MASTER_to_AGENT;
 
 				w = 0;
 				x = WriteFile(pipe_master_to_agent, &server_agent_packet_header, 128, &w, NULL);

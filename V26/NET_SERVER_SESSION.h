@@ -180,6 +180,12 @@ struct PACKET_LEVEL1_1008_responce {
 class NET_SERVER_SESSION
 {
 public:
+
+	bool EXECUTE_is_run = false;
+	void EXECUTE();
+
+	void RUN();
+
 	NET_SERVER_SESSION();
 	~NET_SERVER_SESSION();
 };

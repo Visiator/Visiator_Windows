@@ -48,7 +48,24 @@ void add(char *ss, char *p, unsigned int v) {
 	}
 	ss[i] = 0;
 }
+void add(char *ss, char *p, unsigned int v1, unsigned int v2) {
 
+	char s[300];
+
+	sprintf__s_c_c_ui_ui(s, 290, "%s %s %d / %d\r\n", p, dddd(p), v1, v2);
+
+	int i, j;
+	i = 0;
+	while (i < 3000 - 10 && ss[i] != 0) i++;
+	j = 0;
+	while (s[j] != 0 && i < 3000 - 10) {
+
+		ss[i++] = s[j++];
+
+
+	}
+	ss[i] = 0;
+}
 
 void TOTAL_CONTROL::send_udp_SERVICE() {
 
@@ -65,11 +82,13 @@ void TOTAL_CONTROL::send_udp_SERVICE() {
 		add(ss, "indicator_process_id", app_attributes.indicator_process_id);
 
 		if (service != nullptr) {
-			add(ss, "service->EXECUTE_is_run", service->EXECUTE_is_run);			
-			add(ss, "service->EXECUTE_main_MASTER_AGENT_is_run", service->EXECUTE_main_MASTER_AGENT_is_run);
+			add(ss, "service->EXECUTE_is_run-", service->EXECUTE_is_run);			
+			add(ss, "service->EXECUTE_main_MASTER_AGENT_reconnect_is_run", service->EXECUTE_main_MASTER_AGENT_reconnect_is_run);
 			add(ss, "service->pipe_MASTER_is_open", service->pipe_MASTER_is_open);
 			add(ss, "service->MASTER_is_agent_connected", service->MASTER_is_agent_connected);
+			add(ss, "service->SERVICE_interaction_with_agent_PING", service->SERVICE_interaction_with_agent_PING_try, service->SERVICE_interaction_with_agent_PING_ok );
 
+			add(ss, "service->EXECUTE_CONTROL_is_run", service->EXECUTE_CONTROL_is_run);
 			
 		};
 

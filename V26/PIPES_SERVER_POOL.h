@@ -22,7 +22,7 @@
 #define packet_type_SERVICE_INFO 110
 
 
-#define packet_type_PING_SERVER_to_AGENT 100
+//#define packet_type_PING_SERVER_to_AGENT 100
 #define packet_type_REQUEST_SCREEN 101
 
 #define sizeof_MASTER_AGENT_PACKET_HEADER 128

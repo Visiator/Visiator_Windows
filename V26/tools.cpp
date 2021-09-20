@@ -195,6 +195,19 @@ void sprintf__s_c_c_ui(char *s, int s_len, char *format, char *v1, char *v2, uns
 
 }
 
+void sprintf__s_c_c_ui_ui(char *s, int s_len, char *format, char *v1, char *v2, unsigned int v3, unsigned int v4) {
+
+	try
+	{
+		sprintf_s(s, s_len, format, v1, v2, v3, v4);
+	}
+	catch (...)
+	{
+		s[0] = '?';
+		s[1] = 0;
+	};
+
+}
 
 void sprintf__s_i_c_c_ull_ull(char *s, int len, char *format, int v1, char *v2, char *v3, unsigned long long v4, unsigned long long v5) {
 	try
