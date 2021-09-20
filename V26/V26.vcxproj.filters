@@ -84,6 +84,9 @@
     <ClCompile Include="NET_SERVER_SESSION_POOL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HIGHLEVEL_COMMAND_QUEUE.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -150,6 +153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NET_SERVER_SESSION_POOL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HIGHLEVEL_COMMAND_QUEUE.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

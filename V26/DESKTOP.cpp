@@ -579,8 +579,6 @@ void DESKTOP::EXECUTE() {
 	generate_ID_to_text(iid, PUBLIC_ID);
 	edit_incoming_id->set_text(iid);
 
-	if (net_server_session_pool == nullptr) net_server_session_pool = new NET_SERVER_SESSION_POOL();
-	net_server_session_pool->RUN(PUBLIC_ID, PRIVATE_ID);
 
 
 	/*
@@ -623,6 +621,8 @@ void DESKTOP::EXECUTE() {
 			}
 			incoming_pass_encrypted_FINISH();
 
+			if (net_server_session_pool == nullptr) net_server_session_pool = new NET_SERVER_SESSION_POOL();
+			net_server_session_pool->RUN(PUBLIC_ID, PRIVATE_ID, incoming_pass_encrypted);
 
 
 		}

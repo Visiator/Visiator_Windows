@@ -161,6 +161,7 @@ void sprintf__s_wc_wc(wchar_t *s, int len, wchar_t *format, wchar_t *v1, wchar_t
 bool init_net();
 void set_GLOBAL_STOP_true();
 void fatal_error(const char *s);
+void fatal_error(char *s);
 
 void get_screen_size(int *scr_w, int *scr_h);
 void get_display_size_pixel(int *display_w, int *display_h);
@@ -267,4 +268,6 @@ char upper_char(char p);
 wchar_t upper_char(wchar_t p);
 void Disconnect_Named_Pipe(HANDLE pipe, char *info);
 void generate_easy_pass(unsigned char *psw, wchar_t *psw_w);
+unsigned int GetFromProxy_ip_to_server_connect(unsigned long long public_id, unsigned long long private_id);
+
 

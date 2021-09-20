@@ -19,6 +19,7 @@ unsigned char *encode_color_matrix_5_in_8  = nullptr;
 unsigned char *encode_color_matrix_6_in_8  = nullptr;
 
 
+
 void fatal_error(const char *s) {
 	FILE *f;
 	fopen_s(&f, "c:\\1\\fatal_error.txt", "ab");
@@ -28,6 +29,9 @@ void fatal_error(const char *s) {
 		fclose(f);
 	}
 
+}
+void fatal_error(char *s) {
+	fatal_error((const char *)s);
 }
 
 
@@ -4625,3 +4629,168 @@ void generate_easy_pass(unsigned char *psw, wchar_t *psw_w) {
 
 	
 }
+
+unsigned int GetFromProxy_ip_to_server_connect(unsigned long long public_id, unsigned long long private_id) {
+
+	unsigned long long rc = 0;
+
+	unsigned int ip_to_server_connect = 0;
+
+	if (public_id == 0 || private_id == 0) {
+		return 0;
+	}
+
+	unsigned int crc32;
+	unsigned char bb[500], xx[500];
+	PACKET_LEVEL0 *r0;
+	PACKET_LEVEL1_1002_responce *r1;
+	//PACKET_LEVEL1_1003_responce *r1003;
+
+	PACKET_LEVEL0 *p0;
+	//PACKET_LEVEL1_1002_request *p1;
+	//PACKET_LEVEL1_1003_request *p1003;
+
+	PROXY_LIST *proxy_list;
+
+
+
+	SOCKET sos;
+	sockaddr_in dest_addr;
+
+	MY_AES aes;
+	MY_CRC crc;
+	MY_RSA rsa;
+	rsa.init();
+
+	int res, snd;
+
+	if (INVALID_SOCKET == (sos = socket(AF_INET, SOCK_STREAM, 0)))
+	{ //3
+		//status = "create socket error";
+		return 0;
+	} //3
+
+
+		/*HOSTENT *hosten;
+		//hosten = gethostbyname( view _visiator_com );
+		if (hosten == NULL) {
+			closesocket(sos);
+			sos = 0;
+			//status = "err connect";
+			return;
+		}*/
+
+	unsigned int view_ip;
+	view_ip = get_ip_view_visiator_com();
+
+	if (view_ip == 0) {
+		sudp("NET_SERVER_SESSION::GetFromProxy_ip_to_server_connect() view_ip == 0");
+		closesocket(sos);
+		return 0;
+	}
+
+
+	dest_addr.sin_family = AF_INET;
+	dest_addr.sin_port = htons(SERVER_PORT);
+	//dest_addr.sin_addr.S_un.S_addr = inet_addr("139.162.182.46");// proxy_address );
+	dest_addr.sin_addr.S_un.S_addr = view_ip;// ((in_addr*)hosten->h_addr_list[0])->s_addr;
+	//status = "connect...";
+
+
+	//char iipp[128];
+	//for (int i = 0; i < 30; i++) iipp[i] = 0;
+	//bytes_to_IP(view_ip, iipp);
+
+	//send_udp(iipp);
+
+	if (SOCKET_ERROR == connect(sos, (sockaddr*)&dest_addr, sizeof(dest_addr))) // proxy+!
+	{//4
+		closesocket(sos);
+		sos = 0;
+		proxy_list = app_attributes.proxy_list;
+		if (proxy_list != NULL) {
+			sos = proxy_list->try_connect(view_ip);// (((in_addr*)hosten->h_addr_list[0])->s_addr); // пробуем подключиться через прокси +
+		};
+
+		if (sos == 0) {
+			closesocket(sos);
+			sos = 0;
+			//status = "err connect";
+			return 0;
+		};
+	}//4
+
+	//status = "connect ok";
+
+	setnonblocking(sos);
+
+
+	zero_unsigned_char(bb, 128);
+	//PACKET_LEVEL0 *p0;
+	PACKET_LEVEL1_1002_request *p1;
+
+	p0 = (PACKET_LEVEL0 *)bb;
+	p0->packet_type = 1002;
+	p1 = (PACKET_LEVEL1_1002_request *)p0->body;
+	p1->sub_type = 102; // 102 - просим ip сервера для подключения сервера
+	p1->im_public_id = public_id;
+	p1->im_private_id = private_id;
+
+	for (int i = 0; i < 16; i++) p1->AES_pass[i] = '0' + i;
+	//my_random(p1->AES_pass, 16);
+
+	aes.set_key_16_byte(p1->AES_pass);
+
+	p0->crc32 = crc.calc(&bb[8], 120);
+
+	rsa.encode_128_byte(bb, bb);
+
+	//status = "send_...";
+	snd = 0;
+	do
+	{
+		snd = my_send( sos, (unsigned char *)bb, 128, 0, "", &rc ); // ok
+	} while (snd != 128);
+
+	//status = String("read... ");
+
+	do
+	{
+		res = my_recv( sos, xx, 128, &rc );
+
+	} while (res != 128 && res != -1);
+	aes.decrypt_128_byte(xx);
+
+	//2019+ crc = CRC32_short(&xx[4], 124);
+	crc32 = crc.calc(&xx[8], 120);
+	//PACKET_LEVEL0 *r0;
+	//PACKET_LEVEL1_1002_responce *r1;
+
+	r0 = (PACKET_LEVEL0 *)xx;
+	if (r0->crc32 == crc32)
+	{
+		//status = "crc ok";
+
+		r1 = (PACKET_LEVEL1_1002_responce *)r0->body;
+
+		ip_to_server_connect = r1->ip4;
+		//status = String(idx) + "read ok pause 3000 " + String(res);
+
+		//::Sleep(300);
+		//status = "close...";
+	}
+	else {
+		r1 = (PACKET_LEVEL1_1002_responce *)r0->body;
+		sudp("crc err");
+	};
+	struct linger lng = { 1, 0 };
+	setsockopt(sos, SOL_SOCKET, SO_LINGER, (char *)(&lng), sizeof(struct linger));
+
+	int ee;
+	ee = shutdown(sos, SD_BOTH);
+	closesocket(sos);
+
+
+	return ip_to_server_connect;
+}
+

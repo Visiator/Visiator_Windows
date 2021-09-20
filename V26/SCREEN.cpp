@@ -568,6 +568,7 @@ SCREEN_LIGHT_encoded::SCREEN_LIGHT_encoded() {
 };
 
 SCREEN_LIGHT_encoded::~SCREEN_LIGHT_encoded() {
+
 	delete[] old_buf_one_byte;
 	old_buf_one_byte_size = 0;
 

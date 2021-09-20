@@ -1,6 +1,9 @@
 #pragma once
 
 #include "tools.h"
+#include "CRYPTO.h"
+#include "HIGHLEVEL_COMMAND_QUEUE.h"
+#include "PIPES_SERVER_POOL.h"
 
 #define PACKET_TYPE_request_screen 20001
 #define PACKET_TYPE_responce_screen 20002
@@ -180,7 +183,11 @@ struct PACKET_LEVEL1_1008_responce {
 class NET_SERVER_SESSION
 {
 public:
+	HIGHLEVEL_COMMAND_QUEUE out_queue_command;
+
 	unsigned long long PUBLIC_ID = 0, PRIVATE_ID = 0;
+	unsigned char PASS_ENCODED[32];
+	MY_AES aes_partner;
 
 	SCREEN_LIGHT_encoded  *screen_encoded = nullptr;
 	SCREEN_LIGHT_one_byte *screen_one_byte_ = nullptr;
@@ -200,12 +207,35 @@ public:
 	char  dummy_packet[15];
 	int   dummy_packet_size = 15;
 
+	int last_set_mouse_x = 0, last_set_mouse_y = 0;
 
 	boost::thread* thread_EXECUTE = nullptr;
 	bool EXECUTE_is_run = false;
 	void EXECUTE();
 
-	void RUN(unsigned long long PUBLIC_ID_, unsigned long long PRIVATE_ID_);
+	void RUN(unsigned long long PUBLIC_ID_, unsigned long long PRIVATE_ID_, unsigned char *PASS_ENCODED_);
+
+	void Connect_to_proxy_as_server(unsigned long long public_id, unsigned long long private_id, unsigned int ip_to_server_connect, unsigned char pass_hash16[16]);
+	bool main_loop_is_strated = false;
+	void NetSession_Main_Loop(SOCKET sos);
+	void SEND_SCREEN_FROM_SERVER_TO_CLIENT(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf);
+	int  READ(byte *buffer, int buffer_size);
+	void add_to_low_level_encoded_buffer(unsigned char *buf, unsigned int size);
+	void add_to_low_level_buffer(unsigned char *buf, int size);
+	bool detect_full_command_in_to_low_level_buffer();
+	void analiz_command(unsigned char *buf);
+	void RECEIVE_KEYBOARD_EVENT_LIST_from_client_to_server(unsigned char *buf);
+	void send_event_in_to_session(int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam);
+
+	void clean_();
+
+	void unpress_all_pressed_keys();
+	bool ss_need_disconnect = false;
+	unsigned int need_start_screenflow_count = 0;
+	bool need_start_screenflow = false;
+	int responce_screen_in_queue = 0;
+
+	unsigned long long recv_counter = 0, send_counter = 0;
 
 	NET_SERVER_SESSION();
 	~NET_SERVER_SESSION();
