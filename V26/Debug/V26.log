@@ -1,10 +1,15 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Support for targeting Windows XP is deprecated and will not be present in future releases of Visual Studio. Please see https://go.microsoft.com/fwlink/?linkid=2023588 for more information.
-  AGENT.cpp
+  DESKTOP.cpp
+  c:\program files\boost\boost_1_77_0\boost\bind.hpp(41): note: The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated. Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.
+c:\prj\visiator_windows\v26\desktop.cpp(602): warning C4101: 'k': unreferenced local variable
+c:\prj\visiator_windows\v26\desktop.cpp(556): warning C4101: 'aa': unreferenced local variable
+c:\prj\visiator_windows\v26\desktop.cpp(555): warning C4101: 'r': unreferenced local variable
   NET_CLIENT_SESSION.cpp
   c:\program files\boost\boost_1_77_0\boost\bind.hpp(41): note: The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated. Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.
 c:\prj\visiator_windows\v26\net_client_session.cpp(383): warning C4101: 'z': unreferenced local variable
 c:\prj\visiator_windows\v26\net_client_session.cpp(370): warning C4101: 'ii': unreferenced local variable
   NET_SERVER_SESSION.cpp
+  NET_SERVER_SESSION_POOL.cpp
   SERVICE.cpp
 c:\prj\visiator_windows\v26\service.cpp(455): warning C4101: 'id': unreferenced local variable
 c:\prj\visiator_windows\v26\service.cpp(454): warning C4101: 'h': unreferenced local variable
@@ -13,6 +18,8 @@ c:\prj\visiator_windows\v26\service.cpp(938): warning C4101: 'id': unreferenced 
 c:\prj\visiator_windows\v26\service.cpp(937): warning C4101: 'h': unreferenced local variable
 c:\prj\visiator_windows\v26\service.cpp(1030): warning C4101: 'id': unreferenced local variable
 c:\prj\visiator_windows\v26\service.cpp(1029): warning C4101: 'h': unreferenced local variable
+  main.cpp
+  c:\program files\boost\boost_1_77_0\boost\bind.hpp(41): note: The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated. Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.
   tools.cpp
 c:\prj\visiator_windows\v26\tools.cpp(817): warning C4826: Conversion from 'HCURSOR' to 'unsigned __int64' is sign-extended. This may cause unexpected runtime behavior.
 c:\prj\visiator_windows\v26\tools.cpp(1930): warning C4101: 'i': unreferenced local variable

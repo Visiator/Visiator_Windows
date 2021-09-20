@@ -4590,3 +4590,38 @@ void Disconnect_Named_Pipe(HANDLE pipe, char *info) {
 	DisconnectNamedPipe(pipe);
 	//send_udp2("+++2");
 }
+
+void generate_easy_pass(unsigned char *psw, wchar_t *psw_w) {
+	
+	unsigned int v1, v2, v3, v4;
+
+	v1 = 10;
+	while (v1 >= 10) {
+		v1 = get_sol() & 0xF;
+	}
+	v2 = 10;
+	while (v2 >= 10) {
+		v2 = get_sol() & 0xF;
+	}
+	v3 = 10;
+	while (v3 >= 10) {
+		v3 = get_sol() & 0xF;
+	}
+	v4 = 10;
+	while (v4 >= 10) {
+		v4 = get_sol() & 0xF;
+	}
+	psw[0] = v1 + '0';
+	psw[1] = v2 + '0';
+	psw[2] = v3 + '0';
+	psw[3] = v4 + '0';
+	psw[4] = 0;
+
+	psw_w[0] = v1 + L'0';
+	psw_w[1] = v2 + L'0';
+	psw_w[2] = v3 + L'0';
+	psw_w[3] = v4 + L'0';
+	psw_w[4] = 0;
+
+	
+}

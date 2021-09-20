@@ -180,11 +180,32 @@ struct PACKET_LEVEL1_1008_responce {
 class NET_SERVER_SESSION
 {
 public:
+	unsigned long long PUBLIC_ID = 0, PRIVATE_ID = 0;
 
+	SCREEN_LIGHT_encoded  *screen_encoded = nullptr;
+	SCREEN_LIGHT_one_byte *screen_one_byte_ = nullptr;
+
+
+	unsigned char *llow_level_buffer_read = nullptr;
+	unsigned int   llow_level_buffer_read_max_count = 0;
+	unsigned int    low_level_buffer_read_idx = 0;
+	void  increase_llow_level_buffer_read(int add_size);
+
+	unsigned char *llow_level_encoded_buffer_read = nullptr;
+	unsigned int    low_level_encoded_buffer_read_idx = 0;
+	unsigned int   llow_level_encoded_buffer_read_max_count = 0;
+	void  increase_llow_level_encoded_buffer_read(int add_size);
+
+
+	char  dummy_packet[15];
+	int   dummy_packet_size = 15;
+
+
+	boost::thread* thread_EXECUTE = nullptr;
 	bool EXECUTE_is_run = false;
 	void EXECUTE();
 
-	void RUN();
+	void RUN(unsigned long long PUBLIC_ID_, unsigned long long PRIVATE_ID_);
 
 	NET_SERVER_SESSION();
 	~NET_SERVER_SESSION();

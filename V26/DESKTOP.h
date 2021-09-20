@@ -16,11 +16,14 @@
 #include "tools.h"
 #include "GUI.h"
 #include "GUI_low_level.h"
+#include "NET_SERVER_SESSION_POOL.h"
 
 class DESKTOP
 {
 public:
+	unsigned long long PUBLIC_ID = 0, PRIVATE_ID = 0;
 
+	NET_SERVER_SESSION_POOL *net_server_session_pool = nullptr;
 	GUI *gui = nullptr;
 	GUI_Element *btn_close = nullptr
 		, *btn_change_to_incomming = nullptr
@@ -57,6 +60,7 @@ public:
 
 	bool need_encrypt_incoming_pass = false;
 	unsigned char incoming_pass[32];
+	wchar_t incoming_pass_w[32];
 	unsigned char incoming_pass_encrypted[32];
 
 	bool need_encrypt_outgoing_pass = false;

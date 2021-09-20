@@ -297,11 +297,11 @@ void DESKTOP::init_gui() {
 
 
 	edit_incoming_id = gui->add_element(GUI_Element_Type_edit, 76, 116, 140, 21, 0xffffff);
-	edit_incoming_id->set_text(L"123-456-389");
+	edit_incoming_id->set_text(L"load...");
 	edit_incoming_id->parent = panel_incoming;
 
 	edit_incoming_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 140, 21, 0xffffff);
-	edit_incoming_pass->set_text(L"4863");
+	edit_incoming_pass->set_text(L"load...");
 	edit_incoming_pass->parent = panel_incoming;
 	edit_incoming_pass->is_visible = false;
 
@@ -554,6 +554,35 @@ void DESKTOP::EXECUTE() {
 
 	bool r;
 	AGENT *aa;
+
+	//guest_id->set_label(L"");
+
+	do
+	{
+		//guest_id->set_label(L"Load ID..."); gui->invaidate();
+		edit_incoming_id->set_text(L"Load...");
+		Load_private_id_and_public_id_from_USER_registry(&PUBLIC_ID, &PRIVATE_ID);
+
+		if (PUBLIC_ID == 0) {
+			edit_incoming_id->set_text(L"Register...");
+			//guest_id->set_label(L"Register..."); gui->invaidate();
+			Register_new_partner_on_proxy();
+			my_Slip(3000);
+		}
+
+	} while (PUBLIC_ID == 0 && GLOBAL_STOP == false);
+
+	if (GLOBAL_STOP == true) return;
+
+	wchar_t iid[100];
+	zero_wchar_t(iid, 100);
+	generate_ID_to_text(iid, PUBLIC_ID);
+	edit_incoming_id->set_text(iid);
+
+	if (net_server_session_pool == nullptr) net_server_session_pool = new NET_SERVER_SESSION_POOL();
+	net_server_session_pool->RUN(PUBLIC_ID, PRIVATE_ID);
+
+
 	/*
 	PIPES_SERVER_POOL *ss;
 
@@ -593,6 +622,9 @@ void DESKTOP::EXECUTE() {
 				if(gui != nullptr) gui->invalidate();
 			}
 			incoming_pass_encrypted_FINISH();
+
+
+
 		}
 
 		if (need_encrypt_outgoing_pass) {
@@ -743,9 +775,16 @@ LRESULT DESKTOP::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	for (int i = 0; i < 32; i++) {
 		incoming_pass[i] = 0;
+		incoming_pass_w[i] = 0;
 		incoming_pass_encrypted[i] = 0;
 	}
+
+	generate_easy_pass( incoming_pass , incoming_pass_w );
+
 	incoming_pass_encrypted_START();
+
+	edit_incoming_pass->set_text( incoming_pass_w );
+
 	
 
 	/*** 2021
