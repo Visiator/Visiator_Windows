@@ -48,3 +48,24 @@ NET_SERVER_SESSION *NET_SERVER_SESSION_POOL::add_element() {
 
 }
 
+void NET_SERVER_SESSION_POOL::client_connected_count(int *client_connected_count, int *ready_to_client_connect) {
+
+	int j, k;
+	j = 0;
+	k = 0;
+
+
+	std::list <NET_SERVER_SESSION>::iterator it, end;
+
+	for (it = elements.begin(), end = elements.end(); it != end; ++it)
+	{
+		if (it->need_start_screenflow_count > 0) {
+			j++;
+		}
+		if (it->main_loop_is_strated == true) {
+			k++;
+		}
+	};
+	*client_connected_count = j;
+	*ready_to_client_connect = k;
+}

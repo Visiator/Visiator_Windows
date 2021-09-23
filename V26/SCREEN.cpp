@@ -109,6 +109,14 @@ unsigned char *SCREEN_LIGHT_one_byte::get_buf_one_byte() {
 	return buf_one_byte;
 }
 
+void SCREEN_LIGHT_one_byte::clean_() {
+	for (int i = 0; i < buf_one_byte_size; i++) {
+		buf_one_byte[i] = 0;
+	}
+	clean_ENCODED_SCREEN_8bit_header(&header);
+	screen_id = 0;
+}
+
 void SCREEN_LIGHT_one_byte::clean() {
 	if (buf_one_byte != nullptr) delete[] buf_one_byte;
 	buf_one_byte = nullptr; 
@@ -629,6 +637,12 @@ void SCREEN_LIGHT_encoded::pal_increase_size() {
 	pal = q;
 }
 
+void SCREEN_LIGHT_encoded::clean_() {
+	for (int i = 0; i < body_count_max; i++) {
+		body[i] = 0;
+	}
+	old_screen_id = -1;
+}
 
 bool SCREEN_LIGHT_encoded::encode_screen(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y ) {
 

@@ -2,10 +2,12 @@
 #include "TOTAL_CONTROL.h"
 #include "APPLICATION_ATTRIBUTES.h"
 #include "SERVICE.h"
+#include "DESKTOP.h"
 
 extern APPLICATION_ATTRIBUTES app_attributes;
 extern bool GLOBAL_STOP;
 extern SERVICE *service;
+extern DESKTOP *desktop;
 
 TOTAL_CONTROL::TOTAL_CONTROL() {
 
@@ -30,6 +32,24 @@ char *dddd(char *p) {
 	return d__;
 }
 
+void add(char *ss, char *p) {
+
+	char s[300];
+
+	sprintf__s_c_c(s, 290, "%s %s\r\n", p, dddd(p) );
+
+	int i, j;
+	i = 0;
+	while (i < 3000 - 10 && ss[i] != 0) i++;
+	j = 0;
+	while (s[j] != 0 && i < 3000 - 10) {
+
+		ss[i++] = s[j++];
+
+
+	}
+	ss[i] = 0;
+}
 void add(char *ss, char *p, unsigned int v) {
 
 	char s[300];
@@ -90,6 +110,32 @@ void TOTAL_CONTROL::send_udp_SERVICE() {
 
 			add(ss, "service->EXECUTE_CONTROL_is_run", service->EXECUTE_CONTROL_is_run);
 			
+			add(ss, "service->interaction_with_agent_GET_SCREEN_counter", service->interaction_with_agent_GET_SCREEN_counter);
+			add(ss, "service->interaction_with_agent_GET_SCREEN_status", service->interaction_with_agent_GET_SCREEN_status);
+
+			if (service->net_server_session_pool == nullptr) {
+				add(ss, "service->net_server_session_pool == nullptr");
+			}
+			else {
+				if (service->net_server_session_pool->elements.size() == 0) {
+					add(ss, "service->net_server_session_pool->elements.size() == 0");
+				}
+				else {
+					NET_SERVER_SESSION *s;
+					s = &(service->net_server_session_pool->elements.front());
+					if (s == nullptr) {
+						add(ss, "service->net_server_session_pool->elements.front() == nullptr");
+					}
+					else {
+						add(ss, "net_server_session[0]->main_loop_is_strated", s->main_loop_is_strated);
+						add(ss, "net_server_session[0]->ip_to_server_connect", s->ip_to_server_connect);
+
+
+					}
+
+				}
+			}
+
 		};
 
 		//EXECUTE_main_MASTER_AGENT_is_run
@@ -160,6 +206,63 @@ void TOTAL_CONTROL::send_udp_SERVICE() {
 
 }
 
+void TOTAL_CONTROL::send_udp_DESKTOP() {
+
+	char ss[13000];
+	char s[300];
+
+	zero_unsigned_char((unsigned char *)ss, 13000);
+
+	add(ss, "global_my_proc_id", app_attributes.global_my_proc_id);
+	add(ss, "agent_process_id", app_attributes.agent_process_id);
+	add(ss, "indicator_process_id", app_attributes.indicator_process_id);
+
+	if (desktop != nullptr) {
+		add(ss, "desktop->EXECUTE_is_run-", desktop->EXECUTE_is_run);
+		if (desktop->net_server_session_pool == nullptr) {
+			add(ss, "desktop->net_server_session_pool == nullptr");
+		}
+		else {
+			if (desktop->net_server_session_pool->elements.size() == 0) {
+				add(ss, "desktop->net_server_session_pool->elements.size() == 0");
+			}
+			else {
+				NET_SERVER_SESSION *s;
+				s = &(desktop->net_server_session_pool->elements.front());
+				if (s == nullptr) {
+					add(ss, "desktop->net_server_session_pool->elements.front() == nullptr");
+				}
+				else {
+					add(ss, "net_server_session[0]->main_loop_is_strated", s->main_loop_is_strated);
+					add(ss, "net_server_session[0]->ip_to_server_connect", s->ip_to_server_connect);
+					
+
+				}
+
+			}
+		}
+
+	};
+
+	if (udp_socket__service == 0) {
+		udp_socket__service = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+		udp_socket_adr__service.sin_family = AF_INET;
+		udp_socket_adr__service.sin_port = htons(7781);
+		udp_socket_adr__service.sin_addr.S_un.S_addr = inet_addr("192.168.7.7");
+
+	};
+
+	int i;
+	i = 0;
+
+	while (ss[i] != 0 && i < 13000 - 10) i++;
+
+	sendto(udp_socket__service, ss, i, 0, (struct sockaddr *)&udp_socket_adr__service, sizeof(udp_socket_adr__service));
+
+
+
+}
 
 void TOTAL_CONTROL::EXECUTE() {
 
@@ -169,9 +272,10 @@ void TOTAL_CONTROL::EXECUTE() {
 
 	while (GLOBAL_STOP == false) {
 
-		if(app_attributes.is_service) send_udp_SERVICE();
+		if (app_attributes.is_service) send_udp_SERVICE();
+		if (app_attributes.is_desktop) send_udp_DESKTOP();
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 3; i++) {
 
 			if (GLOBAL_STOP == true) {
 				EXECUTE_is_run = false;

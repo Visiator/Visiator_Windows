@@ -206,7 +206,7 @@ public:
 
 	char  dummy_packet[15];
 	int   dummy_packet_size = 15;
-
+	unsigned int ip_to_server_connect = 0;
 	int last_set_mouse_x = 0, last_set_mouse_y = 0;
 
 	boost::thread* thread_EXECUTE = nullptr;

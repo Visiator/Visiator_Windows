@@ -80,7 +80,7 @@ public:
 	ECB_Mode<AES>::Decryption d;
 	ECB_Mode<AES>::Encryption e;
 
-	void set_key_16_byte(unsigned char *key_16_byte);
+	void set_key_16_byte(unsigned char *key_16_byte, char *info);
 	void encrypt_16_byte(unsigned char *buf_16_byte);
 
 	void encrypt_stream(unsigned char *buf, int buf_len);

@@ -299,6 +299,8 @@ void DESKTOP::init_gui() {
 	edit_incoming_id = gui->add_element(GUI_Element_Type_edit, 76, 116, 140, 21, 0xffffff);
 	edit_incoming_id->set_text(L"load...");
 	edit_incoming_id->parent = panel_incoming;
+	edit_incoming_id->text_color = 0xdddddd;
+
 
 	edit_incoming_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 140, 21, 0xffffff);
 	edit_incoming_pass->set_text(L"load...");
@@ -643,6 +645,12 @@ void DESKTOP::EXECUTE() {
 
 		if (need_encrypt_autorun_pass) {
 			need_encrypt_autorun_pass = false;
+
+			wchar_t w[110];
+			zero_wchar_t(w, 110);
+			edit_autorun_pass->text.copy(w, 100);
+
+			convert_wchart_to_char_PASS(autorun_pass, w );
 
 			for (i = 0; i < 32; i++) autorun_pass_encrypted[i] = 0;
 			for (i = 0; i < 16; i++) autorun_pass_encrypted[i] = autorun_pass[i];
@@ -1176,6 +1184,26 @@ LRESULT DESKTOP::WM_SYSCOMMAND_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
+	int desktop_client_connected_count = 0, dektop_ready_to_client_connect = 0;
+
+	if (edit_incoming_id != nullptr) {
+
+		if (net_server_session_pool != nullptr) {
+			net_server_session_pool->client_connected_count(&desktop_client_connected_count, &dektop_ready_to_client_connect);
+			if (desktop_client_connected_count > 0) {
+				edit_incoming_id->text_color = 0x03A9F1;
+			}
+			else {
+				if (dektop_ready_to_client_connect > 0) {
+					edit_incoming_id->text_color = 0x0;
+				}
+				else {
+					edit_incoming_id->text_color = 0xcccccc;
+				}
+			}
+		}
+
+	};
 	/*** 2021
 
 	if (Panel_Top_auto != nullptr && Panel_Top_auto->is_visible) {

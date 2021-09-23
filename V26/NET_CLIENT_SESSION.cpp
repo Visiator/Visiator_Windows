@@ -98,17 +98,18 @@ void NET_CLIENT_SESSION::EXECUTE() {
 
 
 				set_status(L"Preparing to connect... ");
-
+				sudp("get_IP_for_server_location()...");
 				proxy_ip = get_IP_for_server_location(partner_id, my_pub_id, my_priv_id);
 
 				if (proxy_ip < 100) {
-					
+					sudp("NCS IP not determine...");
 					set_status(L"IP not determine... ");
 
 					my_Slip(3000);
 				}
 				else {
-										
+					sudp("NCS IP determine Ok");
+
 					set_status(L"Connect... ");
 
 					res = Connect_to_server( partner_id, my_pub_id, my_priv_id, partner_pass_encripted, proxy_ip);
@@ -148,6 +149,8 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 		return 0;
 	};
 
+	sudp("NCS Connect_to_server");
+
 	int return_result;
 
 	return_result = 0;
@@ -168,7 +171,7 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 	MY_RSA rsaa;
 	rsaa.init();
 
-	aes_partner.set_key_16_byte(pass_hash16);
+	aes_partner.set_key_16_byte(pass_hash16, "NCS Connect_to_server 1 aes_partner");
 
 	if (INVALID_SOCKET == (sos = socket(AF_INET, SOCK_STREAM, 0)))
 	{ //3
@@ -233,7 +236,7 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 
 		my_random(p1->AES_passs, 16);
 
-		aes_proxy.set_key_16_byte(p1->AES_passs);
+		aes_proxy.set_key_16_byte(p1->AES_passs, "NCS Connect_to_server 2 aes_proxy");
 
 		p0->crc32 = crc.calc(&bb[8], 120);
 
@@ -264,6 +267,9 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 
 			if (s1005->result == 2) { // партнер найден
 				//ALOG("key_for_commit_connection = {%X}", s1005->key);
+
+				sudp("NCS partner founded");
+
 				key_for_commit_connection = s1005->key;
 
 				//********************************************
@@ -292,6 +298,8 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 				} while (res != 16 && res != -1 && GLOBAL_STOP == false);
 				aes_proxy.decrypt_16_byte(xx);
 
+				sudp("1");
+
 				PACKET_LEVEL1_1006_responce *s1006;
 				s1006 = (PACKET_LEVEL1_1006_responce *)xx;
 
@@ -299,8 +307,9 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 
 				if (s1006->result == 1022) {
 					// прокси подтверждает, что мы установили соединение с партнером
+					sudp("Connected");
 
-					set_status(L"Cennected");
+					set_status(L"Connected");
 
 					connection_to_partner_established = true;
 					need_start_screenflow_from_server = true;

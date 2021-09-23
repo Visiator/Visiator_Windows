@@ -110,14 +110,14 @@ void VIEWER::RUN_VIEWER(uint8_t *str_partner_id_, uint8_t *pass_encrypted_length
 	partner_id = generate_ID(str_partner_id_);
 
 
-	zero_unsigned_char(pass_encripted, 32);
+	zero_unsigned_char(pass__encripted, 32);
 	zero_unsigned_char(pass_no_encripted, 32);
 	
 	int i;
 
 	i = 0;
 	while (i < 32 && pass_encrypted_length32_[i] != 0) {
-		pass_encripted[i] = pass_encrypted_length32_[i];
+		pass__encripted[i] = pass_encrypted_length32_[i];
 		i++;
 	}
 
@@ -1261,10 +1261,10 @@ void VIEWER::EXECUTE() {
 
 	
 
-	boost::posix_time::milliseconds SleepTime(100);
+	boost::posix_time::milliseconds SleepTime(10);
 
-	if (pass_encripted[0] != 0) {
-		net_client_session->set_partner_pass_and_id(partner_id, pass_encripted);
+	if (pass_no_encripted[0] == 0) {
+		net_client_session->set_partner_pass_and_id(partner_id, pass__encripted);
 		EXECUTE_is_run = false;
 		return;
 	};

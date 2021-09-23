@@ -104,6 +104,23 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	viewer->RUN_VIEWER(partner_id, pass_encripted, pass_no_encripted);
 	***/
 
+	if ((cmd_line.count == 3 && cmd_line.compare_param_by_no(0, "viewer") == true)) {
+
+		unsigned char id[32], ps[32], pse[32];// , *ps_encr;
+		
+		zero_unsigned_char(pse, 32);
+
+		my_strcpy(id, (unsigned char *)cmd_line.get_param_by_no(1));
+		my_strcpy(ps, (unsigned char *)cmd_line.get_param_by_no(2));
+
+		viewer = new VIEWER();
+		viewer->RUN_VIEWER(id, pse, ps);
+		
+
+		return 0;
+	}
+
+
 	if (cmd_line.compare_param_by_no(0, "reinstall")) {
 
 		ServiceUnInstallLocal();

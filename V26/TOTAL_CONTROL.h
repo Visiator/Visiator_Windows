@@ -14,6 +14,7 @@ public:
 	struct sockaddr_in udp_socket_adr__service;
 
 	void send_udp_SERVICE();
+	void send_udp_DESKTOP();
 	
 	boost::thread* thread_EXECUTE = nullptr;
 

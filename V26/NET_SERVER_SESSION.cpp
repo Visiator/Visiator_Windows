@@ -49,7 +49,7 @@ void NET_SERVER_SESSION::EXECUTE() {
 	
 	EXECUTE_is_run = true;
 
-	unsigned int ip_to_server_connect;
+	ip_to_server_connect;
 
 
 	boost::posix_time::milliseconds SleepTime(1000);
@@ -79,7 +79,7 @@ void NET_SERVER_SESSION::EXECUTE() {
 		}
 
 		if (PRIVATE_ID != 0 && ip_to_server_connect != 0) {
-			sudp("NET_SERVER_SESSION::EXECUTE() connect to proxy...");
+			//sudp("NET_SERVER_SESSION::EXECUTE() connect to proxy...");
 			Connect_to_proxy_as_server(PUBLIC_ID, PRIVATE_ID, ip_to_server_connect, PASS_ENCODED);
 		}
 
@@ -144,9 +144,6 @@ void NET_SERVER_SESSION::increase_llow_level_encoded_buffer_read(int add_size) {
 
 void NET_SERVER_SESSION::Connect_to_proxy_as_server(unsigned long long public_id, unsigned long long private_id, unsigned int ip_to_server_connect, unsigned char pass_hash16[16]) {
 
-	//char ss[500];
-	//sprintf_ s(ss, 300, "Connect_to_proxy_as_server() %02X.%02X.%02X.%02X ", pass_hash16[0], pass_hash16[1], pass_hash16[2], pass_hash16[3] );
-	//send_udp( ss );
 
 	if (public_id == 0 || private_id == 0 || ip_to_server_connect == 0) {
 		// TODO save log
@@ -171,7 +168,7 @@ void NET_SERVER_SESSION::Connect_to_proxy_as_server(unsigned long long public_id
 
 	SOCKET sos;
 	sockaddr_in dest_addr;
-
+	DWORD tmout;
 	MY_AES aes;
 	MY_CRC crc;
 	MY_RSA rsaa;
@@ -179,7 +176,7 @@ void NET_SERVER_SESSION::Connect_to_proxy_as_server(unsigned long long public_id
 
 	//hexstr_to_char16((char *)pass_hash, bb);
 
-	aes_partner.set_key_16_byte(pass_hash16);
+	aes_partner.set_key_16_byte(pass_hash16, "NSS Connect_to_proxy_as_server 1-aes_partner");
 
 
 	int res, snd;
@@ -231,7 +228,7 @@ void NET_SERVER_SESSION::Connect_to_proxy_as_server(unsigned long long public_id
 	//for (int i = 0; i < 16; i++) p1004->AES_passs[i] = '0' + i;
 	my_random(p1004->AES_passs, 16);
 
-	aes.set_key_16_byte(p1004->AES_passs);
+	aes.set_key_16_byte(p1004->AES_passs, "NSS Connect_to_proxy_as_server 2 aes");
 
 	p0->crc32 = crc.calc(&bb[8], 120);
 
@@ -274,17 +271,25 @@ void NET_SERVER_SESSION::Connect_to_proxy_as_server(unsigned long long public_id
 			p1006->sol = 0; // get sol
 
 			aes.encrypt_16_byte((unsigned char *)p1006);
-
+			
+			tmout = GetTickCount();
 			snd = 0;
 			do
 			{
 				snd = my_send(sos, (unsigned char *)p1006, 16, 0, "", &rc);//ok
+				if (res == 0 && tmout + 3000 < GetTickCount()) res = -1;
 			} while (snd != 16 && snd != -1);
 
 			if (snd == 16) {
+				
+				tmout = GetTickCount();
 				do
 				{
 					res = my_recv(sos, xx, 128, &rc);
+					if (res == 0 && tmout + 3000 < GetTickCount()) {
+						res = -1;
+						sudp("NSS timeout (1)");
+					};
 				} while (res != 16 && res != -1);
 				aes.decrypt_16_byte(xx);
 
@@ -296,7 +301,9 @@ void NET_SERVER_SESSION::Connect_to_proxy_as_server(unsigned long long public_id
 						sudp("Connect_to_proxy_as_server() NetSession_Main_Loop()...");
 
 						try {
+							sudp("NSS start Main_Loop (1)");
 							NetSession_Main_Loop(sos);
+							sudp("NSS end   Main_Loop (1)");
 						}
 						catch (...) {
 							// crash_log("NET_SERVER_SESSION::Connect_to_proxy_as_server() NetSession_Main_Loop(sos)");
@@ -333,6 +340,8 @@ void NET_SERVER_SESSION::clean_() {
 
 	//commit_from_client_LAST_SCREEN_ID = 0;
 
+	ip_to_server_connect = 0;
+
 	last_set_mouse_x = 0;
 	last_set_mouse_y = 0;
 
@@ -346,10 +355,9 @@ void NET_SERVER_SESSION::clean_() {
 	recv_counter = 0;
 	send_counter = 0;
 
-	if (screen_encoded != NULL) delete[] screen_encoded;
-	screen_encoded = NULL;
-	if (screen_one_byte_ != NULL) delete[] screen_one_byte_;
-	screen_one_byte_ = NULL;
+	if (screen_encoded != nullptr) screen_encoded->clean_();
+	if (screen_one_byte_ != nullptr) screen_one_byte_->clean_();
+	
 	//in_queue_command.clean();
 	out_queue_command.clean();
 
@@ -423,7 +431,7 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 		if (res > 0) { // arrived
 
 			//recv_counter += res;
-
+			sudp("READ");
 			READ(bb, res);
 
 		}
@@ -431,7 +439,7 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 			Sleep(1);
 		}
 		if (res < 0) { // disconnect 
-			//send_udp2(L"local_stop = true (1)");
+			sudp("local_stop = true (1)");
 			local_stop = true;
 		}
 
@@ -526,7 +534,7 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 
 				ss = my_send(sos, (unsigned char *)(command_data + send_commit), command_data_size - send_commit, 0, "work", &send_counter); // TODO
 				if (ss == -1) {
-					//send_udp2(L"local_stop = true (2)");
+					sudp("local_stop = true (2)");
 					local_stop = true;
 				}
 				else
@@ -620,7 +628,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT(MASTER_AGENT_PACKET_H
 			}
 		}
 		else {
-			if (service->interaction_with_agent_GET_SCREEN(w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
+			if (service->interaction_with_agent_GET_SCREEN(	w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
 				screen_one_byte_->emulate_red();
 			}
 		};
@@ -824,7 +832,7 @@ bool NET_SERVER_SESSION::detect_full_command_in_to_low_level_buffer() {
 		//ALOG("detect_full_command_in_to_low_level_buffer whf?? *sz > 3000000");
 		//send_udp2("*sz = ", *sz);
 		fatal_error("detect_full_command_in_to_low_level_buffer whf?? *sz > 3000000");
-		//send_udp2("ss_need_disconnect = true (1)");
+		sudp("ss_need_disconnect = true (1)");
 		ss_need_disconnect = true;
 		return false;
 	}

@@ -2,7 +2,7 @@
 #include "SERVICE.h"
 #include "tools.h"
 #include "NET_SERVER_SESSION.h"
-//#include "NET_SERVER_SESSION_POOL.h"
+#include "NET_SERVER_SESSION_POOL.h"
 //#include "mem.h"
 
 extern bool GLOBAL_STOP;
@@ -1913,13 +1913,16 @@ bool SERVICE::interaction_with_agent_GET_CLIPBOARD(MASTER_AGENT_PACKET_HEADER *p
 */
 bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, ENCODED_SCREEN_8bit_header *scr_head_buf, SCREEN_LIGHT_one_byte *screen_light) {
 
+	sudp("SERVICE::interaction_with_agent_GET_SCREEN");
+
 	if (screen_light == NULL) return false;
 
-	/* 2021 09 
+	 
 
-	total_control.SERVICE_interaction_with_agent_GET_SCREEN++;
+	
+	interaction_with_agent_GET_SCREEN_counter++;
 
-	total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 1;
+	interaction_with_agent_GET_SCREEN_status = 1;
 
 	//char ss[300];
 	bool x;
@@ -1930,9 +1933,9 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 	//send_udp("interaction_with_agent_2() begin");
 
 	if (MASTER_is_agent_connected == false) {
-		send_udp("interaction_with_agent_2() end (1)");
+		sudp("interaction_with_agent_2() end (1) MASTER_is_agent_connected == false");
 		
-		total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 2;
+		interaction_with_agent_GET_SCREEN_status = 2;
 		return false;
 	}
 
@@ -1951,31 +1954,31 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 	packet_send->packet_size = sizeof_MASTER_AGENT_PACKET_HEADER;
 	packet_send->packet_type = packet_type_REQUEST_SCREEN_one_byte;
 	
-	total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 100;
+	interaction_with_agent_GET_SCREEN_status = 100;
 
-	x = write_pipe(pipe_master, packet_send, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_MASTER_pipe_TIMEOUT);
+	x = write_pipe(pipe_MASTER, packet_send, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_MASTER_pipe_TIMEOUT);
 	if (x != true) {
-		send_udp("======> => => => => => => => interaction_with_agent_2() (1--+) end ");
+		//send_udp("======> => => => => => => => interaction_with_agent_2() (1--+) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
 		
 		//MASTER_is_agent_connected = false;
 		reconnect_master_pipe();
-		total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 102;
+		interaction_with_agent_GET_SCREEN_status = 102;
 		return false;
 	}
 
 	//-----------------------------------------------------------------------------
 	// read 128 (2) получаем ответ (заголовок)
 
-	total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 200;
+	interaction_with_agent_GET_SCREEN_status = 200;
 
-	x = read_pipe(pipe_master, packet_recv, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_MASTER_pipe_TIMEOUT, "i3");
+	x = read_pipe(pipe_MASTER, packet_recv, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_MASTER_pipe_TIMEOUT, "i3");
 	if (x != true) {
-		send_udp("======> => => => => => => => interaction_with_agent_2() (2---) end ");
+		//send_udp("======> => => => => => => => interaction_with_agent_2() (2---) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
-		total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 202;
+		interaction_with_agent_GET_SCREEN_status = 202;
 		return false;
 	}
 
@@ -1986,7 +1989,7 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 	}
 
 	if (flag == false) {
-		send_udp("======> => => => => => => => interaction_with_agent_2() (не распознанный пакет) end ");
+		//send_udp("======> => => => => => => => interaction_with_agent_2() (не распознанный пакет) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
 		return false;
@@ -1994,27 +1997,27 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 
 	//-----------------------------------------------------------------------------
 	// read 128 (3) получаем шапку скрина
-	total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 300;
-	x = read_pipe(pipe_master, (char *)scr_head_buf, sizeof_ENCODED_SCREEN_8bit_header, &r, &read_MASTER_pipe_TIMEOUT, "i4");
+	interaction_with_agent_GET_SCREEN_status = 300;
+	x = read_pipe(pipe_MASTER, (char *)scr_head_buf, sizeof_ENCODED_SCREEN_8bit_header, &r, &read_MASTER_pipe_TIMEOUT, "i4");
 	if (x != true) {
-		send_udp("======> => => => => => => => interaction_with_agent_2() (2----) end ");
+		//send_udp("======> => => => => => => => interaction_with_agent_2() (2----) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
-		total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 301;
+		interaction_with_agent_GET_SCREEN_status = 301;
 		return false;
 	}
 
 	if (scr_head_buf->w <= 0 || scr_head_buf->w > 5500 ||
 		scr_head_buf->h <= 0 || scr_head_buf->h > 5500) {
-		send_udp("======> => => => => => => => receive screen size is bad ");
+		//send_udp("======> => => => => => => => receive screen size is bad ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
 		return false;
 	}
 
-	total_control.SERVICE_interaction_with_agent_GET_SCREEN_w = screen_light->header.w;
-	total_control.SERVICE_interaction_with_agent_GET_SCREEN_h = screen_light->header.h;
-	total_control.SERVICE_interaction_with_agent_GET_SCREEN_cursor = screen_light->header.mouse_cursor_type_id;
+	//total_control.SERVICE_interaction_with_agent_GET_SCREEN_w = screen_light->header.w;
+	//total_control.SERVICE_interaction_with_agent_GET_SCREEN_h = screen_light->header.h;
+	//total_control.SERVICE_interaction_with_agent_GET_SCREEN_cursor = screen_light->header.mouse_cursor_type_id;
 
 	if (screen_light->header.w != scr_head_buf->w ||
 		screen_light->header.h != scr_head_buf->h) {
@@ -2039,14 +2042,14 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 	//-----------------------------------------------------------------------------
 	// read 2000000 (4) получаем тело скрина
 
-	total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 400;
+	interaction_with_agent_GET_SCREEN_status = 400;
 
-	x = read_pipe(pipe_master, screen_light->get_buf_one_byte(), screen_light->buf_one_byte_size, &r, &read_MASTER_pipe_TIMEOUT, "i5");
+	x = read_pipe(pipe_MASTER, screen_light->get_buf_one_byte(), screen_light->buf_one_byte_size, &r, &read_MASTER_pipe_TIMEOUT, "i5");
 	if (x != true) {
-		send_udp("======> => => => => => => => interaction_with_agent_2() (3) end ");
+		//send_udp("======> => => => => => => => interaction_with_agent_2() (3) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
-		total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 401;
+		interaction_with_agent_GET_SCREEN_status = 401;
 		return false;
 	}
 
@@ -2059,8 +2062,8 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 	//sprintf_ s(ss, 90, "IA = %d ", d2 - d1);
 	//send_udp(ss);
 
-	total_control.SERVICE_interaction_with_agent_GET_SCREEN_status = 500;
-	*/
+	interaction_with_agent_GET_SCREEN_status = 500;
+	
 	return true;
 }
 
@@ -2082,9 +2085,16 @@ void SERVICE::LOAD_ID_or_REGISTER() {
 		Register_new_partner_on_proxy();
 		Load_private_id_and_public_id_from_SERVICE_registry(&PUBLIC_ID, &PRIVATE_ID);
 	}
-	//char ss[200];
-	//generate_ID_to_text(ss, PUBLIC_ID);
-	//send_udp(ss);
+
+	if (PUBLIC_ID != 0) {
+
+
+		char ss[200];
+		generate_ID_to_text(ss, PUBLIC_ID);
+		sudp(ss);
+
+		
+	};
 }
 void SERVICE::LOAD_PASS() {
 	if (PASS == nullptr) PASS = new unsigned char[32];
@@ -2502,6 +2512,7 @@ int SERVICE___STOP(wchar_t *service_name) {
 	SC_HANDLE schService;
 	SC_HANDLE schSCManager;
 	//SERVICE_STATUS_PROCESS service_status;
+	DWORD err;
 	BOOL r;
 	int retval;
 	retval = -11111;
@@ -2518,29 +2529,54 @@ int SERVICE___STOP(wchar_t *service_name) {
 
 	SERVICE_STATUS ServiceStatus;
 
-
+	::Sleep(1000);
 	r = ControlService(schService, SERVICE_CONTROL_STOP, &ServiceStatus);
 
-	SERVICE_STATUS svc_status;
-	unsigned long dwCheckPoint;
+	if (r == 0) {
+		err = GetLastError();
+		if (err == ERROR_ACCESS_DENIED)              { sudp("ERROR_ACCESS_DENIED");	}; //	ƒескриптор не имеет необходимого права доступа.
+		if (err == ERROR_DEPENDENT_SERVICES_RUNNING) { sudp("ERROR_DEPENDENT_SERVICES_RUNNING"); }; //		—лужба не может быть остановлена, потому что другие запущенные службы завис€т от нее.
+		if (err == ERROR_INVALID_HANDLE)             { sudp("ERROR_INVALID_HANDLE"); }; //		”казанный дескриптор не был получен, при помощи использовани€ функции CreateService или OpenService, или дескриптор больше не действителен.
+		if (err == ERROR_INVALID_PARAMETER)          { sudp("ERROR_INVALID_PARAMETER"); }; //		“ребуемый управл€ющий код не определен.
+		if (err == ERROR_INVALID_SERVICE_CONTROL)    { sudp("ERROR_INVALID_SERVICE_CONTROL"); }; //		“ребуемый управл€ющий код не действителен, или он неприемлемый дл€ службы.
+		if (err == ERROR_SERVICE_CANNOT_ACCEPT_CTRL) { sudp("ERROR_SERVICE_CANNOT_ACCEPT_CTRL"); }; //		“ребуемый управл€ющий код нельз€ отправить службе, потому что состо€ние службы - SERVICE_STOPPED, SERVICE_START_PENDING или SERVICE_STOP_PENDING.
+		if (err == ERROR_SERVICE_NOT_ACTIVE)         { sudp("ERROR_SERVICE_NOT_ACTIVE"); }; //		—лужба не запустилась.
+		if (err == ERROR_SERVICE_REQUEST_TIMEOUT)    { sudp("ERROR_SERVICE_REQUEST_TIMEOUT"); }; //		Ѕыл запущен процесс дл€ службы, но он не вызывал функцию StartServiceCtrlDispatcher, или поток, который вызвал StartServiceCtrlDispatcher может быть блокирован функцией обрабатывающей программы управлени€.
+		if (err == ERROR_SHUTDOWN_IN_PROGRESS)       { sudp("ERROR_SHUTDOWN_IN_PROGRESS"); }; //	)
+		retval = -222;
+	}
+	else {
 
-	if (QueryServiceStatus(schService, &svc_status))
-	{
-		while (svc_status.dwCurrentState != SERVICE_STOPPED)
+		SERVICE_STATUS svc_status;
+		unsigned long dwCheckPoint;
+
+		if (QueryServiceStatus(schService, &svc_status))
 		{
-			dwCheckPoint = svc_status.dwCheckPoint;
-			my_Slip(svc_status.dwWaitHint);
-			if (!QueryServiceStatus(schService, &svc_status))
+			while (svc_status.dwCurrentState != SERVICE_STOPPED)
 			{
-				break;
-			}
-			if (svc_status.dwCheckPoint < dwCheckPoint)
-			{
-				break;
+				dwCheckPoint = svc_status.dwCheckPoint;
+				my_Slip(svc_status.dwWaitHint);
+				if (!QueryServiceStatus(schService, &svc_status))
+				{
+					break;
+				}
+				if (svc_status.dwCheckPoint < dwCheckPoint)
+				{
+					break;
+				}
 			}
 		}
+		else {
+			err = GetLastError();
+			if (err == ERROR_ACCESS_DENIED) {
+				sudp("ERROR_ACCESS_DENIED");
+			}
+			if (err == ERROR_INVALID_HANDLE) {
+				sudp("ERROR_INVALID_HANDLE");
+			}
+			retval = -111;
+		}
 	}
-
 	CloseServiceHandle(schService);
 	CloseServiceHandle(schSCManager);
 
@@ -2773,7 +2809,7 @@ int get_service_VISIATOR_status() { // получим статус службы 0-не установлена, 1
 void restart_service() {
 	
 	SERVICE___STOP(strServiceName);
-	
+	::Sleep(1000);
 	SERVICE___START(strServiceName);
 
 }
@@ -2822,6 +2858,9 @@ void SERVICE::EXECUTE() {
 
 		boost::this_thread::sleep(SleepTime);
 	};
+
+	net_server_session_pool = new NET_SERVER_SESSION_POOL();
+	net_server_session_pool->RUN(PUBLIC_ID, PRIVATE_ID, PASS);
 
 	if(GLOBAL_STOP == false) thread_EXECUTE_main_MASTER_AGENT = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::EXECUTE_main_MASTER_AGENT_reconnect, this));
 

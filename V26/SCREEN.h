@@ -105,6 +105,7 @@ public:
 	void set_new_size_(int w_, int h_);
 
 	void clean();
+	void clean_();
 
 	void emulate_red();
 	void emulate_dark_blue();
@@ -184,7 +185,7 @@ public:
 	int encoded_buffer_len_max = 0;
 	unsigned char *encoded_buffer = NULL;
 
-
+	void clean_();
 
 	//void set_new_size(int w_, int h_);
 

@@ -269,5 +269,7 @@ wchar_t upper_char(wchar_t p);
 void Disconnect_Named_Pipe(HANDLE pipe, char *info);
 void generate_easy_pass(unsigned char *psw, wchar_t *psw_w);
 unsigned int GetFromProxy_ip_to_server_connect(unsigned long long public_id, unsigned long long private_id);
+void generate_ID_to_text(char *txt_, unsigned long long local_id_);
+void convert_wchart_to_char_PASS(unsigned char *c_32size, wchar_t *w);
 
 

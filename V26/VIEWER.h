@@ -27,7 +27,7 @@ class VIEWER
 public:
 
 	uint64_t partner_id = 0;
-	unsigned char  pass_encripted[32];
+	unsigned char  pass__encripted[32];
 	unsigned char  pass_no_encripted[32];
 
 	GUI *gui = nullptr;

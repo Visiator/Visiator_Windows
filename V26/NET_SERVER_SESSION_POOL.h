@@ -14,6 +14,7 @@ public:
 	std::list<NET_SERVER_SESSION> elements;
 
 	NET_SERVER_SESSION *add_element();
+	void client_connected_count(int *client_connected_count, int *ready_to_client_connect);
 
 	boost::thread* thread_EXECUTE = nullptr;
 	bool EXECUTE_is_run = false;

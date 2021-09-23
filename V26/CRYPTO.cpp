@@ -86,7 +86,19 @@ MY_AES::MY_AES(void) {
 
 }
 
-void MY_AES::set_key_16_byte(unsigned char *key) {
+void MY_AES::set_key_16_byte(unsigned char *key, char *info) {
+
+	char ss[500];
+	sprintf_s(ss, 400, "MY_AES::set_key_16_byte( %02X.%02X.%02X.%02X %02X.%02X.%02X.%02X %02X.%02X.%02X.%02X %02X.%02X.%02X.%02X ) %s"
+		, key[0], key[1], key[2], key[3]
+		, key[4], key[5], key[6], key[7]
+		, key[8], key[9], key[10], key[11]
+		, key[12], key[13], key[14], key[15]
+		, info
+	);
+	sudp(ss);
+
+
 	e.SetKey(key, 16);
 	d.SetKey(key, 16);
 }

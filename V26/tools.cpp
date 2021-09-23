@@ -1434,7 +1434,7 @@ bool Register_new_partner_on_proxy() {
 	//for (int i = 0; i < 16; i++) p1->AES_pass[i] = '0' + i;
 	my_random(p1->AES_pass, 16);
 
-	aes.set_key_16_byte(p1->AES_pass);
+	aes.set_key_16_byte(p1->AES_pass, "Register_new_partner_on_proxy 1-aes");
 
 	p0->crc32 = crc.calc(&bb[8], 120);
 
@@ -1535,7 +1535,7 @@ bool Register_new_partner_on_proxy() {
 		//for (int i = 0; i < 16; i++) p1003->AES_pass[i] = '0' + i;
 		my_random(p1003->AES_pass, 16);
 
-		aes.set_key_16_byte(p1003->AES_pass);
+		aes.set_key_16_byte(p1003->AES_pass, "Register_new_partner_on_proxy 2--aes");
 
 		p0->crc32 = crc.calc(&bb[8], 120);
 
@@ -2553,7 +2553,7 @@ unsigned int get_IP_for_server_location(unsigned long long partner_id, unsigned 
 	unsigned char AES_pass[16];
 	my_random(AES_pass, 16);
 
-	aes.set_key_16_byte(AES_pass);
+	aes.set_key_16_byte(AES_pass, "get_IP_for_server_location 1=aes");
 
 	p0 = (PACKET_LEVEL0 *)bb;
 	p0->packet_type = 1002;
@@ -3163,6 +3163,18 @@ void generate_ID_to_text(wchar_t *txt_, unsigned long long local_id_) {
 	txt_[0] = 0;
 
 	swprintf_s(txt_, 45, L"%03d-%03d-%03d", i1, i2, i3);
+
+
+};
+void generate_ID_to_text(char *txt_, unsigned long long local_id_) {
+	unsigned short *i16, i1, i2, i3;
+	i16 = (unsigned short *)&local_id_;
+	i1 = i16[0];
+	i2 = i16[1];
+	i3 = i16[2];
+	txt_[0] = 0;
+
+	sprintf_s(txt_, 45, "%03d-%03d-%03d", i1, i2, i3);
 
 
 };
@@ -4632,6 +4644,11 @@ void generate_easy_pass(unsigned char *psw, wchar_t *psw_w) {
 
 unsigned int GetFromProxy_ip_to_server_connect(unsigned long long public_id, unsigned long long private_id) {
 
+	char ss[500];
+	generate_ID_to_text(ss, public_id);
+	sudp("GetFromProxy_ip_to_server_connect()");
+	sudp(ss);
+
 	unsigned long long rc = 0;
 
 	unsigned int ip_to_server_connect = 0;
@@ -4739,7 +4756,7 @@ unsigned int GetFromProxy_ip_to_server_connect(unsigned long long public_id, uns
 	for (int i = 0; i < 16; i++) p1->AES_pass[i] = '0' + i;
 	//my_random(p1->AES_pass, 16);
 
-	aes.set_key_16_byte(p1->AES_pass);
+	aes.set_key_16_byte(p1->AES_pass, "GetFromProxy_ip_to_server_connect 1==aes");
 
 	p0->crc32 = crc.calc(&bb[8], 120);
 
@@ -4794,3 +4811,10 @@ unsigned int GetFromProxy_ip_to_server_connect(unsigned long long public_id, uns
 	return ip_to_server_connect;
 }
 
+void convert_wchart_to_char_PASS(unsigned char *c_32size, wchar_t *w) {
+	if (c_32size == nullptr || w == nullptr) return;
+	if (my_strlen(w) > 16) return;
+
+	WideCharToMultiByte( CP_ACP, 0, w, -1, (char *)c_32size, 16, NULL, NULL);
+
+}

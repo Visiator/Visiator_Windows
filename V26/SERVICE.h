@@ -66,6 +66,11 @@ void RUN_SERVICE(void);
 class SERVICE
 {
 public:
+	// for "total_control"
+	int interaction_with_agent_GET_SCREEN_counter = 0;
+	int interaction_with_agent_GET_SCREEN_status = 0;
+
+	NET_SERVER_SESSION_POOL *net_server_session_pool = nullptr;
 
 	PIPES_SERVER_POOL *pipes_server_pool = nullptr;
 
