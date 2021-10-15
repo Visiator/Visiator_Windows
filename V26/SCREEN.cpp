@@ -607,11 +607,11 @@ bool decode_screen(unsigned char *buf, int buf_size, SCREEN_LIGHT *raw_screen) {
 //*******************************************************************************
 // SCREEN_LIGHT_encoded
 
-SCREEN_LIGHT_encoded::SCREEN_LIGHT_encoded() {
+SCREEN_LIGHT_encoded_8bit_first::SCREEN_LIGHT_encoded_8bit_first() {
 
 };
 
-SCREEN_LIGHT_encoded::~SCREEN_LIGHT_encoded() {
+SCREEN_LIGHT_encoded_8bit_first::~SCREEN_LIGHT_encoded_8bit_first() {
 
 	delete[] old_buf_one_byte;
 	old_buf_one_byte_size = 0;
@@ -647,7 +647,7 @@ SCREEN_LIGHT_encoded::~SCREEN_LIGHT_encoded() {
 	leave_crit();
 }*/
 
-void SCREEN_LIGHT_encoded::pal_increase_size() {
+void SCREEN_LIGHT_encoded_8bit_first::pal_increase_size() {
 	unsigned int i,k;
 
 	PAL *q;
@@ -673,14 +673,14 @@ void SCREEN_LIGHT_encoded::pal_increase_size() {
 	pal = q;
 }
 
-void SCREEN_LIGHT_encoded::clean_() {
+void SCREEN_LIGHT_encoded_8bit_first::clean_() {
 	for (int i = 0; i < body_count_max; i++) {
 		body[i] = 0;
 	}
 	old_screen_id = -1;
 }
 
-bool SCREEN_LIGHT_encoded::encode_screen_ONE_BYTE(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y ) {
+bool SCREEN_LIGHT_encoded_8bit_first::encode_screen_ONE_BYTE(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y ) {
 
 	if (screen_one_byte->screen_id == 0) {
 		//send_udp("SCREEN::encode() raw_screen->screen_id == 0 error");
@@ -1093,341 +1093,22 @@ SCREEN_LIGHT_12bit::~SCREEN_LIGHT_12bit() {
 }
 
 void SCREEN_LIGHT_12bit::set_new_size_(int w_, int h_) {
-	if (header.w == w_ && header.h == h_) return;
-	if (buf != nullptr) delete[] buf;
-	if (w_ > 0 && h_ > 0) {
-		buf = new uint16_t[w_ * h_];
-	}
-	else {
-		buf = nullptr;
-	}
+	if (w_ <= 0 || h_ <= 0) return;
 
-	header.w = (unsigned short)w_;
-	header.h = (unsigned short)h_;
-	buf_size = w_ * h_;
+	if (w == w_ && h == h_) return;
+	if (buf != nullptr) delete[] buf;
+	w = w_;
+	h = h_;
+	buf_size = w * h;
+	buf = new unsigned short[buf_size];
+	header = (ENCODED_SCREEN_12bit_header *)&(buf[0]);
+	header->w = w;
+	header->h = h;
+
 	//send_udp("set_new_size_() - - - - - - -");
 }
 
-PAL12 *SCREEN_LIGHT_12bit::new_PAL12() {
-	unsigned char *q;
-	int sz;
-	sz = sizeof(PAL12);
-	sz *= PAL12_color_maxcount * PAL12_len_maxcount;
-	q = new unsigned char[sz];
-	for (int i = 0; i < sz; i++) {
-		q[i] = 0;
-	}
-	return (PAL12 *)q;
-}
 
-void SCREEN_LIGHT_12bit::delete_PAL12(PAL12 **q) {
-	unsigned char *p;
-	p = (unsigned char *)*q;
-	delete[] p;
-	*q = NULL;
-}
-
-unsigned int SCREEN_LIGHT_12bit::calc12_eqvival_len(unsigned short k) {
-	unsigned short color;
-	unsigned int i;
-
-
-	color = buf[k++];
-
-	i = 1;
-
-	while (color == buf[k] && i < 4096)
-	{
-		k++;
-		i++;
-	};
-
-	return i;
-};
-
-int sort_function_pal12(const void *a, const void *b)
-{
-	unsigned int ii;
-	PAL12 **p1, **p2, **pp;
-	p1 = (PAL12 **)a;
-	p2 = (PAL12 **)b;
-
-	pp = (PAL12 **)a;
-
-
-	if (p1[0]->count > p2[0]->count) return -1;
-	if (p1[0]->count == p2[0]->count) return 0;
-	return 1;
-};
-
-void SCREEN_LIGHT_12bit::HE_add_source_element(int w_)
-{
-	HAFMAN_element *e;
-	e = h_pool.get_element();
-	if (e == NULL)
-	{
-		return;
-	};
-
-	e->w = w_;
-
-	if (he_first == NULL)
-	{
-		he_first = e;
-		he_last = e;
-		return;
-	};
-
-	he_last->right = e;
-	e->left = he_last;
-	he_last = e;
-
-};
-
-HAFMAN_element *SCREEN_LIGHT_12bit::serach_elements_to_PLUS()
-{
-	if (he_first == NULL) return NULL;
-	if (he_first == he_last) return NULL;
-
-	HAFMAN_element *e, *r;
-
-	r = he_first;
-
-	e = he_first->right;
-	while (e != NULL)
-	{
-		if (e->w < r->w)
-		{
-			r = e;
-		};
-		e = e->right;
-	};
-	if (r->right != NULL && r->right->w == r->w)
-	{
-		r = r->right;
-	}
-	else
-	{
-		if (r->right != NULL && r->left != NULL && r->right->w + r->w < r->left->w + r->w)
-		{
-			r = r->right;
-		};
-	};
-	if (r->left == NULL) r = r->right;
-	return r;
-};
-
-
-
-
-
-
-
-
-
-HAFMAN_pool::HAFMAN_pool()
-{
-	source_max_count = 100000;
-	source_count = 0;
-	int i;
-	i = 0;
-	while (i < source_max_count)
-	{
-		source[i].clean();
-		i++;
-	};
-
-};
-
-HAFMAN_element *HAFMAN_pool::get_element()
-{
-	if (source_count >= source_max_count)
-	{
-		return NULL;
-	};
-	HAFMAN_element *r;
-	r = &(source[source_count]);
-	source_count++;
-	r->in_use = true;
-	r->level = 1;
-	return r;
-};
-
-
-int SCREEN_LIGHT_12bit::HE_plus_LEFT(HAFMAN_element *v)
-{
-
-	if (v == NULL)
-	{
-		return 1;
-	};
-	if (v->left == NULL)
-	{
-		return 2;
-	};
-	if (he_first == NULL)
-	{
-		return 3;
-	};
-	if (he_last == NULL)
-	{
-		return 4;
-	};
-
-
-	HAFMAN_element *e, *ll, *l, *r, *rr;
-
-	e = h_pool.get_element();
-
-
-	r = v;
-	rr = r->right;
-
-	l = v->left;
-	ll = l->left;
-
-	e->w = l->w + r->w;
-
-	if (he_first != l && he_last != r)
-	{
-		l->top = e;
-		r->top = e;
-
-		e->child0 = l;
-		e->child1 = r;
-
-		r->left = NULL;
-		r->right = NULL;
-
-		l->left = NULL;
-		l->right = NULL;
-
-		e->left = ll;
-		e->right = rr;
-
-		ll->right = e;
-		rr->left = e;
-
-		return 6;
-	};
-
-	if (he_first == l && he_last != r)
-	{
-		l->top = e;
-		r->top = e;
-
-		e->child0 = l;
-		e->child1 = r;
-
-		r->left = NULL;
-		r->right = NULL;
-
-		l->left = NULL;
-		l->right = NULL;
-
-		e->left = ll;
-		e->right = rr;
-
-		rr->left = e;
-		he_first = e;
-
-		return 7;
-	};
-
-
-	if (he_first != l && he_last == r)
-	{
-		l->top = e;
-		r->top = e;
-
-		e->child0 = l;
-		e->child1 = r;
-
-		r->left = NULL;
-		r->right = NULL;
-
-		l->left = NULL;
-		l->right = NULL;
-
-		e->left = ll;
-		e->right = rr;
-
-		he_last = e;
-		ll->right = e;
-
-		return 8;
-	};
-
-	if (he_first == l && he_last == r)
-	{
-		l->top = e;
-		r->top = e;
-
-		e->child0 = l;
-		e->child1 = r;
-
-		r->left = NULL;
-		r->right = NULL;
-
-		l->left = NULL;
-		l->right = NULL;
-
-		e->left = ll;
-		e->right = rr;
-
-		he_last = e;
-		he_first = e;
-
-		return 9;
-	};
-
-	return 10;
-	/*
-	e->w = v->w + v->left->w;
-	e->child0 = v->left;
-	e->child1 = v;
-
-	v->top = e;
-	v->left->top = e;
-	v->level++;
-	v->left->level++;
-
-	if(v->right == NULL)
-	{
-	  he_last = e;
-	}
-	else
-	{
-	  e->right = v->right;
-	  if(v->left->left == NULL)
-	  {
-
-	  }
-	  else
-	  {
-		v->left->left->right = e;
-	  };
-	  v->right = NULL;
-	};
-
-	if(v->left == NULL)
-	{
-	  he_first = e;
-	}
-	else
-	{
-	  e->left = v->left->left;
-	  v->left->right = e;
-	  v->left->left = NULL;
-	};
-
-	e->child0->left = NULL;
-	e->child0->right = NULL;
-
-	e->child1->left = NULL;
-	e->child1->right = NULL;
-	*/
-};
 
 const char hello[] = "hello, hello!";
 

@@ -612,116 +612,6 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 
 int jj = 0;
 
-void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf) {
-
-	if (screen_one_byte_ == nullptr) screen_one_byte_ = new SCREEN_LIGHT_one_byte();
-
-
-	//screen_one_byte->emulate_red();
-
-	if (jj < 3) {
-		screen_one_byte_->emulate_red();
-		jj++;
-	}
-	else {
-		if (app_attributes.is_desktop == true) {
-			
-			init_encode_color_matrix_all();
-
-			if ( get_screenshot( screen_one_byte_ , nullptr ) == false) {
-			
-				screen_one_byte_->emulate_red();
-			}
-		}
-		else {
-			if (service->interaction_with_agent_GET_SCREEN(	w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
-				screen_one_byte_->emulate_red();
-			}
-		};
-	};
-	screen_one_byte_->screen_id++;
-
-	if (screen_encoded == NULL) screen_encoded = new SCREEN_LIGHT_encoded();
-
-	screen_encoded->encode_screen_ONE_BYTE(screen_one_byte_, last_set_mouse_x, last_set_mouse_y);
-
-	//char ss[300];
-
-	//sprintf_ s(ss, 290, "send_ screen %d %d %d", screen_one_byte_->header.w, screen_one_byte_->header.h, screen_one_byte_->header.mouse_cursor_type_id );
-	//send_udp(ss);
-
-	/*
-
-	if (responce_screen_in_queue > 0) { return; };
-
-	if (screen_for_client == NULL) return;
-
-	//send_udp("get screen");
-
-	if (screen_for_client->get_raw_screen_from_session() == false) {
-		return;
-	}
-
-	//send_udp("encode");
-
-	if (screen_for_client->encode() == false) {
-		fatal_error("screen_for_client->encode() error");
-		return;
-	}
-*/
-	unsigned char *buf;
-	unsigned int buf_len, *sz, *crc, *sol, *type, zz;
-
-
-	buf = screen_encoded->encoded_buffer;
-	buf_len = screen_encoded->encoded_buffer_len;
-
-	zz = buf_len / 16;
-	zz *= 16;
-	if (zz < buf_len) zz += 16;
-	buf_len = zz;
-
-	sz = (unsigned int *)&(buf[0]);
-	crc = (unsigned int *)&(buf[4]);
-	type = (unsigned int *)&(buf[8]);
-	sol = (unsigned int *)&(buf[12]);
-	ENCODED_SCREEN_8bit_header *hhh;
-
-	*sz = buf_len;
-	*crc = 0;
-	*type = PACKET_TYPE_responce_screen_ver11;
-	*sol = get_sol();
-	hhh = (ENCODED_SCREEN_8bit_header *)screen_encoded->encoded_buffer;
-
-	unsigned int sscr_id;
-	sscr_id = hhh->screen_id;
-	//send_udp( "SCREEN prepared " , hhh->screen_id );
-
-	//sprintf_ s(ss, 290, "encoded = %d", hhh->mouse_cursor_type_id);
-	//send_udp(ss);
-
-	responce_screen_in_queue++;
-
-	//send_udp("encrypt");
-
-	aes_partner.encrypt_stream(buf, buf_len);
-
-	//c3 = clock();
-
-	//wchar_t cc[ 250 ];
-	//wsprintf(cc, L"encode  %d  %d ", c2 - c1, c3-c2 );
-	//set_status(cc);
-
-	//send_udp("add SCREEN into queue");
-					   // 100003
-	if (out_queue_command.add_element_(PACKET_TYPE_responce_screen_ver11, sscr_id, buf, buf_len) == false) {  // TODO encr ???
-		responce_screen_in_queue--;
-	}
-	else {
-		need_start_screenflow = false;
-	}
-
-}
 
 int  NET_SERVER_SESSION::READ(byte *buffer, int buffer_size) {
 
@@ -1227,6 +1117,140 @@ void NET_SERVER_SESSION::send_event_in_to_session(int session_no, unsigned int e
 	}
 }
 
+void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf) {
+
+	if (screen_one_byte_ == nullptr) screen_one_byte_ = new SCREEN_LIGHT_one_byte();
+
+
+	//screen_one_byte->emulate_red();
+
+	if (jj < 3) {
+		screen_one_byte_->emulate_red();
+		jj++;
+	}
+	else {
+		if (app_attributes.is_desktop == true) {
+
+			init_encode_color_matrix_all();
+
+			if (get_screenshot(screen_one_byte_, nullptr) == false) {
+
+				screen_one_byte_->emulate_red();
+			}
+		}
+		else {
+			if (service->interaction_with_agent_GET_SCREEN(w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
+				screen_one_byte_->emulate_red();
+			}
+		};
+	};
+	screen_one_byte_->screen_id++;
+
+	if (screen_encoded == NULL) screen_encoded = new SCREEN_LIGHT_encoded_8bit_first();
+
+	screen_encoded->encode_screen_ONE_BYTE(screen_one_byte_, last_set_mouse_x, last_set_mouse_y);
+
+	//char ss[300];
+
+	//sprintf_ s(ss, 290, "send_ screen %d %d %d", screen_one_byte_->header.w, screen_one_byte_->header.h, screen_one_byte_->header.mouse_cursor_type_id );
+	//send_udp(ss);
+
+	/*
+
+	if (responce_screen_in_queue > 0) { return; };
+
+	if (screen_for_client == NULL) return;
+
+	//send_udp("get screen");
+
+	if (screen_for_client->get_raw_screen_from_session() == false) {
+		return;
+	}
+
+	//send_udp("encode");
+
+	if (screen_for_client->encode() == false) {
+		fatal_error("screen_for_client->encode() error");
+		return;
+	}
+*/
+	unsigned char *buf;
+	unsigned int buf_len, *sz, *crc, *sol, *type, zz;
+
+
+	buf = screen_encoded->encoded_buffer;
+	buf_len = screen_encoded->encoded_buffer_len;
+
+	zz = buf_len / 16;
+	zz *= 16;
+	if (zz < buf_len) zz += 16;
+	buf_len = zz;
+
+	sz = (unsigned int *)&(buf[0]);
+	crc = (unsigned int *)&(buf[4]);
+	type = (unsigned int *)&(buf[8]);
+	sol = (unsigned int *)&(buf[12]);
+	ENCODED_SCREEN_8bit_header *hhh;
+
+	*sz = buf_len;
+	*crc = 0;
+	*type = PACKET_TYPE_responce_screen_ver11;
+	*sol = get_sol();
+	hhh = (ENCODED_SCREEN_8bit_header *)screen_encoded->encoded_buffer;
+
+	unsigned int sscr_id;
+	sscr_id = hhh->screen_id;
+	//send_udp( "SCREEN prepared " , hhh->screen_id );
+
+	//sprintf_ s(ss, 290, "encoded = %d", hhh->mouse_cursor_type_id);
+	//send_udp(ss);
+
+	responce_screen_in_queue++;
+
+	//send_udp("encrypt");
+
+	aes_partner.encrypt_stream(buf, buf_len);
+
+	//c3 = clock();
+
+	//wchar_t cc[ 250 ];
+	//wsprintf(cc, L"encode  %d  %d ", c2 - c1, c3-c2 );
+	//set_status(cc);
+
+	//send_udp("add SCREEN into queue");
+					   // 100003
+	if (out_queue_command.add_element_(PACKET_TYPE_responce_screen_ver11, sscr_id, buf, buf_len) == false) {  // TODO encr ???
+		responce_screen_in_queue--;
+	}
+	else {
+		need_start_screenflow = false;
+	}
+
+}
+
+
 void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_12bit_header *scr_head_buf) {
+
+	if (jj < 3) {
+		screen_one_byte_->emulate_red();
+		jj++;
+	}
+	else {
+		if (app_attributes.is_desktop == true) {
+
+			if (get_screenshot(screen_one_byte_, nullptr) == false) {
+
+				screen_one_byte_->emulate_red();
+			}
+		}
+		else {
+			/*
+			if (service->interaction_with_agent_GET_SCREEN(w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
+				screen_one_byte_->emulate_red();
+			}
+			*/
+		};
+	};
+	screen_one_byte_->screen_id++;
 
 };

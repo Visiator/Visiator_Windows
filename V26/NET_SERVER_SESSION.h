@@ -205,8 +205,9 @@ public:
 	unsigned char PASS_ENCODED[32];
 	MY_AES aes_partner;
 
-	SCREEN_LIGHT_encoded  *screen_encoded = nullptr;
+	SCREEN_LIGHT_encoded_8bit_first  *screen_encoded = nullptr;
 	SCREEN_LIGHT_one_byte *screen_one_byte_ = nullptr;
+
 
 
 	unsigned char *llow_level_buffer_read = nullptr;
