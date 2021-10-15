@@ -114,7 +114,9 @@
       </SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Program Files\boost\boost_1_77_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\prj\Visiator_Windows\V26\zlib\contrib\vstudio\vc14\x86\ZlibStatRelease;C:\Program Files\boost\boost_1_77_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>zlibstat.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -145,6 +147,7 @@
     <ClCompile Include="HIGHLEVEL_COMMAND_QUEUE.cpp" />
     <ClCompile Include="KERNEL.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="minilzo.c" />
     <ClCompile Include="NET_CLIENT_SESSION.cpp" />
     <ClCompile Include="NET_SERVER_SESSION.cpp" />
     <ClCompile Include="NET_SERVER_SESSION_POOL.cpp" />
@@ -217,6 +220,7 @@
     <Image Include="inc\panel_outgoing.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="inc\font\font_lucida sans unicode_8.raw" />
     <None Include="inc\font\font_roboto_150.rawaaaa" />
     <None Include="inc\font\font_roboto_220.rawaaaa" />
   </ItemGroup>

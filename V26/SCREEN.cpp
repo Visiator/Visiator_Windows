@@ -1,3 +1,39 @@
+
+#ifndef WIN32
+
+#define WIN32_LEAN_AND_MEAN
+#define WIN32_WINNT 0x0501
+
+
+#define _WINSOCKAPI_ 
+#include <windows.h>
+#undef _WINSOCKAPI_
+#include <winsock2.h>
+#include <stdlib.h>
+#include <iphlpapi.h>
+#include <stdio.h>
+#undef _WINSOCKAPI_
+
+
+
+#endif
+#include <stdio.h>
+//#include "bzlib.h"
+
+//#include "lzoconf.h"
+#include "minilzo.h"
+
+
+
+
+//#define ZLIB_STAT
+
+//#include "zlib/zlib.h"
+
+//#pragma comment(lib, "zlibwapi.lib")
+
+//  Z_PREFIX
+
 #include "SCREEN.h"
 
 #include "tools.h"
@@ -644,7 +680,7 @@ void SCREEN_LIGHT_encoded::clean_() {
 	old_screen_id = -1;
 }
 
-bool SCREEN_LIGHT_encoded::encode_screen(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y ) {
+bool SCREEN_LIGHT_encoded::encode_screen_ONE_BYTE(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y ) {
 
 	if (screen_one_byte->screen_id == 0) {
 		//send_udp("SCREEN::encode() raw_screen->screen_id == 0 error");
@@ -1044,5 +1080,542 @@ bool SCREEN_LIGHT_encoded::encode_screen(SCREEN_LIGHT_one_byte *screen_one_byte,
 	//save_screen_to_file(encoded_buffer, encoded_buffer_len);
 
 	return true;
+
+}
+
+
+SCREEN_LIGHT_12bit::SCREEN_LIGHT_12bit() {
+
+}
+
+SCREEN_LIGHT_12bit::~SCREEN_LIGHT_12bit() {
+
+}
+
+void SCREEN_LIGHT_12bit::set_new_size_(int w_, int h_) {
+	if (header.w == w_ && header.h == h_) return;
+	if (buf != nullptr) delete[] buf;
+	if (w_ > 0 && h_ > 0) {
+		buf = new uint16_t[w_ * h_];
+	}
+	else {
+		buf = nullptr;
+	}
+
+	header.w = (unsigned short)w_;
+	header.h = (unsigned short)h_;
+	buf_size = w_ * h_;
+	//send_udp("set_new_size_() - - - - - - -");
+}
+
+PAL12 *SCREEN_LIGHT_12bit::new_PAL12() {
+	unsigned char *q;
+	int sz;
+	sz = sizeof(PAL12);
+	sz *= PAL12_color_maxcount * PAL12_len_maxcount;
+	q = new unsigned char[sz];
+	for (int i = 0; i < sz; i++) {
+		q[i] = 0;
+	}
+	return (PAL12 *)q;
+}
+
+void SCREEN_LIGHT_12bit::delete_PAL12(PAL12 **q) {
+	unsigned char *p;
+	p = (unsigned char *)*q;
+	delete[] p;
+	*q = NULL;
+}
+
+unsigned int SCREEN_LIGHT_12bit::calc12_eqvival_len(unsigned short k) {
+	unsigned short color;
+	unsigned int i;
+
+
+	color = buf[k++];
+
+	i = 1;
+
+	while (color == buf[k] && i < 4096)
+	{
+		k++;
+		i++;
+	};
+
+	return i;
+};
+
+int sort_function_pal12(const void *a, const void *b)
+{
+	unsigned int ii;
+	PAL12 **p1, **p2, **pp;
+	p1 = (PAL12 **)a;
+	p2 = (PAL12 **)b;
+
+	pp = (PAL12 **)a;
+
+
+	if (p1[0]->count > p2[0]->count) return -1;
+	if (p1[0]->count == p2[0]->count) return 0;
+	return 1;
+};
+
+void SCREEN_LIGHT_12bit::HE_add_source_element(int w_)
+{
+	HAFMAN_element *e;
+	e = h_pool.get_element();
+	if (e == NULL)
+	{
+		return;
+	};
+
+	e->w = w_;
+
+	if (he_first == NULL)
+	{
+		he_first = e;
+		he_last = e;
+		return;
+	};
+
+	he_last->right = e;
+	e->left = he_last;
+	he_last = e;
+
+};
+
+HAFMAN_element *SCREEN_LIGHT_12bit::serach_elements_to_PLUS()
+{
+	if (he_first == NULL) return NULL;
+	if (he_first == he_last) return NULL;
+
+	HAFMAN_element *e, *r;
+
+	r = he_first;
+
+	e = he_first->right;
+	while (e != NULL)
+	{
+		if (e->w < r->w)
+		{
+			r = e;
+		};
+		e = e->right;
+	};
+	if (r->right != NULL && r->right->w == r->w)
+	{
+		r = r->right;
+	}
+	else
+	{
+		if (r->right != NULL && r->left != NULL && r->right->w + r->w < r->left->w + r->w)
+		{
+			r = r->right;
+		};
+	};
+	if (r->left == NULL) r = r->right;
+	return r;
+};
+
+
+
+
+
+
+
+
+
+HAFMAN_pool::HAFMAN_pool()
+{
+	source_max_count = 100000;
+	source_count = 0;
+	int i;
+	i = 0;
+	while (i < source_max_count)
+	{
+		source[i].clean();
+		i++;
+	};
+
+};
+
+HAFMAN_element *HAFMAN_pool::get_element()
+{
+	if (source_count >= source_max_count)
+	{
+		return NULL;
+	};
+	HAFMAN_element *r;
+	r = &(source[source_count]);
+	source_count++;
+	r->in_use = true;
+	r->level = 1;
+	return r;
+};
+
+
+int SCREEN_LIGHT_12bit::HE_plus_LEFT(HAFMAN_element *v)
+{
+
+	if (v == NULL)
+	{
+		return 1;
+	};
+	if (v->left == NULL)
+	{
+		return 2;
+	};
+	if (he_first == NULL)
+	{
+		return 3;
+	};
+	if (he_last == NULL)
+	{
+		return 4;
+	};
+
+
+	HAFMAN_element *e, *ll, *l, *r, *rr;
+
+	e = h_pool.get_element();
+
+
+	r = v;
+	rr = r->right;
+
+	l = v->left;
+	ll = l->left;
+
+	e->w = l->w + r->w;
+
+	if (he_first != l && he_last != r)
+	{
+		l->top = e;
+		r->top = e;
+
+		e->child0 = l;
+		e->child1 = r;
+
+		r->left = NULL;
+		r->right = NULL;
+
+		l->left = NULL;
+		l->right = NULL;
+
+		e->left = ll;
+		e->right = rr;
+
+		ll->right = e;
+		rr->left = e;
+
+		return 6;
+	};
+
+	if (he_first == l && he_last != r)
+	{
+		l->top = e;
+		r->top = e;
+
+		e->child0 = l;
+		e->child1 = r;
+
+		r->left = NULL;
+		r->right = NULL;
+
+		l->left = NULL;
+		l->right = NULL;
+
+		e->left = ll;
+		e->right = rr;
+
+		rr->left = e;
+		he_first = e;
+
+		return 7;
+	};
+
+
+	if (he_first != l && he_last == r)
+	{
+		l->top = e;
+		r->top = e;
+
+		e->child0 = l;
+		e->child1 = r;
+
+		r->left = NULL;
+		r->right = NULL;
+
+		l->left = NULL;
+		l->right = NULL;
+
+		e->left = ll;
+		e->right = rr;
+
+		he_last = e;
+		ll->right = e;
+
+		return 8;
+	};
+
+	if (he_first == l && he_last == r)
+	{
+		l->top = e;
+		r->top = e;
+
+		e->child0 = l;
+		e->child1 = r;
+
+		r->left = NULL;
+		r->right = NULL;
+
+		l->left = NULL;
+		l->right = NULL;
+
+		e->left = ll;
+		e->right = rr;
+
+		he_last = e;
+		he_first = e;
+
+		return 9;
+	};
+
+	return 10;
+	/*
+	e->w = v->w + v->left->w;
+	e->child0 = v->left;
+	e->child1 = v;
+
+	v->top = e;
+	v->left->top = e;
+	v->level++;
+	v->left->level++;
+
+	if(v->right == NULL)
+	{
+	  he_last = e;
+	}
+	else
+	{
+	  e->right = v->right;
+	  if(v->left->left == NULL)
+	  {
+
+	  }
+	  else
+	  {
+		v->left->left->right = e;
+	  };
+	  v->right = NULL;
+	};
+
+	if(v->left == NULL)
+	{
+	  he_first = e;
+	}
+	else
+	{
+	  e->left = v->left->left;
+	  v->left->right = e;
+	  v->left->left = NULL;
+	};
+
+	e->child0->left = NULL;
+	e->child0->right = NULL;
+
+	e->child1->left = NULL;
+	e->child1->right = NULL;
+	*/
+};
+
+const char hello[] = "hello, hello!";
+
+#define HEAP_ALLOC(var,size) \
+    lzo_align_t __LZO_MMODEL var [ ((size) + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t) ]
+
+static HEAP_ALLOC(wrkmem, LZO1X_1_MEM_COMPRESS);
+
+
+void SCREEN_LIGHT_12bit::encode() {
+
+	DWORD d1 = 0, d2 = 0, d3 = 0, d4 = 0;
+
+	
+
+	unsigned char *xx, *yy;
+	xx = new unsigned char[32000000];
+
+	yy = new unsigned char[32000000];
+
+	unsigned long  xxx, yyy;
+	xxx = 32000000;
+	yyy = 12000000;
+
+	for (int i = 0; i < 32000000; i++) {
+		xx[i] = 0;
+		yy[i] = 0;
+	};
+
+	int res, res2;
+
+	/***
+
+	d1 = GetTickCount();
+
+	res = compress2( xx, &xxx, (unsigned char *)hello, 13 , 9);
+
+	d2 = GetTickCount();
+
+	res2 = uncompress( yy, &yyy, xx, xxx );
+
+	d3 = GetTickCount();
+	d4 = GetTickCount();
+	***/
+
+	// BZ2_bzBuffToBuffCompress
+
+	int nIn, nOut, nZ;
+	int   r;
+
+	if (lzo_init() != LZO_E_OK)
+	{
+		return;
+	}
+
+
+	d1 = GetTickCount();
+
+	r = lzo1x_1_compress((unsigned char *)buf, buf_size, xx,&xxx, wrkmem);
+	if (r == LZO_E_OK) {
+
+	}
+		
+
+
+	//nIn = BZ2_bzBuffToBuffCompress( (char *)xx, &xxx, (char *)buf, buf_size, 9, 0, 0);
+
+	d2 = GetTickCount();
+
+	r = lzo1x_decompress(xx, xxx, yy, &yyy, NULL);
+	if (r == LZO_E_OK ) {
+
+	}
+
+
+	//nOut = BZ2_bzBuffToBuffDecompress((char *)yy, &yyy, (char *)xx, xxx, 1, 0);
+
+	d3 = GetTickCount();
+
+	/***
+	if (pal12 == nullptr) {
+		pal12 = new_PAL12();
+		pal12_index = new PAL12*[PAL12_color_maxcount * PAL12_len_maxcount];
+	}
+
+	if (body12 == nullptr) {
+		body12_max_count = 600000;
+		body12 = new unsigned int[body12_max_count];
+	}
+
+
+
+	unsigned short color;
+	unsigned int ll, color_un_len;
+	int i, j, k, kk;
+
+	k = 0;
+	kk = header.w * header.h;
+	while (k < kk)
+	{
+		color = buf[k];
+		ll = calc12_eqvival_len(k);
+
+		color_un_len = color * PAL12_len_maxcount + ll;
+
+		pal12[color_un_len].count += ll;
+
+		body12[body12_count] = color_un_len;
+
+		body12_count++;
+		if (body12_count >= body12_max_count)
+		{
+			body12_count = 1;
+		};
+
+
+		//ii = add_to_pal12( color , ll );
+		k += ll;
+	};
+
+	d2 = GetTickCount();
+
+	//for (i = 0; i < PAL12_color_maxcount * PAL12_len_maxcount; i++) pal12_index[i] = nullptr;
+
+	PAL12 *pp;
+
+	pp = pal12_index[0];
+
+	pal12_index_count = 0;
+	i = 0;
+	j = PAL12_color_maxcount * PAL12_len_maxcount;
+	while (i < j)
+	{
+
+		if (pal12[i].count > 0)
+		{
+
+			pal12_index[pal12_index_count] = &pal12[i];
+			pal12_index[pal12_index_count]->sort = 0;
+			pal12_index_count++;
+		};
+
+		i++;
+	};
+
+	pal12_index[pal12_index_count] = nullptr;
+
+	d3 = GetTickCount();
+
+	qsort(&(pal12_index[0]), pal12_index_count, 4, sort_function_pal12);
+
+	d4 = GetTickCount();
+
+
+	for (i = 0; i < pal12_index_count; i++)
+	{
+		pal12_index[i]->sort = i;
+		HE_add_source_element(pal12_index[i]->count);
+	};
+
+	HAFMAN_element *e;
+
+	e = serach_elements_to_PLUS();
+	while (e != NULL)
+	{
+
+		HE_plus_LEFT(e);
+		e = serach_elements_to_PLUS();
+	};
+	***/
+
+
+
+	d4 = GetTickCount();
+
+
+	char ss[1000];
+	ss[0] = 0;
+
+	sprintf_s(ss, 900, "d2=%u\r\nd3=%u\r\nd4=%u\r\n", d2 - d1, d3 - d1, d4 - d1);
+
+	FILE *f;
+
+	fopen_s(&f, "c:\\1\\dd.txt", "wb");
+
+	fprintf(f, "%s", ss);
+
+	fclose(f);
+
 
 }

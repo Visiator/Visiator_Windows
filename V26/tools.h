@@ -251,7 +251,7 @@ char *decode_pipe_error(DWORD err);
 bool write_pipe(HANDLE pipe, void *buf, int need_write_size, DWORD *write_size, DWORD *write_pipe_TIMEOUT);
 bool read_pipe(HANDLE pipe, void *buf, int need_read_size, DWORD *read_size, DWORD *read_pipe_TIMEOUT, char *info);
 
-bool get_screenshot(SCREEN_LIGHT_one_byte *screen);
+bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12bit);
 bool CHECK_DESKTOP();
 bool exec_event_in_to_session(int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam);
 

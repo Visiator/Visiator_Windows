@@ -477,7 +477,8 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 
 			if (responce_screen_in_queue == 0) {
 
-				SEND_SCREEN_FROM_SERVER_TO_CLIENT((MASTER_AGENT_PACKET_HEADER *)w_buf, (MASTER_AGENT_PACKET_HEADER *)r_buf, (ENCODED_SCREEN_8bit_header *)scr_head_buf);
+				if (need_start_screenflow_FORMAT_VER == PACKET_TYPE_request_start_screenflow_ver11) SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first((MASTER_AGENT_PACKET_HEADER *)w_buf, (MASTER_AGENT_PACKET_HEADER *)r_buf, (ENCODED_SCREEN_8bit_header *)scr_head_buf);
+				if (need_start_screenflow_FORMAT_VER == PACKET_TYPE_request_start_screenflow_ver22) SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first((MASTER_AGENT_PACKET_HEADER *)w_buf, (MASTER_AGENT_PACKET_HEADER *)r_buf, (ENCODED_SCREEN_12bit_header *)scr_head_buf);
 
 			}
 			forced_send_screen = 1;
@@ -554,7 +555,9 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 
 			};
 
-			if (tt == PACKET_TYPE_responce_screen) {
+			if (tt == PACKET_TYPE_responce_screen_ver11 ||
+				tt == PACKET_TYPE_responce_screen_ver22
+				) {
 
 
 				if (responce_screen_in_queue > 0) {
@@ -609,7 +612,7 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 
 int jj = 0;
 
-void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf) {
+void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf) {
 
 	if (screen_one_byte_ == nullptr) screen_one_byte_ = new SCREEN_LIGHT_one_byte();
 
@@ -622,8 +625,11 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT(MASTER_AGENT_PACKET_H
 	}
 	else {
 		if (app_attributes.is_desktop == true) {
+			
 			init_encode_color_matrix_all();
-			if (get_screenshot(screen_one_byte_) == false) {
+
+			if ( get_screenshot( screen_one_byte_ , nullptr ) == false) {
+			
 				screen_one_byte_->emulate_red();
 			}
 		}
@@ -637,7 +643,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT(MASTER_AGENT_PACKET_H
 
 	if (screen_encoded == NULL) screen_encoded = new SCREEN_LIGHT_encoded();
 
-	screen_encoded->encode_screen(screen_one_byte_, last_set_mouse_x, last_set_mouse_y);
+	screen_encoded->encode_screen_ONE_BYTE(screen_one_byte_, last_set_mouse_x, last_set_mouse_y);
 
 	//char ss[300];
 
@@ -683,7 +689,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT(MASTER_AGENT_PACKET_H
 
 	*sz = buf_len;
 	*crc = 0;
-	*type = PACKET_TYPE_responce_screen;
+	*type = PACKET_TYPE_responce_screen_ver11;
 	*sol = get_sol();
 	hhh = (ENCODED_SCREEN_8bit_header *)screen_encoded->encoded_buffer;
 
@@ -708,7 +714,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT(MASTER_AGENT_PACKET_H
 
 	//send_udp("add SCREEN into queue");
 					   // 100003
-	if (out_queue_command.add_element_(PACKET_TYPE_responce_screen, sscr_id, buf, buf_len) == false) {  // TODO encr ???
+	if (out_queue_command.add_element_(PACKET_TYPE_responce_screen_ver11, sscr_id, buf, buf_len) == false) {  // TODO encr ???
 		responce_screen_in_queue--;
 	}
 	else {
@@ -1032,7 +1038,9 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 	};
 	***/
 
-	if (*type == PACKET_TYPE_request_start_screenflow) {
+	if ( *type == PACKET_TYPE_request_start_screenflow_ver11 ||
+		 *type == PACKET_TYPE_request_start_screenflow_ver22
+		) {
 		reserv3 = (unsigned int *)&(buf[24]);
 		reserv4 = (unsigned int *)&(buf[28]);
 
@@ -1060,6 +1068,8 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 		//send_udp2("SRV recv PACKET_TYPE_request_start_screenflow ", *reserv4);
 
 		//commit_from_client_LAST_SCREEN_ID = *reserv3;
+		need_start_screenflow_FORMAT_VER = *type;
+		
 		need_start_screenflow_count++;
 		need_start_screenflow = true;
 		return;
@@ -1077,7 +1087,7 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 	if (*type == PACKET_TYPE_responce_mouse_cursor_full_format) {
 		//ALOG("PACKET_TYPE_responce_mouse_cursor_full_format");
 	}
-	if (*type == PACKET_TYPE_responce_screen) {
+	if (*type == PACKET_TYPE_responce_screen_ver11) {
 		//send_udp("PACKET_TYPE_responce_screen");
 		/* 2019 +
 		//header = (ENCODED_SCREEN_8bit_header *)&(buf[0]);
@@ -1217,3 +1227,6 @@ void NET_SERVER_SESSION::send_event_in_to_session(int session_no, unsigned int e
 	}
 }
 
+void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_12bit_header *scr_head_buf) {
+
+};

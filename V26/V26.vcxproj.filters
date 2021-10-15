@@ -87,6 +87,9 @@
     <ClCompile Include="HIGHLEVEL_COMMAND_QUEUE.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="minilzo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -253,5 +256,6 @@
   <ItemGroup>
     <None Include="inc\font\font_roboto_150.rawaaaa" />
     <None Include="inc\font\font_roboto_220.rawaaaa" />
+    <None Include="inc\font\font_lucida sans unicode_8.raw" />
   </ItemGroup>
 </Project>

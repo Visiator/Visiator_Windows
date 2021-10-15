@@ -21,12 +21,12 @@ extern VIEWER  *viewer;
 #define MY_MENU_TRANSFER_FILE 123354
 
 LRESULT CALLBACK MainWinProcViewer(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
-void _callback__arrived_screen(unsigned char *buf, int buf_size);
+void _callback__arrived_screen(unsigned char *buf, int buf_size, unsigned int _FORMAT_VER);
 void _callback__connect();
 void _callback__disconnect();
 
-void _callback__arrived_screen(unsigned char *buf, int buf_size) {
-	if (viewer != nullptr) viewer->callback__arrived_screen(buf, buf_size);
+void _callback__arrived_screen(unsigned char *buf, int buf_size, unsigned int _FORMAT_VER) {
+	if (viewer != nullptr) viewer->callback__arrived_screen(buf, buf_size, _FORMAT_VER);
 }
 
 void _callback__connect() {
@@ -1567,7 +1567,7 @@ void resize_screen(GUI_low_level *low_level, SCREEN_LIGHT *src, SCREEN_LIGHT *de
 }
 
 
-void VIEWER::callback__arrived_screen(unsigned char *buf, int buf_size) {
+void VIEWER::callback__arrived_screen(unsigned char *buf, int buf_size, unsigned int _FORMAT_VER) {
 
 
 	int display_w, display_h;

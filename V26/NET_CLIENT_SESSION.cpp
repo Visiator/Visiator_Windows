@@ -149,6 +149,8 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 		return 0;
 	};
 
+	SERVER_VER = 0;
+
 	sudp("NCS Connect_to_server");
 
 	int return_result;
@@ -270,6 +272,8 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 
 				sudp("NCS partner founded");
 
+				SERVER_VER = s1005->srv_ver;
+
 				key_for_commit_connection = s1005->key;
 
 				//********************************************
@@ -312,9 +316,16 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 					set_status(L"Connected");
 
 					connection_to_partner_established = true;
-					need_start_screenflow_from_server = true;
+					if (SERVER_VER > 4000) {
+						need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver22;
+					}
+					else {
+						need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver11;
+					}
 
 					if (parent_func__connect != NULL) parent_func__connect();
+
+					need_start_screenflow_from_server = true;
 
 					//send_udp("ClientConnect");
 
@@ -541,8 +552,9 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 		}
 
-		if (need_start_screenflow_from_server == true) {
+		if ( need_start_screenflow_from_server == true) {
 			need_start_screenflow_from_server = false;
+			
 
 
 			cmd = (unsigned char *)bb;
@@ -557,7 +569,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 			*sz = 32;
 			*crc32 = 0;
-			*type = PACKET_TYPE_request_start_screenflow;
+			*type = need_start_screenflow_from_server_FORMAT_VER;
 			*sol = get_sol();
 			*old_screen_id = 0;
 			*session_no = 0;
@@ -1011,7 +1023,10 @@ void NET_CLIENT_SESSION::analiz_command(unsigned char *buf) {
 
 	ENCODED_SCREEN_8bit_header *header;
 
-	if (*type == PACKET_TYPE_responce_screen) {
+	if ( *type == PACKET_TYPE_responce_screen_ver11 ||
+		 *type == PACKET_TYPE_responce_screen_ver22
+		
+		) {
 
 		recv_responce_screen = GetTickCount();
 
@@ -1025,7 +1040,7 @@ void NET_CLIENT_SESSION::analiz_command(unsigned char *buf) {
 			//send_udp(ss);
 		}
 
-		if (parent_func__arrived_screen != NULL) parent_func__arrived_screen(buf, *sz);
+		if (parent_func__arrived_screen != NULL) parent_func__arrived_screen(buf, *sz, *type);
 
 		if (parent_low_level != nullptr) parent_low_level->invalidate();
 
@@ -1203,7 +1218,7 @@ void NET_CLIENT_SESSION::analiz_command(unsigned char *buf) {
 	if (*type == PACKET_TYPE_responce_mouse_cursor_full_format) {
 		//ALOG("PACKET_TYPE_responce_mouse_cursor_full_format");
 	}
-	if (*type == PACKET_TYPE_responce_screen) {
+	if (*type == PACKET_TYPE_responce_screen_ver11) {
 		//send_udp("PACKET_TYPE_responce_screen");
 		/* 2019 +
 		header = (ENCODED_SCREEN_8bit_header *)&(buf[0]);

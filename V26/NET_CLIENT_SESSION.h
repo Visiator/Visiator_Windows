@@ -13,7 +13,8 @@ class NET_CLIENT_SESSION
 {
 public:
 	uint64_t my_pub_id = 0, my_priv_id = 0;
-	
+	unsigned int SERVER_VER = 0;
+
 	std::wstring status;
 	void set_status(wchar_t *v);
 	GUI_low_level *parent_low_level = nullptr;
@@ -38,6 +39,7 @@ public:
 
 	bool connection_to_partner_established = false;
 	bool need_start_screenflow_from_server = false;
+	unsigned int need_start_screenflow_from_server_FORMAT_VER = 0;
 
 	unsigned char *llow_level_encoded_buffer_read = NULL;
 	unsigned int    low_level_encoded_buffer_read_idx = 0;
@@ -64,7 +66,7 @@ public:
 
 	int  Connect_to_server( unsigned long long partner_id, unsigned long long public_id, unsigned long long private_id, unsigned char pass_hash16[16], unsigned int proxy_ip);
 
-	void(*parent_func__arrived_screen)(unsigned char *buf, int buf_size) = nullptr;
+	void(*parent_func__arrived_screen)(unsigned char *buf, int buf_size, unsigned int _FORMAT_VER) = nullptr;
 	void(*parent_func__connect)(void) = nullptr;
 	void(*parent_func__disconnect)(void) = nullptr;
 

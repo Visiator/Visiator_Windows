@@ -89,7 +89,7 @@ public:
 	//########################################################################
 
 	bool is_sync_clipboards = true;
-	void callback__arrived_screen(unsigned char *buf, int buf_size);
+	void callback__arrived_screen(unsigned char *buf, int buf_size, unsigned int _FORMAT_VER);
 	void callback__connect();
 	void callback__disconnect();
 

@@ -1,0 +1,12 @@
+﻿  Microsoft (R) Macro Assembler Version 14.16.27045.0
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+   Assembling: match686.asm
+  Microsoft (R) Macro Assembler Version 14.16.27045.0
+  Copyright (C) Microsoft Corporation.  All rights reserved.
+  
+   Assembling: inffas32.asm
+match686.obj : error LNK2026: module unsafe for SAFESEH image.
+inffas32.obj : error LNK2026: module unsafe for SAFESEH image.
+     Creating library x86\ZlibDllDebug\zlibwapi.lib and object x86\ZlibDllDebug\zlibwapi.exp
+x86\ZlibDllDebug\zlibwapi.dll : fatal error LNK1281: Unable to generate SAFESEH image.

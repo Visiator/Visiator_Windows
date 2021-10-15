@@ -46,6 +46,131 @@ struct PAL
 	unsigned int count;
 };
 
+struct PAL12 {
+	unsigned short color;
+	unsigned short len;
+	unsigned int   count;
+	unsigned int   sort;
+	PAL12() {
+		color = 0;
+		len = 0;
+		count = 0;
+		sort = 0;
+	}
+};
+
+struct  ENCODED_SCREEN_12bit_header
+{
+	unsigned int reserv01;
+	unsigned int reserv02;
+	unsigned int reserv03;
+	unsigned int reserv04;
+
+	unsigned int format;
+	unsigned int header_size; // 
+
+	unsigned short w, h;
+
+	unsigned char color_bit;
+	unsigned char reserve1;
+	unsigned char reserve2;
+	unsigned char reserve3;
+
+	unsigned int screen_id;
+	unsigned int old_screen_id;
+	unsigned int pal_size;
+	unsigned int body_size;
+
+	unsigned short mouse_x;
+	unsigned short mouse_y;
+	unsigned int   mouse_cursor_type_id;
+	unsigned int   keyboard_location;
+	unsigned int   itis_user_move_mouse;
+
+};
+
+#define PAL12_color_maxcount 4096
+#define PAL12_len_maxcount 4096
+
+class HAFMAN_element {
+public:
+	int w;
+	int level;
+	bool in_use;
+	HAFMAN_element *left;
+	HAFMAN_element *right;
+	HAFMAN_element *top;
+	HAFMAN_element *child0;
+	HAFMAN_element *child1;
+
+	void generate_code(char *str, char add);
+
+	void clean()
+	{
+		left = NULL;
+		right = NULL;
+		top = NULL;
+		child0 = NULL;
+		child1 = NULL;
+		level = 0;
+		w = 0;
+		in_use = false;
+	};
+	HAFMAN_element()
+	{
+		clean();
+	};
+};
+
+class HAFMAN_pool {
+public:
+	HAFMAN_element source[100000];
+	int source_count;
+	int source_max_count;
+
+	HAFMAN_element *get_element();
+
+	HAFMAN_pool();
+};
+
+class SCREEN_LIGHT_12bit {
+public:
+
+	HAFMAN_pool h_pool;
+	HAFMAN_element *he_first = nullptr;
+	HAFMAN_element *he_last  = nullptr;
+	void HE_add_source_element(int w_);
+	HAFMAN_element *serach_elements_to_PLUS();
+	int HE_plus_LEFT(HAFMAN_element *v);
+
+	unsigned int *body12 = nullptr;
+	unsigned int body12_max_count = 0, body12_count = 0;
+
+	PAL12 *new_PAL12();
+	void  delete_PAL12(PAL12 **q);
+	
+	PAL12 **pal12_index = nullptr;
+
+	PAL12 *pal12 = nullptr;
+	unsigned int pal12_index_count = 0;
+
+	ENCODED_SCREEN_12bit_header header;
+
+	unsigned short *buf = nullptr;
+	int buf_size = 0;
+	
+	unsigned int calc12_eqvival_len(unsigned short k);
+
+	void encode();
+
+	void set_new_size_(int w_, int h_);
+	void load_from_BMP_buffer(BYTE *buf, SCREEN_LIGHT_12bit *b12);
+
+	
+	SCREEN_LIGHT_12bit();
+	~SCREEN_LIGHT_12bit();
+};
+
 
 struct  ENCODED_SCREEN_8bit_header
 {
@@ -76,7 +201,6 @@ struct  ENCODED_SCREEN_8bit_header
 	unsigned int   itis_user_move_mouse;
 
 };
-
 
 
 class SCREEN_LIGHT_one_byte
@@ -190,7 +314,7 @@ public:
 	//void set_new_size(int w_, int h_);
 
 	void pal_increase_size();
-	bool encode_screen(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y);
+	bool encode_screen_ONE_BYTE(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y);
 
 	SCREEN_LIGHT_encoded();
 	~SCREEN_LIGHT_encoded();

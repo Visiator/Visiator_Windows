@@ -5,10 +5,19 @@
 #include "HIGHLEVEL_COMMAND_QUEUE.h"
 #include "PIPES_SERVER_POOL.h"
 
+
+
+
 #define PACKET_TYPE_request_screen 20001
-#define PACKET_TYPE_responce_screen 20002
+
+#define PACKET_TYPE_responce_screen_ver11 20002
+#define PACKET_TYPE_responce_screen_ver22 20053
+
 #define PACKET_TYPE_responce_screen_test 20003
-#define PACKET_TYPE_request_start_screenflow 20004
+
+#define PACKET_TYPE_request_start_screenflow_ver11 20004
+#define PACKET_TYPE_request_start_screenflow_ver22 20052
+
 #define PACKET_TYPE_responce_mouse_cursor_full_format 20005
 #define PACKET_TYPE_responce_mouse_cursor_short_format 20006
 
@@ -54,6 +63,11 @@
 #define PACKET_TYPE_TRANSFER_from_SRV_to_CLI_CANCELED 20051
 
 
+
+
+// 20052 already used
+// 20053 already used
+
 struct PACKET_LEVEL0
 {
 	unsigned int zero;
@@ -77,6 +91,7 @@ struct PACKET_LEVEL1_1002_responce // get_proxy_ip
 {
 	unsigned int  sub_type;
 	unsigned int  ip4;
+	
 	unsigned char body[100];
 };
 struct PACKET_LEVEL1_1003_request // register neww partner
@@ -118,7 +133,8 @@ struct PACKET_LEVEL1_1005_responce // client connecting
 {
 	unsigned long long result;
 	unsigned int  key;
-	unsigned char body[96];
+	unsigned int  srv_ver;
+	unsigned char body[92];
 };
 struct PACKET_LEVEL1_1006_responce // server connecting
 {
@@ -218,7 +234,8 @@ public:
 	void Connect_to_proxy_as_server(unsigned long long public_id, unsigned long long private_id, unsigned int ip_to_server_connect, unsigned char pass_hash16[16]);
 	bool main_loop_is_strated = false;
 	void NetSession_Main_Loop(SOCKET sos);
-	void SEND_SCREEN_FROM_SERVER_TO_CLIENT(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf);
+	void SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf);
+	void SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_12bit_header *scr_head_buf);
 	int  READ(byte *buffer, int buffer_size);
 	void add_to_low_level_encoded_buffer(unsigned char *buf, unsigned int size);
 	void add_to_low_level_buffer(unsigned char *buf, int size);
@@ -233,6 +250,7 @@ public:
 	bool ss_need_disconnect = false;
 	unsigned int need_start_screenflow_count = 0;
 	bool need_start_screenflow = false;
+	unsigned int need_start_screenflow_FORMAT_VER = 0;
 	int responce_screen_in_queue = 0;
 
 	unsigned long long recv_counter = 0, send_counter = 0;

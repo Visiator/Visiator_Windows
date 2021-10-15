@@ -212,7 +212,7 @@ void AGENT::PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_one_byte() {
 
 	//zero(&screen_header.header, sizeof_ENCODED_SCREEN_8bit_header);
 	bool result;
-	result = get_screenshot(&screen_header);
+	result = get_screenshot(&screen_header, nullptr);
 	if (result == false) {
 		screen_header.emulate_dark_blue();
 

@@ -3395,7 +3395,8 @@ bool read_pipe(HANDLE pipe, void *buf, int need_read_size, DWORD *read_size, DWO
 
 int BitBlt_fail = 0;
 BITMAPINFO *bitmap_1 = nullptr;
-bool get_screenshot(SCREEN_LIGHT_one_byte *screen) {
+
+bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12bit) {
 
 	if (screen == NULL) {
 		fatal_error("get_screenshot() screen == NULL");

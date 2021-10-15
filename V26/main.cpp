@@ -42,6 +42,8 @@
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "version.lib")
 #pragma comment(lib, "cryptlib.lib")
+#pragma comment(lib, "zlibstat.lib")
+
 
 FONT *font[10] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 bool GLOBAL_STOP = false;
@@ -53,6 +55,8 @@ KERNEL kernel;
 CMDLINE cmd_line;
 AGENT *agent = nullptr;
 TOTAL_CONTROL *total_control = nullptr;
+
+void test_b12();
 
 void WinMain_finish();
 
@@ -73,6 +77,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	cmd_line.decode((char *)lpCmdLine);
 	
 	load_fonts();
+
+	test_b12();
 
 	total_control = new TOTAL_CONTROL();
 	total_control->start_EXECUTE();
@@ -175,3 +181,153 @@ void WinMain_finish() {
 
 
 }
+
+
+
+unsigned short encode_rgb_to_12bit(unsigned int c0, unsigned int c1, unsigned int c2)
+{
+	unsigned int r;
+
+	r = c0 | (c1 << 4) | (c2 << 8);
+
+	return (r & 0xFFF);
+};
+
+//int bitmap_w = 0, bitmap_h = 0;
+//unsigned int *bitmap = NULL;
+
+
+void SCREEN_LIGHT_12bit::load_from_BMP_buffer(BYTE *buf, SCREEN_LIGHT_12bit *b12) {
+	int inverse = 1;
+	int bitmap_w, bitmap_h;
+
+	if (buf == NULL) return;
+	//if (bitmap != NULL) delete[] bitmap;
+
+	//bitmap = NULL;
+
+	//bitmap_w = 0;
+	//bitmap_h = 0;
+
+
+	unsigned short *bfType, *bfReserved1, *bfReserved2;
+	unsigned int *bfSize, *bfOffBits;
+
+	bfType = (unsigned short *)&(buf[0]);
+	bfSize = (unsigned int *)&(buf[2]);
+	bfReserved1 = (unsigned short *)&(buf[6]);
+	bfReserved2 = (unsigned short *)&(buf[8]);
+	bfOffBits = (unsigned int *)&(buf[10]);
+
+
+	if (*bfType != 0x4d42) return;
+
+
+	unsigned int *BITMAPINFO_ver, *biWidth, *biHeight, *biCompression, *biSizeImage, *biClrUsed, *biClrImportant;
+	unsigned short *biBitCount;
+
+	int i, j, delta, x, y;
+	unsigned short *q;
+	delta = *bfOffBits;
+
+	BITMAPINFO_ver = (unsigned int *)&(buf[14]);
+
+	if (*BITMAPINFO_ver == 40) {
+		biWidth = (unsigned int *)&(buf[14 + 0x04]);
+		biHeight = (unsigned int *)&(buf[14 + 0x08]);
+		biBitCount = (unsigned short *)&(buf[14 + 0x0e]);
+		biCompression = (unsigned int *)&(buf[14 + 0x10]);
+		biSizeImage = (unsigned int *)&(buf[14 + 0x14]);
+		biClrUsed = (unsigned int *)&(buf[14 + 0x20]);
+		biClrImportant = (unsigned int *)&(buf[14 + 0x24]);
+		if (*biCompression == 0 && *biBitCount == 24) {
+
+			bitmap_w = *biWidth;
+			bitmap_h = *biHeight;
+
+			//bitmap = new unsigned int[bitmap_w * bitmap_h]; //neew(w * h * 4, t->bitmap, "load_textura_from_BMP_buffer()");
+
+			b12->set_new_size_(bitmap_w, bitmap_h);
+
+			q = b12->buf;
+
+			char cc[4];
+			unsigned int *qq;
+			qq = (unsigned int *)cc;
+
+			i = delta;
+			for (y = bitmap_h - 1; y >= 0; y--) {
+				j = 0;
+				for (x = 0; x < bitmap_w; x++) {
+
+					if (inverse == 0) {
+
+						cc[3] = 0;
+						cc[0] = buf[i];
+						cc[1] = buf[i + 1];
+						cc[2] = buf[i + 2];
+
+						q[y*bitmap_w + x] = encode_rgb_to_12bit( buf[i], buf[i+1], buf[i+2] );
+
+					}
+					else {
+						cc[3] = 0;
+						cc[2] = buf[i];
+						cc[1] = buf[i + 1];
+						cc[0] = buf[i + 2];
+						
+						q[y*bitmap_w + x] = encode_rgb_to_12bit(buf[i+2], buf[i + 1], buf[i]);
+					}
+					
+					//q[y*bitmap_w + x] = encode_rgb_to_12bit( *qq );
+
+					i += 3;
+					j += 3;
+				}
+				j = bitmap_w % 4;
+
+				
+				i += j;
+			};
+			return;
+		}
+		return;
+	}
+};
+
+void test_b12() {
+
+	SCREEN_LIGHT_12bit *b12;
+
+	b12 = new SCREEN_LIGHT_12bit();
+
+	////////////////////////////////////////////////////////////////////////////
+
+	BYTE *b;
+	b = new BYTE[35000000];
+	FILE *f;
+	fopen_s( &f, "C:\\1\\12.bmp", "rb");
+
+	int i, j, k;
+
+	j = fread(b, 1, 35000000, f);
+
+	fclose(f);
+
+	b12->load_from_BMP_buffer(b, b12);
+
+
+
+	b12->encode();
+
+	delete[] b;
+
+	////////////////////////////////////////////////////////////////////////////
+
+	//b12->set_new_size_(bitmap_w, bitmap_h);
+
+
+
+};
+
+
