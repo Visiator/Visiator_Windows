@@ -100,12 +100,20 @@ public:
 	ENCODED_SCREEN_12bit_header *header = nullptr;
 
 	int w = 0, h = 0;
-	unsigned short *buf = nullptr;
-	int buf_size = 0;
+	unsigned char *buf = nullptr;
+	int buf_max_size = 0;
+	int buf_len = 0;
 		
+	int screen_id = 0;
+	int old_screen_id = 0;
+
 	void set_new_size_(int w_, int h_);
 	void encode();
 	void load_from_BMP_buffer(BYTE *buf, SCREEN_LIGHT_12bit *b12);
+
+	void get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffer, int g_nWidth, int g_nHeight, int g_nColorMode);
+
+	void emulate_red();
 
 	SCREEN_LIGHT_12bit();
 	~SCREEN_LIGHT_12bit();
@@ -167,6 +175,8 @@ public:
 	
 
 	void set_new_size_(int w_, int h_);
+
+	void get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffer, int g_nWidth, int g_nHeight, int g_nColorMode);
 
 	void clean();
 	void clean_();
@@ -260,5 +270,17 @@ public:
 	~SCREEN_LIGHT_encoded_8bit_first();
 };
 
+class SCREEN_LIGHT_encoded_12bit
+{
+public:
 
+	unsigned char *encoded_buffer = nullptr;
+	unsigned int encoded_buffer_max_size = 0;
+	unsigned int encoded_buffer_len = 0;
+
+	void encode_screen_12bit(SCREEN_LIGHT_12bit *screen_12bit, int last_set_mouse_x, int last_set_mouse_y);
+
+	SCREEN_LIGHT_encoded_12bit();
+	~SCREEN_LIGHT_encoded_12bit();
+};
 

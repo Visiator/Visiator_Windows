@@ -812,7 +812,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 				//return ss;
 			};
 
-
+			  
 		} // 10
 
 	}

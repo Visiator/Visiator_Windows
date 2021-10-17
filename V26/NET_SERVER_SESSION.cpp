@@ -477,8 +477,12 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 
 			if (responce_screen_in_queue == 0) {
 
-				if (need_start_screenflow_FORMAT_VER == PACKET_TYPE_request_start_screenflow_ver11) SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first((MASTER_AGENT_PACKET_HEADER *)w_buf, (MASTER_AGENT_PACKET_HEADER *)r_buf, (ENCODED_SCREEN_8bit_header *)scr_head_buf);
-				if (need_start_screenflow_FORMAT_VER == PACKET_TYPE_request_start_screenflow_ver22) SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first((MASTER_AGENT_PACKET_HEADER *)w_buf, (MASTER_AGENT_PACKET_HEADER *)r_buf, (ENCODED_SCREEN_12bit_header *)scr_head_buf);
+				if (need_start_screenflow_FORMAT_VER == PACKET_TYPE_request_start_screenflow_ver11) {
+					SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first((MASTER_AGENT_PACKET_HEADER *)w_buf, (MASTER_AGENT_PACKET_HEADER *)r_buf, (ENCODED_SCREEN_8bit_header *)scr_head_buf);
+				}
+				if (need_start_screenflow_FORMAT_VER == PACKET_TYPE_request_start_screenflow_ver22) {
+					SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first((MASTER_AGENT_PACKET_HEADER *)w_buf, (MASTER_AGENT_PACKET_HEADER *)r_buf, (ENCODED_SCREEN_12bit_header *)scr_head_buf);
+				};
 
 			}
 			forced_send_screen = 1;
@@ -1231,16 +1235,18 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGE
 
 void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_12bit_header *scr_head_buf) {
 
+	if (screen_12bit == nullptr) screen_12bit = new SCREEN_LIGHT_12bit();
+
 	if (jj < 3) {
-		screen_one_byte_->emulate_red();
+		screen_12bit->emulate_red();
 		jj++;
 	}
 	else {
 		if (app_attributes.is_desktop == true) {
 
-			if (get_screenshot(screen_one_byte_, nullptr) == false) {
+			if (get_screenshot(nullptr, screen_12bit) == false) {
 
-				screen_one_byte_->emulate_red();
+				screen_12bit->emulate_red();
 			}
 		}
 		else {
@@ -1251,6 +1257,51 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AG
 			*/
 		};
 	};
-	screen_one_byte_->screen_id++;
+	screen_12bit->screen_id++;
+
+	if (screen_encoded_12bit == NULL) screen_encoded_12bit = new SCREEN_LIGHT_encoded_12bit();
+
+	screen_encoded_12bit->encode_screen_12bit(screen_12bit, last_set_mouse_x, last_set_mouse_y);
+
+	unsigned char *_buf;
+	unsigned int _buf_len, *sz, *crc, *sol, *type, zz;
+
+
+	_buf = screen_encoded_12bit->encoded_buffer;
+	_buf_len = screen_encoded_12bit->encoded_buffer_len;
+
+	zz = _buf_len / 16;
+	zz *= 16;
+	if (zz < _buf_len) zz += 16;
+	_buf_len = zz;
+
+	sz = (unsigned int *)&(_buf[0]);
+	crc = (unsigned int *)&(_buf[4]);
+	type = (unsigned int *)&(_buf[8]);
+	sol = (unsigned int *)&(_buf[12]);
+	ENCODED_SCREEN_12bit_header *hhh;
+
+	*sz = _buf_len;
+	*crc = 0;
+	*type = PACKET_TYPE_responce_screen_ver22;
+	*sol = get_sol();
+	hhh = (ENCODED_SCREEN_12bit_header *)screen_encoded_12bit->encoded_buffer;
+
+	unsigned int sscr_id;
+	sscr_id = hhh->screen_id;
+
+
+	responce_screen_in_queue++;
+
+
+	aes_partner.encrypt_stream(_buf, _buf_len);
+
+
+	if (out_queue_command.add_element_(PACKET_TYPE_responce_screen_ver22, sscr_id, _buf, _buf_len) == false) {  // TODO encr ???
+		responce_screen_in_queue--;
+	}
+	else {
+		need_start_screenflow = false;
+	}
 
 };

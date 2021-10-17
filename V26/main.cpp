@@ -182,6 +182,27 @@ void WinMain_finish() {
 
 }
 
+unsigned short encode_rgb_to_12bit(unsigned int v)
+{
+	unsigned int r, r1, r2, r3;
+
+	r1 = (v & 0xff)/16;
+	
+	r2 = (v & 0xff00);
+	r2 = r2 >> 8;
+	r2 = r2 / 16;
+	r2 = r2 << 4;
+
+	r3 = (v & 0xff0000);
+	r3 = r3 >> 16;
+	r3 = r3 / 16;
+	r3 = r3 << 8;
+
+
+	r = r1 | r2 | r3;
+
+	return (r & 0xFFF);
+};
 
 
 unsigned short encode_rgb_to_12bit(unsigned int c0, unsigned int c1, unsigned int c2)
@@ -227,7 +248,7 @@ void SCREEN_LIGHT_12bit::load_from_BMP_buffer(BYTE *buf, SCREEN_LIGHT_12bit *b12
 	unsigned short *biBitCount;
 
 	int i, j, delta, x, y;
-	unsigned short *q;
+	unsigned char *q;
 	delta = *bfOffBits;
 
 	BITMAPINFO_ver = (unsigned int *)&(buf[14]);
@@ -267,7 +288,7 @@ void SCREEN_LIGHT_12bit::load_from_BMP_buffer(BYTE *buf, SCREEN_LIGHT_12bit *b12
 						cc[1] = buf[i + 1];
 						cc[2] = buf[i + 2];
 
-						q[y*bitmap_w + x] = encode_rgb_to_12bit( buf[i], buf[i+1], buf[i+2] );
+						///q[y*bitmap_w + x] = encode_rgb_to_12bit( buf[i], buf[i+1], buf[i+2] );
 
 					}
 					else {
@@ -276,7 +297,7 @@ void SCREEN_LIGHT_12bit::load_from_BMP_buffer(BYTE *buf, SCREEN_LIGHT_12bit *b12
 						cc[1] = buf[i + 1];
 						cc[0] = buf[i + 2];
 						
-						q[y*bitmap_w + x] = encode_rgb_to_12bit(buf[i+2], buf[i + 1], buf[i]);
+						///q[y*bitmap_w + x] = encode_rgb_to_12bit(buf[i+2], buf[i + 1], buf[i]);
 					}
 					
 					//q[y*bitmap_w + x] = encode_rgb_to_12bit( *qq );
@@ -314,11 +335,11 @@ void test_b12() {
 
 	fclose(f);
 
-	b12->load_from_BMP_buffer(b, b12);
+	//b12->load_from_BMP_buffer(b, b12);
 
 
 
-	b12->encode();
+//	b12->encode();
 
 	delete[] b;
 

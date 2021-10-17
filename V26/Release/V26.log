@@ -1,9 +1,81 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Support for targeting Windows XP is deprecated and will not be present in future releases of Visual Studio. Please see https://go.microsoft.com/fwlink/?linkid=2023588 for more information.
+  AGENT.cpp
+  APPLICATION_ATTRIBUTES.cpp
+  CRYPTO.cpp
+  DESKTOP.cpp
+  c:\program files\boost\boost_1_77_0\boost\bind.hpp(41): note: The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated. Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.
+c:\prj\visiator_windows\v26\desktop.cpp(602): warning C4101: 'k': unreferenced local variable
+c:\prj\visiator_windows\v26\desktop.cpp(558): warning C4101: 'aa': unreferenced local variable
+c:\prj\visiator_windows\v26\desktop.cpp(557): warning C4101: 'r': unreferenced local variable
+  EVENT_QUEUE.cpp
+  FONT.cpp
+c:\prj\visiator_windows\v26\font.cpp(245): warning C4101: 'kk': unreferenced local variable
+  GUI_Element.cpp
+  c:\program files\boost\boost_1_77_0\boost\bind.hpp(41): note: The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated. Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.
+c:\prj\visiator_windows\v26\gui_element.cpp(158): warning C4101: 'i': unreferenced local variable
+c:\prj\visiator_windows\v26\gui_element.cpp(158): warning C4101: 'w': unreferenced local variable
+c:\prj\visiator_windows\v26\gui_element.cpp(232): warning C4018: '<': signed/unsigned mismatch
+  GUI_low_level.cpp
+c:\prj\visiator_windows\v26\gui_low_level.cpp(173): warning C4101: 'b': unreferenced local variable
+c:\prj\visiator_windows\v26\gui_low_level.cpp(173): warning C4101: 'q2': unreferenced local variable
+c:\prj\visiator_windows\v26\gui_low_level.cpp(173): warning C4101: 'q': unreferenced local variable
+c:\prj\visiator_windows\v26\gui_low_level.cpp(173): warning C4101: 'g': unreferenced local variable
+c:\prj\visiator_windows\v26\gui_low_level.cpp(173): warning C4101: 'r': unreferenced local variable
+  HIGHLEVEL_COMMAND_QUEUE.cpp
+  KERNEL.cpp
+c:\prj\visiator_windows\v26\kernel.cpp(790): warning C4293: '<<': shift count negative or too big, undefined behavior
+c:\prj\visiator_windows\v26\kernel.cpp(791): warning C4293: '<<': shift count negative or too big, undefined behavior
+  NET_CLIENT_SESSION.cpp
+  c:\program files\boost\boost_1_77_0\boost\bind.hpp(41): note: The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated. Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.
+c:\prj\visiator_windows\v26\net_client_session.cpp(403): warning C4101: 'z': unreferenced local variable
+c:\prj\visiator_windows\v26\net_client_session.cpp(390): warning C4101: 'ii': unreferenced local variable
   NET_SERVER_SESSION.cpp
+  NET_SERVER_SESSION_POOL.cpp
+  PIPES_SERVER_POOL.cpp
+  SCREEN.cpp
+c:\prj\visiator_windows\v26\screen.cpp(1159): warning C4101: 'nOut': unreferenced local variable
+c:\prj\visiator_windows\v26\screen.cpp(1159): warning C4101: 'nIn': unreferenced local variable
+c:\prj\visiator_windows\v26\screen.cpp(1159): warning C4101: 'nZ': unreferenced local variable
+c:\prj\visiator_windows\v26\screen.cpp(1141): warning C4101: 'res2': unreferenced local variable
+c:\prj\visiator_windows\v26\screen.cpp(1141): warning C4101: 'res': unreferenced local variable
+  SERVICE.cpp
+c:\prj\visiator_windows\v26\service.cpp(136): warning C4191: 'type cast': unsafe conversion from 'void (__cdecl *)(DWORD)' to 'LPHANDLER_FUNCTION'
+          Calling this function through the result pointer may cause your program to fail
+c:\prj\visiator_windows\v26\service.cpp(455): warning C4101: 'id': unreferenced local variable
+c:\prj\visiator_windows\v26\service.cpp(454): warning C4101: 'h': unreferenced local variable
+c:\prj\visiator_windows\v26\service.cpp(603): warning C4101: 'h': unreferenced local variable
+c:\prj\visiator_windows\v26\service.cpp(938): warning C4101: 'id': unreferenced local variable
+c:\prj\visiator_windows\v26\service.cpp(937): warning C4101: 'h': unreferenced local variable
+c:\prj\visiator_windows\v26\service.cpp(1030): warning C4101: 'id': unreferenced local variable
+c:\prj\visiator_windows\v26\service.cpp(1029): warning C4101: 'h': unreferenced local variable
+  TOTAL_CONTROL.cpp
+  c:\program files\boost\boost_1_77_0\boost\bind.hpp(41): note: The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated. Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.
+c:\prj\visiator_windows\v26\total_control.cpp(96): warning C4101: 's': unreferenced local variable
+c:\prj\visiator_windows\v26\total_control.cpp(212): warning C4101: 's': unreferenced local variable
+  TRANSFER_DIALOG2_DirsFiles_TREE_element.cpp
+  VIEWER.cpp
+  c:\program files\boost\boost_1_77_0\boost\bind.hpp(41): note: The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated. Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.
+  VIEWER_small_top_panel.cpp
+  c:\program files\boost\boost_1_77_0\boost\bind.hpp(41): note: The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated. Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.
+  Compiling...
+  main.cpp
+  c:\program files\boost\boost_1_77_0\boost\bind.hpp(41): note: The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated. Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.
+c:\prj\visiator_windows\v26\main.cpp(311): warning C4101: 'k': unreferenced local variable
+c:\prj\visiator_windows\v26\main.cpp(311): warning C4101: 'i': unreferenced local variable
+  tools.cpp
+c:\prj\visiator_windows\v26\tools.cpp(821): warning C4826: Conversion from 'HCURSOR' to 'unsigned __int64' is sign-extended. This may cause unexpected runtime behavior.
+c:\prj\visiator_windows\v26\tools.cpp(1934): warning C4101: 'i': unreferenced local variable
+c:\prj\visiator_windows\v26\tools.cpp(1978): warning C4242: 'argument': conversion from 'unsigned int' to 'u_short', possible loss of data
+c:\prj\visiator_windows\v26\tools.cpp(2074): warning C4101: 'i': unreferenced local variable
+c:\prj\visiator_windows\v26\tools.cpp(2756): warning C4191: 'type cast': unsafe conversion from 'FARPROC' to 'LPFN_ISWOW64PROCESS'
+          Calling this function through the result pointer may cause your program to fail
+c:\prj\visiator_windows\v26\tools.cpp(3313): warning C4101: 'ss': unreferenced local variable
+c:\prj\visiator_windows\v26\tools.cpp(3489): warning C4101: 'ss': unreferenced local variable
+c:\prj\visiator_windows\v26\tools.cpp(4313): warning C4244: 'return': conversion from 'unsigned __int64' to 'unsigned int', possible loss of data
 C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(1220,5): warning MSB8030: The linker switch "Minimum Required Version" requires "SubSystem" to be set.  Without "SubSystem", the "Minimum Required Version" would not be passed to linker and could prevent to the output binary from running on older Operating Systems.
   Generating code
-  3 of 2651 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+  89 of 2649 functions ( 3.4%) were compiled, the rest were copied from previous compilation.
+    11 functions were new in current compilation
+    13 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   V26.vcxproj -> C:\prj\Visiator_Windows\Release\V26.exe

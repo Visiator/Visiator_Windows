@@ -207,8 +207,9 @@ public:
 
 	SCREEN_LIGHT_encoded_8bit_first  *screen_encoded = nullptr;
 	SCREEN_LIGHT_one_byte *screen_one_byte_ = nullptr;
-
-
+	
+	SCREEN_LIGHT_12bit *screen_12bit = nullptr;
+	SCREEN_LIGHT_encoded_12bit *screen_encoded_12bit = nullptr;
 
 	unsigned char *llow_level_buffer_read = nullptr;
 	unsigned int   llow_level_buffer_read_max_count = 0;

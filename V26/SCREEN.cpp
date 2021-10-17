@@ -39,6 +39,12 @@
 #include "tools.h"
 //#include "mem.h"
 
+extern unsigned char *encode_color_matrix_onebyte;
+extern unsigned char *encode_color_matrix_5_in_8;
+extern unsigned char *encode_color_matrix_6_in_8;
+
+unsigned short encode_rgb_to_12bit(unsigned int v);
+
 CHESS_SHADOW::CHESS_SHADOW() {
 
 }
@@ -114,6 +120,144 @@ void SCREEN_LIGHT_one_byte::unlock() {
 	}
 	is_lock = false;
 }
+
+void SCREEN_LIGHT_one_byte::get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffer, int g_nWidth, int g_nHeight, int g_nColorMode) {
+
+	unsigned char *ee;
+	unsigned int *z, *zz, zzz;
+	int jj, y, x; // fe
+
+	ee = get_buf_one_byte();
+
+
+	if (g_nColorMode == 32) {
+
+		z = (unsigned int *)BitBlt_raw_buffer;
+		jj = 0;
+		for (y = 0; y < g_nHeight; y++)
+		{
+			zz = &(z[(g_nHeight - 1 - y)*g_nWidth]);
+			for (x = 0; x < g_nWidth; x++)
+			{
+				zzz = *zz & 0xffffff;
+				//zzz = 0xffffff;
+
+				*ee = encode_color_matrix_onebyte[zzz];//++ 
+				//*ee = __color_multibit_G7C223_(v[j + 2], v[j + 1], v[j + 0]);
+				//if (*ee == 0xfe) fe++;
+				ee++;
+				zz++;
+
+			};
+		};
+
+	};
+
+	unsigned short *z16, *zz16;
+
+	if (g_nColorMode == 16) {
+
+		z16 = (unsigned short *)BitBlt_raw_buffer;
+		jj = 0;
+
+		unsigned int g16, b16, r16;
+
+		for (y = 0; y < g_nHeight; y++)
+		{
+			/*
+			zz = &(z[(g_nHeight - 1 - y)*g_nWidth]);
+			for (x = 0; x < g_nWidth; x++)
+			{
+				zzz = *zz & 0xffffff;
+				*ee = encode_color_matrix_onebyte[zzz];//++ __color_multibit_G7C223_(v[j + 2], v[j + 1], v[j + 0]);
+				ee++;
+				zz++;
+
+			};
+			*/
+			zz16 = &(z16[(g_nHeight - 1 - y)*g_nWidth]);
+			for (x = 0; x < g_nWidth; x++)
+			{
+				//f800 07e0 001f
+
+
+				zzz = *zz16 & 0xffff;
+
+				b16 = 0;
+				g16 = 0;
+				r16 = 0;
+
+				b16 = zzz & 0x001f;
+				g16 = zzz & 0x03e0;
+				r16 = zzz & 0x7c00;
+
+				g16 = g16 >> 5;
+				r16 = r16 >> 10;
+
+				b16 = encode_color_matrix_5_in_8[b16];
+				g16 = encode_color_matrix_5_in_8[g16];
+				r16 = encode_color_matrix_5_in_8[r16];
+
+
+				g16 = g16 << 8;
+				r16 = r16 << 16;
+
+
+
+
+
+				zzz = r16 | b16 | g16;
+
+				//zzz = r16;
+
+				//if (zzz != 0) zzzz++;
+
+				*ee = encode_color_matrix_onebyte[zzz];//++ __color_multibit_G7C223_(v[j + 2], v[j + 1], v[j + 0]);
+				ee++;
+				zz16++;
+
+			};
+		};
+
+	};
+
+	unsigned char *z8, *zz8;// , *v;
+
+
+	int zzzz = 0;
+	unsigned int r8, g8, b8;
+	if (g_nColorMode == 24) {
+
+		z8 = (unsigned char *)BitBlt_raw_buffer;
+		jj = 0;
+		for (y = 0; y < g_nHeight; y++)
+		{
+			zz8 = &(z8[(g_nHeight - 1 - y)*g_nWidth * 3]);
+			for (x = 0; x < g_nWidth; x++)
+			{
+				r8 = *zz8 & 0xff; zz8++;
+				g8 = *zz8 & 0xff; zz8++;
+				b8 = *zz8 & 0xff; zz8++;
+
+				zzz = *zz8 & 0xffffff;
+
+				g8 = g8 << 8;
+				b8 = b8 << 16;
+
+				zzz = r8 | b8 | g8;
+
+				*ee = encode_color_matrix_onebyte[zzz];
+				//*ee = __color_multibit_G7C223_(v[j + 2], v[j + 1], v[j + 0]);
+				ee++;
+
+
+			};
+		};
+
+	};
+
+}
+
 
 
 void SCREEN_LIGHT_one_byte::set_new_size_(int w_, int h_) {
@@ -1092,6 +1236,24 @@ SCREEN_LIGHT_12bit::~SCREEN_LIGHT_12bit() {
 
 }
 
+void SCREEN_LIGHT_12bit::emulate_red() {
+
+	set_new_size_(250, 250);
+
+	unsigned char *q;
+
+	for (int j = 0; j < 250; j++) {
+		q = buf + j * 250;
+		for (int i = 0; i < 250; i++) {
+			*q++ = 32;
+		}
+	}
+	// 1 - 7 - красный
+	// 8 16 - зеленый
+	// 32 - темно синий
+}
+
+
 void SCREEN_LIGHT_12bit::set_new_size_(int w_, int h_) {
 	if (w_ <= 0 || h_ <= 0) return;
 
@@ -1099,8 +1261,8 @@ void SCREEN_LIGHT_12bit::set_new_size_(int w_, int h_) {
 	if (buf != nullptr) delete[] buf;
 	w = w_;
 	h = h_;
-	buf_size = w * h;
-	buf = new unsigned short[buf_size];
+	buf_max_size = w * h * 3;
+	buf = new unsigned char[buf_max_size];
 	header = (ENCODED_SCREEN_12bit_header *)&(buf[0]);
 	header->w = w;
 	header->h = h;
@@ -1167,7 +1329,7 @@ void SCREEN_LIGHT_12bit::encode() {
 
 	d1 = GetTickCount();
 
-	r = lzo1x_1_compress((unsigned char *)buf, buf_size, xx,&xxx, wrkmem);
+	r = lzo1x_1_compress((unsigned char *)buf, buf_len, xx,&xxx, wrkmem);
 	if (r == LZO_E_OK) {
 
 	}
@@ -1299,4 +1461,145 @@ void SCREEN_LIGHT_12bit::encode() {
 	fclose(f);
 
 
+}
+
+void encode_color_12bit_0(unsigned int zzz1, unsigned int zzz2, unsigned char *ee) {
+
+	unsigned int r0, r1, r2, r3, r4, r5;
+	
+	r0 = (zzz1 & 0xff0000); r0 = (r0 >> 16); r0 /= 16;
+	r1 = zzz1 & 0xff00;   	r1 = r1 >> 8;    r1 /= 16;
+	r2 = zzz1 & 0xff;                        r2 /= 16;
+
+	r3 = zzz2 & 0xff0000; r3 = r3 >> 16; r3 /= 16;
+	r4 = zzz2 & 0xff00;   r4 = r4 >> 8;  r4 /= 16;
+	r5 = zzz2 & 0xff;                    r5 /= 16;
+
+	ee[0] = ((r0 << 4) | r1);
+	ee[1] = ((r2 << 4) | r3);
+	ee[2] = ((r4 << 4) | r5);
+
+}
+
+void SCREEN_LIGHT_12bit::get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffer, int g_nWidth, int g_nHeight, int g_nColorMode) {
+	unsigned char *ee;
+	unsigned int *z, *zz, zzz1, zzz2;
+	int jj, y, x; // fe
+
+	ee = (unsigned char *)buf;
+
+
+	if (g_nColorMode == 32) {
+
+		z = (unsigned int *)BitBlt_raw_buffer;
+
+		jj = 0;
+
+		for (y = 0; y < g_nHeight; y++)
+		{
+
+			zz = &(z[(g_nHeight - 1 - y)*g_nWidth]);
+
+			for (x = 0; x < g_nWidth; x+=2)
+			{
+				zzz1 = *zz & 0xffffff; zz++;
+				zzz2 = *zz & 0xffffff; zz++;
+
+				encode_color_12bit_0(zzz1, zzz2, ee);
+
+				ee += 3;				
+				buf_len += 3;
+			};
+		};
+
+	};
+}
+
+//*********************************************************************************************************************************
+
+
+SCREEN_LIGHT_encoded_12bit::SCREEN_LIGHT_encoded_12bit() {
+
+}
+
+SCREEN_LIGHT_encoded_12bit::~SCREEN_LIGHT_encoded_12bit() {
+
+}
+
+void SCREEN_LIGHT_encoded_12bit::encode_screen_12bit(SCREEN_LIGHT_12bit *screen_12bit, int last_set_mouse_x, int last_set_mouse_y) {
+
+	encoded_buffer_len = 0;
+
+	if (encoded_buffer_max_size == 0) {
+
+		init_encode_color_matrix_all();
+
+		encoded_buffer_max_size = 1000;
+		encoded_buffer = new unsigned char[encoded_buffer_max_size];
+		if (lzo_init() != LZO_E_OK)
+		{
+			set_GLOBAL_STOP_true();
+			return;
+		}
+	}
+
+	
+	int r;
+
+	//d1 = GetTickCount();
+
+	if (encoded_buffer_max_size < screen_12bit->buf_len * 6) {
+		encoded_buffer_max_size = screen_12bit->buf_len * 6;
+		if (encoded_buffer != nullptr) delete[] encoded_buffer;
+		encoded_buffer = new unsigned char[encoded_buffer_max_size];
+	}
+
+	lzo_uint size;
+	size = encoded_buffer_max_size - sizeof(ENCODED_SCREEN_12bit_header);
+
+	r = lzo1x_1_compress( (unsigned char *)screen_12bit->buf, screen_12bit->buf_len, encoded_buffer+ sizeof(ENCODED_SCREEN_12bit_header), &size, wrkmem);
+	if (r == LZO_E_OK) {
+
+	}
+
+	encoded_buffer_len = size;
+
+	//************************************************************
+
+	ENCODED_SCREEN_12bit_header *header;
+
+	header = (ENCODED_SCREEN_12bit_header *)encoded_buffer;
+
+	header->reserv01 = 0;
+	header->reserv02 = 0;
+	header->reserv03 = 0;
+	header->reserv04 = 0;
+
+	header->format = 3;
+	header->w = screen_12bit->header->w;
+	header->h = screen_12bit->header->h;
+	header->color_bit = 32;// raw_screen->color_mode;
+	header->reserve1 = 0;
+	header->reserve2 = 0;
+	header->reserve3 = 0;
+	header->screen_id = screen_12bit->screen_id;
+	header->old_screen_id = screen_12bit->old_screen_id;
+	header->pal_size = 0;
+	header->body_size = 0;
+	header->header_size = sizeof(ENCODED_SCREEN_12bit_header);
+
+	header->mouse_x = screen_12bit->header->mouse_x;
+	header->mouse_y = screen_12bit->header->mouse_y;
+	header->mouse_cursor_type_id = screen_12bit->header->mouse_cursor_type_id;
+
+	if (screen_12bit->header->mouse_x == last_set_mouse_x && screen_12bit->header->mouse_y == last_set_mouse_y) {
+		header->itis_user_move_mouse = 100;
+	}
+	else {
+		header->itis_user_move_mouse = 200;
+	}
+
+	header->keyboard_location = screen_12bit->header->keyboard_location;
+
+	screen_12bit->old_screen_id = screen_12bit->screen_id;
 }
