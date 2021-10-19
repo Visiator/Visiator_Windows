@@ -3542,7 +3542,7 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 	//send_udp(ss);
 
 	if(screen != nullptr) screen->header.keyboard_location = get_KeyboardLocation();
-	if (screen_12bit != nullptr) screen_12bit->header->keyboard_location = get_KeyboardLocation();
+	if (screen_12bit != nullptr) screen_12bit->keyboard_location = get_KeyboardLocation();
 	//POINT p;
 	//GetCursorPos(&p);
 
@@ -3564,9 +3564,9 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 		}
 
 		if (screen_12bit != nullptr) {
-			screen_12bit->header->mouse_x = (unsigned short)cursor_info.ptScreenPos.x;
-			screen_12bit->header->mouse_y = (unsigned short)cursor_info.ptScreenPos.y;
-			screen_12bit->header->mouse_cursor_type_id = decode_mouse_cursor_type((unsigned long long)cursor_info.hCursor);
+			screen_12bit->mouse_x = (unsigned short)cursor_info.ptScreenPos.x;
+			screen_12bit->mouse_y = (unsigned short)cursor_info.ptScreenPos.y;
+			screen_12bit->mouse_cursor_type_id = decode_mouse_cursor_type((unsigned long long)cursor_info.hCursor);
 		}
 		
 
@@ -3581,9 +3581,9 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 			screen->header.mouse_cursor_type_id = -1;
 		}
 		if (screen_12bit != nullptr) {
-			screen_12bit->header->mouse_x = -1;
-			screen_12bit->header->mouse_y = -1;
-			screen_12bit->header->mouse_cursor_type_id = -1;
+			screen_12bit->mouse_x = -1;
+			screen_12bit->mouse_y = -1;
+			screen_12bit->mouse_cursor_type_id = -1;
 		}
 	}
 

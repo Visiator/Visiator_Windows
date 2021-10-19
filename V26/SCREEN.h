@@ -97,15 +97,25 @@ struct  ENCODED_SCREEN_12bit_header
 class SCREEN_LIGHT_12bit {
 public:
 
-	ENCODED_SCREEN_12bit_header *header = nullptr;
+	//ENCODED_SCREEN_12bit_header *header = nullptr;
 
-	int w = 0, h = 0;
+	unsigned short w = 0, h = 0;
+	unsigned short mouse_x;
+	unsigned short mouse_y;
+	unsigned int   mouse_cursor_type_id;
+	unsigned int   keyboard_location;
+
 	unsigned char *buf = nullptr;
-	int buf_max_size = 0;
+	int buf_max_size_ = 0;
 	int buf_len = 0;
 		
 	int screen_id = 0;
 	int old_screen_id = 0;
+	int old_w = 0, old_h = 0;
+	unsigned int *old__buf = nullptr;
+	unsigned int old__buf_size = 0;
+
+	void clean_();
 
 	void set_new_size_(int w_, int h_);
 	void encode();
@@ -231,8 +241,9 @@ public:
 
 void init_decode_color2(void);
 
-bool decode_screen(unsigned char *buf, int buf_size, SCREEN_LIGHT *raw_screen);
-
+bool decode_screen_8bit_first(unsigned char *buf, int buf_size, SCREEN_LIGHT *raw_screen);
+bool decode_screen_12bit_first(unsigned char *buf, int buf_size, SCREEN_LIGHT *raw_screen);
+bool decode_screen_8bit_second(unsigned char *buf, int buf_size, SCREEN_LIGHT *raw_screen);
 
 
 class SCREEN_LIGHT_encoded_8bit_first
@@ -270,15 +281,55 @@ public:
 	~SCREEN_LIGHT_encoded_8bit_first();
 };
 
+class SCREEN_LIGHT_encoded_8bit_second
+{
+public:
+	int w = 0, h = 0;
+	int old_w = 0, old_h = 0;
+	int old_screen_id = -1;
+	//int encoded_buffer_len = 0;
+
+	//unsigned char *encoded_buf = NULL;
+	//int encoded_buf_size = 0;
+
+	unsigned char *old_buf_one_byte = nullptr;
+	int old_buf_one_byte_size = 0;
+
+	
+
+	
+
+	void clean_();
+
+	//void set_new_size(int w_, int h_);
+
+	unsigned char *encoded_buffer = nullptr;
+	unsigned int encoded_buffer_max_size = 0;
+	unsigned int encoded_buffer_len = 0;
+
+	bool encode_screen_ONE_BYTE_second(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y);
+
+	SCREEN_LIGHT_encoded_8bit_second();
+	~SCREEN_LIGHT_encoded_8bit_second();
+};
+
 class SCREEN_LIGHT_encoded_12bit
 {
 public:
+	int w = 0, h = 0;
+	//int old_w = 0, old_h = 0;
+	int old_screen_id = -1;
+	      
+	//unsigned char *old_buf = nullptr;
+	//int old_buf_size = 0;
 
 	unsigned char *encoded_buffer = nullptr;
 	unsigned int encoded_buffer_max_size = 0;
 	unsigned int encoded_buffer_len = 0;
 
 	void encode_screen_12bit(SCREEN_LIGHT_12bit *screen_12bit, int last_set_mouse_x, int last_set_mouse_y);
+
+	void clean_();
 
 	SCREEN_LIGHT_encoded_12bit();
 	~SCREEN_LIGHT_encoded_12bit();

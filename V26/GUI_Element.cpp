@@ -91,9 +91,11 @@ void GUI_Element::Paint(GUI_low_level *low_level) {
 
 	if (color != 1) low_level->rectangle(x, y, w, h, color);
 
+	wchar_t ss[500];
+	ss[0] = 0;
+
 	if (type == GUI_Element_Type_viewer) {
-		wchar_t ss[500];
-		ss[0] = 0;
+		
 		
 		if (viewer->view_mode == VIEW_MODE_NOCONNECT) {
 
@@ -115,6 +117,11 @@ void GUI_Element::Paint(GUI_low_level *low_level) {
 		}
 		Pain_VIEWER(low_level);
 
+		ss[0] = 0;
+		swprintf_s(ss, 450, L"R=%lld S=%lld", viewer->net_client_session->recv__counter, viewer->net_client_session->send__countern);
+		font[0]->paintAAA(low_level, 9, 10, ss, 0x000000, -1, false);
+		font[0]->paintAAA(low_level, 11, 10, ss, 0x000000, -1, false);
+		font[0]->paintAAA(low_level, 10, 10, ss, 0x99ff99, -1, false);
 		return;
 	}
 

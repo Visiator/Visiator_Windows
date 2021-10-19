@@ -317,7 +317,7 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 
 					connection_to_partner_established = true;
 					if (SERVER_VER > 4000) {
-						need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver22;
+						need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver11;
 					}
 					else {
 						need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver11;
@@ -379,6 +379,13 @@ void NET_CLIENT_SESSION::set_partner_pass_and_id(uint64_t partner_id_, uint8_t *
 	for (int i = 0; i < 32; i++) {
 		partner_pass_encripted[i] = partner_pass_encripted_len32[i];
 	}
+
+	char ss[100];
+
+	sprintf_s(ss, 90, "set_partner_pass_and_id %02X-%02X-%02X ", partner_pass_encripted[0], partner_pass_encripted[1], partner_pass_encripted[2] );
+
+	sudp(ss);
+
 	partner_id = partner_id_;
 	set_status(L"partner_id received");
 	partner_pass_and_id_is_set = true;
@@ -400,29 +407,41 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 	recv__counter = 0;
 	send__countern = 0;
 
-	int res, snd, z, zz;
+	int res, res2, snd, z, zz;
 	MY_CRC crc;
 
 	local_stop = false;
 
+	boost::posix_time::milliseconds SleepTime(10);
+		
+	char ss[100];
+
 	while (GLOBAL_STOP == false && local_stop == false) {
 
 		//send_udp("loop");
+		
+		//
 
 		res = my_recv(sos, bb, 500000, &recv__counter);
 		if (res > 0) { // arrived
 
+			
 
 			//recv__counter__time = GetTickCount();
 
-			READ(bb, res);
+			
+			ss[0] = 0;
+			sprintf_s(ss, 90, "READ %d", res);
+			sudp(ss);
 
+			READ(bb, res);
+			if(parent_low_level != nullptr) parent_low_level->invalidate();
 		}
 		if (res < 0) { // disconnect 
 			local_stop = true;
 		}
 		if (res == 0) {
-			::Sleep(1);
+			boost::this_thread::sleep(SleepTime);
 		};
 
 		if (need_send_ALL_KEY_UP_event == true) {
@@ -589,6 +608,8 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 			*crc32 = crc.calc(&(cmd[8]), (8 + 16));
 
 			aes_partner.encrypt_stream(cmd, 32);
+
+			sudp("CLIENT send recuest screen...");
 
 			snd = my_send(sos, (unsigned char *)bb, 32, 0, "", &send__countern);
 			if (snd > 0) {
@@ -1024,7 +1045,8 @@ void NET_CLIENT_SESSION::analiz_command(unsigned char *buf) {
 	ENCODED_SCREEN_8bit_header *header;
 
 	if ( *type == PACKET_TYPE_responce_screen_ver11 ||
-		 *type == PACKET_TYPE_responce_screen_ver22
+		 *type == PACKET_TYPE_responce_screen_ver22 ||
+		 *type == PACKET_TYPE_responce_screen_ver33
 		
 		) {
 
@@ -1039,7 +1061,10 @@ void NET_CLIENT_SESSION::analiz_command(unsigned char *buf) {
 			//sprintf_ s(ss, 490, "mouse_cursor_type_id = %d ", header->mouse_cursor_type_id);
 			//send_udp(ss);
 		}
-
+		char ss[110];
+		ss[0] = 0;
+		sprintf_s( ss, 100, "sz=%d", *sz);
+		sudp(ss);
 		if (parent_func__arrived_screen != NULL) parent_func__arrived_screen(buf, *sz, *type);
 
 		if (parent_low_level != nullptr) parent_low_level->invalidate();

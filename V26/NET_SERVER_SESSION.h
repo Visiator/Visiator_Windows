@@ -12,11 +12,13 @@
 
 #define PACKET_TYPE_responce_screen_ver11 20002
 #define PACKET_TYPE_responce_screen_ver22 20053
+#define PACKET_TYPE_responce_screen_ver33 20055
 
 #define PACKET_TYPE_responce_screen_test 20003
 
 #define PACKET_TYPE_request_start_screenflow_ver11 20004
 #define PACKET_TYPE_request_start_screenflow_ver22 20052
+#define PACKET_TYPE_request_start_screenflow_ver33 20054
 
 #define PACKET_TYPE_responce_mouse_cursor_full_format 20005
 #define PACKET_TYPE_responce_mouse_cursor_short_format 20006
@@ -62,11 +64,10 @@
 
 #define PACKET_TYPE_TRANSFER_from_SRV_to_CLI_CANCELED 20051
 
-
-
-
 // 20052 already used
 // 20053 already used
+// 20054 already used
+// 20055 already used
 
 struct PACKET_LEVEL0
 {
@@ -205,7 +206,9 @@ public:
 	unsigned char PASS_ENCODED[32];
 	MY_AES aes_partner;
 
-	SCREEN_LIGHT_encoded_8bit_first  *screen_encoded = nullptr;
+	SCREEN_LIGHT_encoded_8bit_first   *screen_encoded_8bit_first  = nullptr;
+	SCREEN_LIGHT_encoded_8bit_second  *screen_encoded_8bit_second = nullptr;
+
 	SCREEN_LIGHT_one_byte *screen_one_byte_ = nullptr;
 	
 	SCREEN_LIGHT_12bit *screen_12bit = nullptr;
@@ -238,6 +241,8 @@ public:
 	void NetSession_Main_Loop(SOCKET sos);
 	void SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf);
 	void SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_12bit_header *scr_head_buf);
+	void SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_second(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf);
+
 	int  READ(byte *buffer, int buffer_size);
 	void add_to_low_level_encoded_buffer(unsigned char *buf, unsigned int size);
 	void add_to_low_level_buffer(unsigned char *buf, int size);

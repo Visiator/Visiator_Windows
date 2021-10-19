@@ -45,6 +45,8 @@ extern unsigned char *encode_color_matrix_6_in_8;
 
 unsigned short encode_rgb_to_12bit(unsigned int v);
 
+bool decode_screen_8bit_second(unsigned char *buf, int buf_size, SCREEN_LIGHT *raw_screen);
+
 CHESS_SHADOW::CHESS_SHADOW() {
 
 }
@@ -593,7 +595,7 @@ void init_decode_color2(void) {
 };
 
 
-bool decode_screen(unsigned char *buf, int buf_size, SCREEN_LIGHT *raw_screen) {
+bool decode_screen_8bit_first(unsigned char *buf, int buf_size, SCREEN_LIGHT *raw_screen) {
 	if (buf == NULL) {
 		fatal_error("SCREEN::decode() buf == NULL");
 		return false;
@@ -824,6 +826,17 @@ void SCREEN_LIGHT_encoded_8bit_first::clean_() {
 	old_screen_id = -1;
 }
 
+int sort_function_pal(const void *a, const void *b)
+{
+	PAL *p1, *p2;
+	p1 = (PAL *)a;
+	p2 = (PAL *)b;
+	if (p1->len * p1->count > p2->len * p2->count) return -1;
+	if (p1->len * p1->count == p2->len * p2->count) return 0;
+	return 1;
+};
+
+/*
 bool SCREEN_LIGHT_encoded_8bit_first::encode_screen_ONE_BYTE(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y ) {
 
 	if (screen_one_byte->screen_id == 0) {
@@ -953,9 +966,6 @@ bool SCREEN_LIGHT_encoded_8bit_first::encode_screen_ONE_BYTE(SCREEN_LIGHT_one_by
 				if (pal_count >= pal_count_max) {
 					pal_increase_size();
 				}
-				/*unlock();
-				fatal_error("pal_count >= pal_count_max");
-				return false;*/
 
 			};
 			qq = *q;
@@ -994,7 +1004,7 @@ bool SCREEN_LIGHT_encoded_8bit_first::encode_screen_ONE_BYTE(SCREEN_LIGHT_one_by
 	};
 	/////////////////////////////////////////////
 	//set_status(L"pal_count==", pal_count);
-	//qsort((void *)pal, pal_count, sizeof(pal[0]), sort_function_pal);
+	qsort((void *)pal, pal_count, sizeof(pal[0]), sort_function_pal);
 	c3 = clock();
 	/////////////////////////////////////////////
 
@@ -1226,7 +1236,7 @@ bool SCREEN_LIGHT_encoded_8bit_first::encode_screen_ONE_BYTE(SCREEN_LIGHT_one_by
 	return true;
 
 }
-
+*/
 
 SCREEN_LIGHT_12bit::SCREEN_LIGHT_12bit() {
 
@@ -1244,15 +1254,23 @@ void SCREEN_LIGHT_12bit::emulate_red() {
 
 	for (int j = 0; j < 250; j++) {
 		q = buf + j * 250;
-		for (int i = 0; i < 250; i++) {
-			*q++ = 32;
+		for (int i = 0; i < 250; i+=2) {
+			*q++ = 0x00;
+			*q++ = 0xf0;
+			*q++ = 0x0f;
 		}
 	}
+
+	buf_len = 250 / 2 * 250 * 3;
+
 	// 1 - 7 - красный
 	// 8 16 - зеленый
 	// 32 - темно синий
 }
 
+void SCREEN_LIGHT_12bit::clean_() {
+	old_screen_id = -1;
+}
 
 void SCREEN_LIGHT_12bit::set_new_size_(int w_, int h_) {
 	if (w_ <= 0 || h_ <= 0) return;
@@ -1261,11 +1279,9 @@ void SCREEN_LIGHT_12bit::set_new_size_(int w_, int h_) {
 	if (buf != nullptr) delete[] buf;
 	w = w_;
 	h = h_;
-	buf_max_size = w * h * 3;
-	buf = new unsigned char[buf_max_size];
-	header = (ENCODED_SCREEN_12bit_header *)&(buf[0]);
-	header->w = w;
-	header->h = h;
+	buf_max_size_ = w * h * 3;
+	buf = new unsigned char[buf_max_size_];
+	buf_len = w * h * 3;
 
 	//send_udp("set_new_size_() - - - - - - -");
 }
@@ -1482,14 +1498,65 @@ void encode_color_12bit_0(unsigned int zzz1, unsigned int zzz2, unsigned char *e
 }
 
 void SCREEN_LIGHT_12bit::get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffer, int g_nWidth, int g_nHeight, int g_nColorMode) {
+	
+	unsigned int *q, *o;
+	
 	unsigned char *ee;
-	unsigned int *z, *zz, zzz1, zzz2;
-	int jj, y, x; // fe
+	unsigned int *z, *zz, zzz1, zzz2, val;
+	int jj, y, x, wh; // fe
 
 	ee = (unsigned char *)buf;
 
-
+	buf_len = 0;
 	if (g_nColorMode == 32) {
+
+		if (g_nWidth != old_w || g_nHeight != old_h) {
+			old_screen_id = -1;
+			old_w = g_nWidth;
+			old_h = g_nHeight;
+
+			if (old__buf != nullptr) delete[] old__buf;
+			old__buf_size = old_w * old_h;
+			old__buf = new unsigned int[old__buf_size];
+		}
+
+		//////////////////===================================================================
+
+		q = (unsigned int *)BitBlt_raw_buffer;
+		o = old__buf;
+
+
+		//send__udp("ENCODE - - - - raw_screen->w = ", raw_screen->w );
+
+		wh = g_nWidth * g_nHeight;
+		//cc1 = 0;
+		//cc2 = 0;
+		//cc3 = 0;
+		if (old_screen_id > 0) {
+			for (int i = 0; i < wh; i++) {
+				val = *q;
+				//if (val == 0xfe) cc3++;
+				if (*o == val) {
+					*q = 0xffffE0;
+					//cc1++;
+				}
+				else {
+					*o = val;
+					//cc2++;
+				}
+				q++;
+				o++;
+			}
+		}
+		else {
+			for (int i = 0; i < wh; i++) {
+				*o = *q;
+				q++;
+				o++;
+			}
+		}
+
+		/////////======================================================================
 
 		z = (unsigned int *)BitBlt_raw_buffer;
 
@@ -1526,6 +1593,860 @@ SCREEN_LIGHT_encoded_12bit::~SCREEN_LIGHT_encoded_12bit() {
 
 }
 
+
+unsigned char *decompress_buffer = nullptr;
+unsigned int   decompress_buffer_max_size = 0;
+
+bool decode_screen_12bit_first(unsigned char *buf, int buf_size, SCREEN_LIGHT *raw_screen) {
+	if (buf == NULL) {
+		fatal_error("SCREEN::decode() buf == NULL");
+		return false;
+	};
+
+	if (raw_screen == NULL) return false;
+
+	int ww, hh, scr_id, old_scr_id, bdy_size, i, pl_idx, pl_size, j;
+
+	ENCODED_SCREEN_12bit_header *hdr;
+	
+	int header_size = 16 * 4;
+
+	hdr = (ENCODED_SCREEN_12bit_header *)buf;
+
+	if (hdr->format != 3) {
+
+		fatal_error("SCREEN::decode() hdr->format != 3 ");
+		return false;
+	};
+
+	if (hdr->color_bit != 32) {
+
+		fatal_error("SCREEN::decode() hdr->color_bit != 32");
+		//ALOG("hdr->color_bit = %d ", hdr->color_bit );
+		return false;
+	};
+
+	ww = hdr->w;
+	hh = hdr->h;
+
+
+	if (ww < 0 || ww > 5000 || hh < 0 || hh > 5000) {
+
+		fatal_error("SCREEN::decode() ww < 0 || ww > 5000 || hh < 0 || hh > 5000 ");
+		return false;
+	}
+
+	raw_screen->keyboard_location = hdr->keyboard_location;
+
+	//desk.keyboard.set_current_layout_by_code(keyboard_location);
+
+	if (ww != raw_screen->w || hh != raw_screen->h) {
+		raw_screen->lock_FULL(3000);
+		raw_screen->set_new_size(ww, hh);
+	};
+
+	
+
+
+	unsigned int *q, clr, ii, jj, q_max, q_idx, r, x, y, z1, z2, r0, r1, r2, r3, r4, r5;
+	unsigned char *d;
+	lzo_uint sz;
+	q_max = ww * hh;
+	q_idx = 0;
+
+	q = raw_screen->get_buf();
+
+
+
+	if (decompress_buffer_max_size < ww * hh * 3 * 2) {
+		decompress_buffer_max_size = ww * hh * 3 * 2;
+		if (decompress_buffer != nullptr) delete[] decompress_buffer;
+		decompress_buffer = new unsigned char[decompress_buffer_max_size];
+	}
+	
+	r = lzo1x_decompress(buf + 64, hdr->body_size, decompress_buffer, &sz, NULL);
+	if (r == LZO_E_OK) {
+
+	}
+
+	if (sz != ww / 2 * 3 * hh) {
+
+		set_GLOBAL_STOP_true();
+		return false;
+	}
+	
+	d = decompress_buffer;
+
+	q = raw_screen->get_buf();
+	for (y = 0; y < hh; y++) {
+		for (x = 0; x < ww / 2; x++) {
+
+			r0 = *d & 0xf0; r0 = r0 >> 4; 
+			r1 = *d & 0x0f;
+			d++;
+			
+			r2 = *d & 0xf0; r2 = r2 >> 4;
+			r3 = *d & 0x0f;
+			d++;
+
+			r4 = *d & 0xf0; r4 = r4 >> 4;
+			r5 = *d & 0x0f;
+			d++;
+
+			r0 *= 16; r0 = r0 | 0x0f;
+			r1 *= 16; r1 = r1 | 0x0f;
+			r2 *= 16; r2 = r2 | 0x0f;
+			r3 *= 16; r3 = r3 | 0x0f;
+			r4 *= 16; r4 = r4 | 0x0f;
+			r5 *= 16; r5 = r5 | 0x0f;
+
+			z1 = (r0 << 16) | (r1 << 8) | r2;
+			z2 = (r3 << 16) | (r4 << 8) | r5;
+
+			if (z1 == 0xffffEf) {
+				q++;
+			}
+			else {
+				*q++ = z1;
+			};
+
+			if (z2 == 0xffffEf) {
+				q++;
+			}
+			else {
+				*q++ = z2;
+			};
+		}
+	}
+	
+	scr_id = hdr->screen_id;
+	old_scr_id = hdr->old_screen_id;
+
+
+	raw_screen->mouse_x = hdr->mouse_x;
+	raw_screen->mouse_y = hdr->mouse_y;
+	raw_screen->mouse_cursor_type_id = hdr->mouse_cursor_type_id;
+	raw_screen->_itis_user_move_mouse_ = hdr->itis_user_move_mouse;
+	raw_screen->keyboard_location = hdr->keyboard_location;
+
+
+	raw_screen->screen_id = scr_id;
+	raw_screen->old_screen_id = old_scr_id;
+
+	return true;
+
+
+}
+
+
+//============================================================================================
+
+SCREEN_LIGHT_encoded_8bit_second::SCREEN_LIGHT_encoded_8bit_second() {
+
+};
+
+SCREEN_LIGHT_encoded_8bit_second::~SCREEN_LIGHT_encoded_8bit_second() {
+
+	if(old_buf_one_byte != nullptr) delete[] old_buf_one_byte;
+	old_buf_one_byte_size = 0;
+
+	
+	if(encoded_buffer != nullptr) delete[] encoded_buffer;
+
+}
+
+void SCREEN_LIGHT_encoded_8bit_second::clean_() {
+	old_screen_id = -1;
+}
+
+void SCREEN_LIGHT_encoded_12bit::clean_() {
+	old_screen_id = -1;
+}
+
+bool SCREEN_LIGHT_encoded_8bit_first::encode_screen_ONE_BYTE(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y) {
+
+	if (screen_one_byte->screen_id == 0) {
+		//send_udp("SCREEN::encode() raw_screen->screen_id == 0 error");
+		return false;
+	}
+
+	if (screen_one_byte->screen_id == old_screen_id) {
+		//fatal_error("SCREEN::encode() screen_id == old_screen_id wtf??");
+		return false;
+	}
+
+	if (screen_one_byte->header.w == 0 || screen_one_byte->header.h == 0) return false;
+	if (screen_one_byte->header.w < 0 || screen_one_byte->header.h < 0) return false;
+	if (screen_one_byte->header.w > 5500 || screen_one_byte->header.h > 5500) return false;
+
+	if (screen_one_byte->header.w != old_w || screen_one_byte->header.h != old_h) {
+		old_screen_id = -1;
+		old_w = screen_one_byte->header.w;
+		old_h = screen_one_byte->header.h;
+
+		if (old_buf_one_byte != NULL) delete[] old_buf_one_byte;
+		old_buf_one_byte_size = old_w * old_h;
+		old_buf_one_byte = new unsigned char[old_buf_one_byte_size];
+	}
+
+	if (pal == NULL) {
+		pal_count_max = 2000;
+		pal = new_PAL(pal_count_max);     //        neew(sizeof(PAL) * pal_count_max, pal, "SCREEN::SCREEN() neww PAL[xxx]");
+
+	}
+
+	if (body == NULL) {
+		body_count_max = 1980 * 1200 * 4;
+		body = new unsigned char[body_count_max]; //neew(body_count_max, body, "SCREEN::SCREEN() body");
+	};
+
+	unsigned int pal_count;
+
+	int body_count;
+
+	pal_count = 0;
+	body_count = 0;
+	encoded_buffer_len = 0;
+
+	unsigned int i, j, k, zz, c1, c2, c3, c4, c5, c6, c7;// , cc1, cc2, cc3;
+	unsigned char *q, qq, *o, val;
+
+	//lock();
+
+	q = screen_one_byte->get_buf_one_byte();
+	o = old_buf_one_byte;
+
+
+	//send__udp("ENCODE - - - - raw_screen->w = ", raw_screen->w );
+
+	zz = screen_one_byte->header.w * screen_one_byte->header.h;
+	//cc1 = 0;
+	//cc2 = 0;
+	//cc3 = 0;
+	if (old_screen_id > 0) {
+		for (i = 0; i < zz; i++) {
+			val = *q;
+			//if (val == 0xfe) cc3++;
+			if (*o == val) {
+				*q = 0xfe;
+				//cc1++;
+			}
+			else {
+				*o = val;
+				//cc2++;
+			}
+			q++;
+			o++;
+		}
+	}
+	else {
+		for (i = 0; i < zz; i++) {
+			*o = *q;
+			q++;
+			o++;
+		}
+	}
+
+
+
+	q = screen_one_byte->get_buf_one_byte();
+	qq = q[0];
+
+	//if (pal == NULL) pal = neww PAL[pal_count_max];
+
+	unsigned short len;
+
+	c1 = clock();
+
+	len = 0;
+	pal_count = 0;
+	i = 0;
+	while (i < zz) {
+		if (*q == qq && len < 65000) {
+			len++;
+		}
+		else {
+			j = 0;
+			k = 0;
+			while (j < pal_count)
+			{
+				if (pal[j].color == qq &&
+					pal[j].len == len)
+				{
+					//fprintf(f, "+[%d] %d , %d\r\n", j, pal[ j ].color , pal[ j ].len );
+
+					pal[j].count++;
+					k = 1;
+					break;
+				};
+				j++;
+			};
+
+			if (k == 0)
+			{
+				//fprintf(f, "-[%d] %d , %d\r\n", j, qq , len );
+				pal[pal_count].color = qq;
+				pal[pal_count].len = len;
+				pal[pal_count].count = 1;
+				pal_count++;
+				if (pal_count >= pal_count_max) {
+					pal_increase_size();
+				}
+				/*unlock();
+				fatal_error("pal_count >= pal_count_max");
+				return false;*/
+
+			};
+			qq = *q;
+			len = 1;
+		};
+		i++;
+		q++;
+	}
+
+	//send__udp("ENCODE - - - - pal_count = ", pal_count);
+
+	c2 = clock();
+	j = 0;
+	k = 0;
+	while (j < pal_count)
+	{
+		if (pal[j].color == qq &&
+			pal[j].len == len)
+		{
+			pal[j].count++;
+			k = 1;
+			break;
+		};
+		j++;
+	};
+
+	if (k == 0) {
+
+		pal[pal_count].color = qq;
+		pal[pal_count].len = len;
+		//pal_count = 1;
+
+		pal[pal_count].count = 1;
+		pal_count++;
+
+	};
+	/////////////////////////////////////////////
+	//set_status(L"pal_count==", pal_count);
+	qsort((void *)pal, pal_count, sizeof(pal[0]), sort_function_pal);
+	c3 = clock();
+	/////////////////////////////////////////////
+
+	//f = fopen("c:\\1\\ppp.txt", "wb");
+	unsigned int jj;
+	int c8, c16;
+	c8 = 0;
+	c16 = 0;
+
+	unsigned char *vv;
+	vv = (unsigned char *)&jj;
+
+
+
+
+	//if (body == NULL) body = neww unsigned char[body_count_max];
+
+	body_count = 0;
+	q = screen_one_byte->get_buf_one_byte();
+
+	i = 0;
+	qq = q[0];
+	len = 0;
+
+	while (i < zz)
+	{//22222
+
+		if (*q == qq && len < 65000) {
+			len++;
+		}
+		else {
+			jj = 0;
+			k = 0;
+			while (jj < pal_count)
+			{
+				if (pal[jj].color == qq &&
+					pal[jj].len == len)
+				{
+					if (jj < 128)
+					{
+						// TODO
+						//fprintf(f, "%c", jj );
+						body[body_count] = jj;
+						body_count++;
+						c8++;
+						if (body_count >= body_count_max)
+						{
+							// 2019 11 TODO ! надо сделать body_increase_size();
+							//unlock();
+							fatal_error("body_count >= body_count_max (1)");
+							return false;
+						};
+					}
+					else
+					{
+						// TODO
+						// fprintf(f, "%c%c", (vv[1] | 0x80), vv[0] );
+						body[body_count] = (vv[1] | 0x80);
+						body_count++;
+						body[body_count] = vv[0];
+						body_count++;
+						c16++;
+						if (body_count >= body_count_max)
+						{
+							// 2019 11 TODO ! надо сделать body_increase_size();
+							//unlock();
+							fatal_error("body_count >= body_count_max (2)");
+							return false;
+						};
+
+
+					};
+					//fprintf(f, "[%d] %d , %d\r\n", jj, pal[ jj ].color , pal[ jj ].len );
+					k = 1;
+					break;
+				};
+				jj++;
+			};
+			if (k == 0)
+			{
+				//unlock();
+				fatal_error("err wtf ?? k == 0");
+				return false;
+			};
+			qq = *q;
+			len = 1;
+		};
+		i++;
+		q++;
+	};//22222
+
+
+
+	////////////////////////
+	c4 = clock();
+	jj = 0;
+	k = 0;
+	while (jj < pal_count)
+	{
+		if (pal[jj].color == qq &&
+			pal[jj].len == len)
+		{
+			if (jj < 128)
+			{
+				// TODO
+				// fprintf(f, "%c", jj );
+				body[body_count] = jj;
+				c8++;
+				body_count++;
+				if (body_count >= body_count_max)
+				{
+					// 2019 11 TODO ! надо сделать body_increase_size();
+					//unlock();
+					fatal_error("body_count >= body_count_max (3)");
+					return false;
+				};
+
+			}
+			else
+			{
+				// TODO
+				// fprintf(f, "%c%c", (vv[1] | 0x80), vv[0] );
+				body[body_count] = (vv[1] | 0x80);
+				body_count++;
+				body[body_count] = vv[0];
+				body_count++;
+				if (body_count >= body_count_max)
+				{
+					// 2019 11 TODO ! надо сделать body_increase_size();
+					//unlock();
+					fatal_error("body_count >= body_count_max (4)");
+					return false;
+				};
+			};
+			k = 1;
+			break;
+		};
+		jj++;
+	};
+	c5 = clock();
+	/////////////////////////////////////////////////////////////
+	int header_size, pal_size, body_size;
+
+	header_size = 16 * 4;
+
+	pal_size = pal_count * 4;
+	body_size = body_count;
+
+
+	encoded_buffer_len = header_size + pal_size + body_size;
+
+	if (encoded_buffer_len_max < encoded_buffer_len) {
+
+		if (encoded_buffer != NULL) delete[] encoded_buffer;
+		encoded_buffer_len_max = (int)((float)encoded_buffer_len * 1.5);
+		encoded_buffer = new unsigned char[encoded_buffer_len_max]; //neew(encoded_buffer_len_max, encoded_buffer);
+	};
+
+	ENCODED_SCREEN_8bit_header *header;
+
+	header = (ENCODED_SCREEN_8bit_header *)encoded_buffer;
+
+	header->reserv01 = 0;
+	header->reserv02 = 0;
+	header->reserv03 = 0;
+	header->reserv04 = 0;
+
+	header->format = 2;
+	header->w = screen_one_byte->header.w;
+	header->h = screen_one_byte->header.h;
+	header->color_bit = 32;// raw_screen->color_mode;
+	header->reserve1 = 0;
+	header->reserve2 = 0;
+	header->reserve3 = 0;
+	header->screen_id = screen_one_byte->screen_id;
+	header->old_screen_id = old_screen_id;
+	header->pal_size = pal_count * 4;
+	header->body_size = body_count;
+	header->header_size = header_size;
+
+	header->mouse_x = screen_one_byte->header.mouse_x;
+	header->mouse_y = screen_one_byte->header.mouse_y;
+	header->mouse_cursor_type_id = screen_one_byte->header.mouse_cursor_type_id;
+
+	if (screen_one_byte->header.mouse_x == last_set_mouse_x && screen_one_byte->header.mouse_y == last_set_mouse_y) {
+		header->itis_user_move_mouse = 100;
+	}
+	else {
+		header->itis_user_move_mouse = 200;
+	}
+
+	header->keyboard_location = screen_one_byte->header.keyboard_location;
+
+
+
+	C8SH16 *cs;
+
+	//char ssd[500];
+	//sprintf_ s(ssd, 250, "w-%d h-%d c-%d p-%d b-%d k-%X len=%d ", raw_screen->w, raw_screen->h, raw_screen->color_mode, pal_count, body_count , raw_screen->raw_keyboard_location, encoded_buffer_len);
+	//send_udp(ssd);
+
+	cs = (C8SH16 *)&encoded_buffer[header_size];
+	for (i = 0; i < pal_count; i++)
+	{
+		//sprintf_ s(ssd, 500, "PAL[%d] %02X %d ", i, pal[i].color, pal[i].len );
+		//send_udp(ssd);
+		cs->c = pal[i].color;
+		cs->s = pal[i].len;
+		cs++;
+	};
+	c6 = clock();
+
+	unsigned char *v, *bd;
+
+	v = (unsigned char *)&(encoded_buffer[header_size + pal_count * 4]);
+	bd = body;
+	for (int i = 0; i < body_count; i++)
+	{
+		*v = *bd;
+		bd++;
+		v++;
+	};
+	c7 = clock();
+
+	old_screen_id = screen_one_byte->screen_id;
+
+	//save_screen_to_file(encoded_buffer, encoded_buffer_len);
+
+	return true;
+
+}
+
+
+bool SCREEN_LIGHT_encoded_8bit_second::encode_screen_ONE_BYTE_second(SCREEN_LIGHT_one_byte *screen_one_byte, int last_set_mouse_x, int last_set_mouse_y) {
+
+	if (screen_one_byte->screen_id == 0) {
+		//send_udp("SCREEN::encode() raw_screen->screen_id == 0 error");
+		return false;
+	}
+
+	if (screen_one_byte->screen_id == old_screen_id) {
+		//fatal_error("SCREEN::encode() screen_id == old_screen_id wtf??");
+		return false;
+	}
+
+	if (screen_one_byte->header.w == 0 || screen_one_byte->header.h == 0) return false;
+	if (screen_one_byte->header.w < 0 || screen_one_byte->header.h < 0) return false;
+	if (screen_one_byte->header.w > 5500 || screen_one_byte->header.h > 5500) return false;
+
+	if (screen_one_byte->header.w != old_w || screen_one_byte->header.h != old_h) {
+		old_screen_id = -1;
+		old_w = screen_one_byte->header.w;
+		old_h = screen_one_byte->header.h;
+
+		if (old_buf_one_byte != NULL) delete[] old_buf_one_byte;
+		old_buf_one_byte_size = old_w * old_h;
+		old_buf_one_byte = new unsigned char[old_buf_one_byte_size];
+	}
+
+
+
+	encoded_buffer_len = 0;
+
+	unsigned int i, j, k, zz, c1, c2, c3, c4, c5, c6, c7;// , cc1, cc2, cc3;
+	unsigned char *q, qq, *o, val;
+
+	//lock();
+
+	q = screen_one_byte->get_buf_one_byte();
+	o = old_buf_one_byte;
+
+
+	//send__udp("ENCODE - - - - raw_screen->w = ", raw_screen->w );
+
+	zz = screen_one_byte->header.w * screen_one_byte->header.h;
+	//cc1 = 0;
+	//cc2 = 0;
+	//cc3 = 0;
+	if (old_screen_id > 0) {
+		for (i = 0; i < zz; i++) {
+			val = *q;
+			//if (val == 0xfe) cc3++;
+			if (*o == val) {
+				*q = 0xfe;
+				//cc1++;
+			}
+			else {
+				*o = val;
+				//cc2++;
+			}
+			q++;
+			o++;
+		}
+	}
+	else {
+		for (i = 0; i < zz; i++) {
+			*o = *q;
+			q++;
+			o++;
+		}
+	}
+
+
+
+	q = screen_one_byte->get_buf_one_byte();
+	qq = q[0];
+
+	//if (pal == NULL) pal = neww PAL[pal_count_max];
+
+	unsigned short len;
+
+	
+
+	//send__udp("ENCODE - - - - pal_count = ", pal_count);
+
+	c2 = clock();
+	
+	c3 = clock();
+	/////////////////////////////////////////////
+
+	c5 = clock();
+	/////////////////////////////////////////////////////////////
+	int header_size, r;
+
+	header_size = 16 * 4;
+
+	if (encoded_buffer_max_size < zz * 2) {
+		encoded_buffer_max_size = zz * 2;
+		if (encoded_buffer != nullptr) delete[] encoded_buffer;
+		encoded_buffer = new unsigned char[encoded_buffer_max_size];
+	}
+
+	lzo_uint size;
+	size = encoded_buffer_max_size - (16 * 4);
+
+	r = lzo1x_1_compress((unsigned char *)screen_one_byte->get_buf_one_byte(), zz, encoded_buffer + (16 * 4), &size, wrkmem);
+	if (r == LZO_E_OK) {
+
+	}
+	/*
+	FILE *f;
+	fopen_s(&f, "c:\\1\\cmp.txt", "ab");
+	if (f != NULL) {
+		fprintf(f, "%d %02X-%02X-%02X", size, encoded_buffer[64], encoded_buffer[65], encoded_buffer[66]);
+		fclose(f);
+	}
+	*/
+
+	encoded_buffer_len = size;
+
+
+	ENCODED_SCREEN_8bit_header *header;
+
+	header = (ENCODED_SCREEN_8bit_header *)encoded_buffer;
+
+	header->reserv01 = 0;
+	header->reserv02 = 0;
+	header->reserv03 = 0;
+	header->reserv04 = 0;
+
+	header->format = 4;
+	header->w = screen_one_byte->header.w;
+	header->h = screen_one_byte->header.h;
+	header->color_bit = 32;// raw_screen->color_mode;
+	header->reserve1 = 0;
+	header->reserve2 = 0;
+	header->reserve3 = 0;
+	header->screen_id = screen_one_byte->screen_id;
+	header->old_screen_id = old_screen_id;
+	header->pal_size = 0;
+	header->body_size = size;
+	header->header_size = header_size;
+
+	header->mouse_x = screen_one_byte->header.mouse_x;
+	header->mouse_y = screen_one_byte->header.mouse_y;
+	header->mouse_cursor_type_id = screen_one_byte->header.mouse_cursor_type_id;
+
+	if (screen_one_byte->header.mouse_x == last_set_mouse_x && screen_one_byte->header.mouse_y == last_set_mouse_y) {
+		header->itis_user_move_mouse = 100;
+	}
+	else {
+		header->itis_user_move_mouse = 200;
+	}
+
+	header->keyboard_location = screen_one_byte->header.keyboard_location;
+
+
+	c6 = clock();
+
+	c7 = clock();
+
+	old_screen_id = screen_one_byte->screen_id;
+
+	//save_screen_to_file(encoded_buffer, encoded_buffer_len);
+
+	return true;
+
+};
+
+
+bool decode_screen_8bit_second(unsigned char *buf, int buf_size, SCREEN_LIGHT *raw_screen) {
+	if (buf == NULL) {
+		fatal_error("SCREEN::decode() buf == NULL");
+		return false;
+	};
+
+	if (raw_screen == NULL) return false;
+
+	int ww, hh, scr_id, old_scr_id, bdy_size, i, pl_idx, pl_size, j;
+
+	ENCODED_SCREEN_12bit_header *hdr;
+
+	int header_size = 16 * 4;
+
+	hdr = (ENCODED_SCREEN_12bit_header *)buf;
+
+	if (hdr->format != 4) {
+
+		fatal_error("SCREEN::decode() hdr->format != 4 ");
+		return false;
+	};
+
+	if (hdr->color_bit != 32) {
+
+		fatal_error("SCREEN::decode() hdr->color_bit != 32");
+		//ALOG("hdr->color_bit = %d ", hdr->color_bit );
+		return false;
+	};
+
+	ww = hdr->w;
+	hh = hdr->h;
+
+
+	if (ww < 0 || ww > 5000 || hh < 0 || hh > 5000) {
+
+		fatal_error("SCREEN::decode() ww < 0 || ww > 5000 || hh < 0 || hh > 5000 ");
+		return false;
+	}
+
+	raw_screen->keyboard_location = hdr->keyboard_location;
+
+	//desk.keyboard.set_current_layout_by_code(keyboard_location);
+
+	if (ww != raw_screen->w || hh != raw_screen->h) {
+		raw_screen->lock_FULL(3000);
+		raw_screen->set_new_size(ww, hh);
+	};
+
+
+
+
+	unsigned int *q, clr, ii, jj, q_max, q_idx, r, x, y, z1, z2, r0, r1, r2, r3, r4, r5;
+	unsigned char *d;
+	lzo_uint sz;
+	q_max = ww * hh;
+	q_idx = 0;
+
+	q = raw_screen->get_buf();
+
+
+
+	if (decompress_buffer_max_size < ww * hh * 4) {
+		decompress_buffer_max_size = ww * hh * 4;
+		if (decompress_buffer != nullptr) delete[] decompress_buffer;
+		decompress_buffer = new unsigned char[decompress_buffer_max_size];
+	}
+
+	r = lzo1x_decompress(buf + 64, hdr->body_size, decompress_buffer, &sz, NULL);
+	if (r == LZO_E_OK) {
+
+	}
+
+	if (sz != ww * hh) {
+
+		set_GLOBAL_STOP_true();
+		return false;
+	}
+
+	d = decompress_buffer;
+
+	q = raw_screen->get_buf();
+	for (y = 0; y < hh; y++) {
+		for (x = 0; x < ww ; x++) {
+
+			if (*d == 0xfe) {
+				q++;
+				d++;
+			}
+			else {
+				*q++ = decode_color_matrix_G7C223[*d++];
+			};
+		}
+	}
+
+	scr_id = hdr->screen_id;
+	old_scr_id = hdr->old_screen_id;
+
+
+	raw_screen->mouse_x = hdr->mouse_x;
+	raw_screen->mouse_y = hdr->mouse_y;
+	raw_screen->mouse_cursor_type_id = hdr->mouse_cursor_type_id;
+	raw_screen->_itis_user_move_mouse_ = hdr->itis_user_move_mouse;
+	raw_screen->keyboard_location = hdr->keyboard_location;
+
+
+	raw_screen->screen_id = scr_id;
+	raw_screen->old_screen_id = old_scr_id;
+
+	return true;
+
+
+}
+
 void SCREEN_LIGHT_encoded_12bit::encode_screen_12bit(SCREEN_LIGHT_12bit *screen_12bit, int last_set_mouse_x, int last_set_mouse_y) {
 
 	encoded_buffer_len = 0;
@@ -1544,12 +2465,15 @@ void SCREEN_LIGHT_encoded_12bit::encode_screen_12bit(SCREEN_LIGHT_12bit *screen_
 	}
 
 	
+
+	
+
 	int r;
 
 	//d1 = GetTickCount();
 
-	if (encoded_buffer_max_size < screen_12bit->buf_len * 6) {
-		encoded_buffer_max_size = screen_12bit->buf_len * 6;
+	if (encoded_buffer_max_size < screen_12bit->buf_len * 2) {
+		encoded_buffer_max_size = screen_12bit->buf_len * 2;
 		if (encoded_buffer != nullptr) delete[] encoded_buffer;
 		encoded_buffer = new unsigned char[encoded_buffer_max_size];
 	}
@@ -1557,10 +2481,18 @@ void SCREEN_LIGHT_encoded_12bit::encode_screen_12bit(SCREEN_LIGHT_12bit *screen_
 	lzo_uint size;
 	size = encoded_buffer_max_size - sizeof(ENCODED_SCREEN_12bit_header);
 
-	r = lzo1x_1_compress( (unsigned char *)screen_12bit->buf, screen_12bit->buf_len, encoded_buffer+ sizeof(ENCODED_SCREEN_12bit_header), &size, wrkmem);
+	r = lzo1x_1_compress((unsigned char *)screen_12bit->buf, screen_12bit->buf_len, encoded_buffer + sizeof(ENCODED_SCREEN_12bit_header), &size, wrkmem);
 	if (r == LZO_E_OK) {
 
 	}
+	/*
+	FILE *f;
+	fopen_s(&f, "c:\\1\\cmp.txt", "ab");
+	if (f != NULL) {
+		fprintf(f, "%d %02X-%02X-%02X", size, encoded_buffer[64], encoded_buffer[65], encoded_buffer[66]);
+		fclose(f);
+	}
+	*/
 
 	encoded_buffer_len = size;
 
@@ -1576,8 +2508,8 @@ void SCREEN_LIGHT_encoded_12bit::encode_screen_12bit(SCREEN_LIGHT_12bit *screen_
 	header->reserv04 = 0;
 
 	header->format = 3;
-	header->w = screen_12bit->header->w;
-	header->h = screen_12bit->header->h;
+	header->w = screen_12bit->w;
+	header->h = screen_12bit->h;
 	header->color_bit = 32;// raw_screen->color_mode;
 	header->reserve1 = 0;
 	header->reserve2 = 0;
@@ -1585,21 +2517,21 @@ void SCREEN_LIGHT_encoded_12bit::encode_screen_12bit(SCREEN_LIGHT_12bit *screen_
 	header->screen_id = screen_12bit->screen_id;
 	header->old_screen_id = screen_12bit->old_screen_id;
 	header->pal_size = 0;
-	header->body_size = 0;
+	header->body_size = size;
 	header->header_size = sizeof(ENCODED_SCREEN_12bit_header);
 
-	header->mouse_x = screen_12bit->header->mouse_x;
-	header->mouse_y = screen_12bit->header->mouse_y;
-	header->mouse_cursor_type_id = screen_12bit->header->mouse_cursor_type_id;
+	header->mouse_x = screen_12bit->mouse_x;
+	header->mouse_y = screen_12bit->mouse_y;
+	header->mouse_cursor_type_id = screen_12bit->mouse_cursor_type_id;
 
-	if (screen_12bit->header->mouse_x == last_set_mouse_x && screen_12bit->header->mouse_y == last_set_mouse_y) {
+	if (screen_12bit->mouse_x == last_set_mouse_x && screen_12bit->mouse_y == last_set_mouse_y) {
 		header->itis_user_move_mouse = 100;
 	}
 	else {
 		header->itis_user_move_mouse = 200;
 	}
 
-	header->keyboard_location = screen_12bit->header->keyboard_location;
+	header->keyboard_location = screen_12bit->keyboard_location;
 
 	screen_12bit->old_screen_id = screen_12bit->screen_id;
 }

@@ -4,6 +4,8 @@
 #include "GUI.h"
 #include "GUI_low_level.h"
 #include "VIEWER_small_top_panel.h"
+#include "NET_SERVER_SESSION.h"
+
 
 extern APPLICATION_ATTRIBUTES app_attributes;
 extern bool GLOBAL_STOP;
@@ -403,6 +405,9 @@ LRESULT VIEWER::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (net_client_session == nullptr) {
 		net_client_session = new NET_CLIENT_SESSION();
+
+		net_client_session->parent_low_level = gui->low_level;
+
 		net_client_session->parent_func__arrived_screen = &_callback__arrived_screen;
 		net_client_session->parent_func__connect = &_callback__connect;
 		net_client_session->parent_func__disconnect = &_callback__disconnect;
@@ -1008,7 +1013,7 @@ LRESULT VIEWER::WM_PAINT_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	*/
 	gui->low_level->Paint();
 
-	gui->invalidate();
+	//gui->invalidate();
 
 	//InvalidateRect(hw, NULL, FALSE);
 
@@ -1270,6 +1275,12 @@ void VIEWER::EXECUTE() {
 	};
 	prepare_pass_tik = 0;
 	
+
+	//char ss[100];
+
+	//sprintf_s(ss, 90, "pass_no_encripted %02X-%02X-%02X-%02X-%02X", pass_no_encripted[0], pass_no_encripted[1], pass_no_encripted[2], pass_no_encripted[3], pass_no_encripted[4] );
+
+	//sudp(ss);
 
 	while (GLOBAL_STOP == false) {
 
@@ -1576,44 +1587,90 @@ void VIEWER::callback__arrived_screen(unsigned char *buf, int buf_size, unsigned
 	float aspect;
 	RECT WindowRect, ClientRect;
 
-	//AnsiString a;
-	//a = "callback__arrived_screen ";
-	//a += buf_size;
-	//send_udp( a.c_str() );
-
-	ENCODED_SCREEN_8bit_header *hdr;
-	hdr = (ENCODED_SCREEN_8bit_header *)buf;
-
-	if (last_cursor != hdr->mouse_cursor_type_id) {
-		last_cursor = hdr->mouse_cursor_type_id;
-		need_cursor = hdr->mouse_cursor_type_id;
-		PostMessage(window_hwnd, WM_SETCURSOR, 0, 0);
-	}
-
-
-
 	bool flag1 = false, flag2 = false, flag3 = false;
 
 	if (screen_light_from_server_fullsize->w == 0) flag1 = true;
 
+	if (_FORMAT_VER == PACKET_TYPE_responce_screen_ver11) {
+		ENCODED_SCREEN_8bit_header *hdr8;
+		
+		hdr8 = (ENCODED_SCREEN_8bit_header *)buf;
 
+		if (last_cursor != hdr8->mouse_cursor_type_id) {
+			last_cursor = hdr8->mouse_cursor_type_id;
+			need_cursor = hdr8->mouse_cursor_type_id;
+			PostMessage(window_hwnd, WM_SETCURSOR, 0, 0);
+		}
 
-	if (hdr->w != screen_light_from_server_fullsize->w || hdr->h != screen_light_from_server_fullsize->h) {
+		if (hdr8->w != screen_light_from_server_fullsize->w || hdr8->h != screen_light_from_server_fullsize->h) {
 
-		screen_light_from_server_fullsize->lock_FULL(4000);
+			screen_light_from_server_fullsize->lock_FULL(4000);
+			screen_light_from_server_fullsize->set_new_size(hdr8->w, hdr8->h);
 
-		screen_light_from_server_fullsize->set_new_size(hdr->w, hdr->h);
+			flag3 = true;
+		};
 
+		if (hdr8->w != screen_light_from_server_fullsize->w || hdr8->h != screen_light_from_server_fullsize->h) {
+			flag3 = true;
+		};
 
-		//screen_light_from_server_fullsize->unlock(4001);
-		flag3 = true;
+		decode_screen_8bit_first(buf, buf_size, screen_light_from_server_fullsize);
+
 	};
 
-	if (hdr->w != screen_light_from_server_fullsize->w || hdr->h != screen_light_from_server_fullsize->h) {
-		flag3 = true;
+	if (_FORMAT_VER == PACKET_TYPE_responce_screen_ver22) {
+		ENCODED_SCREEN_12bit_header *hdr12;
+
+		hdr12 = (ENCODED_SCREEN_12bit_header *)buf;
+
+		if (last_cursor != hdr12->mouse_cursor_type_id) {
+			last_cursor = hdr12->mouse_cursor_type_id;
+			need_cursor = hdr12->mouse_cursor_type_id;
+			PostMessage(window_hwnd, WM_SETCURSOR, 0, 0);
+		}
+
+		if (hdr12->w != screen_light_from_server_fullsize->w || hdr12->h != screen_light_from_server_fullsize->h) {
+
+			screen_light_from_server_fullsize->lock_FULL(4000);
+			screen_light_from_server_fullsize->set_new_size(hdr12->w, hdr12->h);
+
+			flag3 = true;
+		};
+
+		if (hdr12->w != screen_light_from_server_fullsize->w || hdr12->h != screen_light_from_server_fullsize->h) {
+			flag3 = true;
+		};
+
+		decode_screen_12bit_first(buf, buf_size, screen_light_from_server_fullsize);
+
 	};
 
-	decode_screen(buf, buf_size, screen_light_from_server_fullsize);
+	if (_FORMAT_VER == PACKET_TYPE_responce_screen_ver33) {
+		//sudp("detect arrived PACKET_TYPE_responce_screen_ver33");
+		ENCODED_SCREEN_8bit_header *hdr8s;
+
+		hdr8s = (ENCODED_SCREEN_8bit_header *)buf;
+
+		if (last_cursor != hdr8s->mouse_cursor_type_id) {
+			last_cursor = hdr8s->mouse_cursor_type_id;
+			need_cursor = hdr8s->mouse_cursor_type_id;
+			PostMessage(window_hwnd, WM_SETCURSOR, 0, 0);
+		}
+
+		if (hdr8s->w != screen_light_from_server_fullsize->w || hdr8s->h != screen_light_from_server_fullsize->h) {
+
+			screen_light_from_server_fullsize->lock_FULL(4000);
+			screen_light_from_server_fullsize->set_new_size(hdr8s->w, hdr8s->h);
+
+			flag3 = true;
+		};
+
+		if (hdr8s->w != screen_light_from_server_fullsize->w || hdr8s->h != screen_light_from_server_fullsize->h) {
+			flag3 = true;
+		};
+
+		decode_screen_8bit_second(buf, buf_size, screen_light_from_server_fullsize);
+	};
 
 	server_screen_w = screen_light_from_server_fullsize->w;
 	server_screen_h = screen_light_from_server_fullsize->h;

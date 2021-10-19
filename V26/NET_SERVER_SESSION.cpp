@@ -29,7 +29,7 @@ NET_SERVER_SESSION::~NET_SERVER_SESSION() {
 	low_level_encoded_buffer_read_idx = 0;
 
 
-	delete[] screen_encoded;
+	delete[] screen_encoded_8bit_first;
 	delete[] screen_one_byte_;
 
 }
@@ -144,6 +144,17 @@ void NET_SERVER_SESSION::increase_llow_level_encoded_buffer_read(int add_size) {
 
 void NET_SERVER_SESSION::Connect_to_proxy_as_server(unsigned long long public_id, unsigned long long private_id, unsigned int ip_to_server_connect, unsigned char pass_hash16[16]) {
 
+	FILE *f;
+	fopen_s(&f, "c:\\1\\NSS.txt", "ab");
+	if (f != NULL) {
+		fprintf(f, "start %02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\r\n"
+			, pass_hash16[0], pass_hash16[1], pass_hash16[2], pass_hash16[3]
+			, pass_hash16[0], pass_hash16[1], pass_hash16[2], pass_hash16[3]
+			, pass_hash16[0], pass_hash16[1], pass_hash16[2], pass_hash16[3]
+			, pass_hash16[0], pass_hash16[1], pass_hash16[2], pass_hash16[3]
+			);
+		fclose(f);
+	};
 
 	if (public_id == 0 || private_id == 0 || ip_to_server_connect == 0) {
 		// TODO save log
@@ -355,7 +366,7 @@ void NET_SERVER_SESSION::clean_() {
 	recv_counter = 0;
 	send_counter = 0;
 
-	if (screen_encoded != nullptr) screen_encoded->clean_();
+	if (screen_encoded_8bit_first != nullptr) screen_encoded_8bit_first->clean_();
 	if (screen_one_byte_ != nullptr) screen_one_byte_->clean_();
 	
 	//in_queue_command.clean();
@@ -390,6 +401,11 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 	//char ss[100];
 	//sprintf_ s(ss, 90, " recv_counter=%lld ", recv_counter);
 
+	if (screen_encoded_8bit_first != nullptr) screen_encoded_8bit_first->clean_();
+	if (screen_encoded_8bit_second != nullptr) screen_encoded_8bit_second->clean_();
+	if (screen_encoded_12bit != nullptr) screen_encoded_12bit->clean_();
+	if (screen_12bit != nullptr) screen_12bit->clean_();
+
 	unsigned char *w_buf, *r_buf, *scr_head_buf;
 	w_buf = new unsigned char[512];
 	r_buf = new unsigned char[512];
@@ -421,6 +437,8 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 	DWORD last_send_heartbeat, tc;
 	last_send_heartbeat = GetTickCount() + 3000;
 
+	boost::posix_time::milliseconds SleepTime(10);
+
 	int forced_send_screen;
 	forced_send_screen = 0;
 	while (GLOBAL_STOP == false && local_stop == false && ss_need_disconnect == false) {
@@ -436,7 +454,7 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 
 		}
 		else {
-			Sleep(1);
+			boost::this_thread::sleep(SleepTime);
 		}
 		if (res < 0) { // disconnect 
 			sudp("local_stop = true (1)");
@@ -483,7 +501,10 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 				if (need_start_screenflow_FORMAT_VER == PACKET_TYPE_request_start_screenflow_ver22) {
 					SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first((MASTER_AGENT_PACKET_HEADER *)w_buf, (MASTER_AGENT_PACKET_HEADER *)r_buf, (ENCODED_SCREEN_12bit_header *)scr_head_buf);
 				};
-
+				if (need_start_screenflow_FORMAT_VER == PACKET_TYPE_request_start_screenflow_ver33) {
+					// SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_second((MASTER_AGENT_PACKET_HEADER *)w_buf, (MASTER_AGENT_PACKET_HEADER *)r_buf, (ENCODED_SCREEN_12bit_header *)scr_head_buf);
+					SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_second((MASTER_AGENT_PACKET_HEADER *)w_buf, (MASTER_AGENT_PACKET_HEADER *)r_buf, (ENCODED_SCREEN_8bit_header *)scr_head_buf);
+				};
 			}
 			forced_send_screen = 1;
 		}
@@ -530,6 +551,14 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 			int so;
 			so = 0;
 
+			if (tt == PACKET_TYPE_responce_screen_ver11 ||
+				tt == PACKET_TYPE_responce_screen_ver22 ||
+				tt == PACKET_TYPE_responce_screen_ver33
+
+				) {
+				sudp("sss begin");
+
+			};
 
 			while (local_stop == false && send_commit < command_data_size) {
 
@@ -549,7 +578,7 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 						send_counter += ss;
 					}
 					else {
-						Sleep(0);
+						//Sleep(0);
 					}
 				}
 
@@ -560,9 +589,11 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 			};
 
 			if (tt == PACKET_TYPE_responce_screen_ver11 ||
-				tt == PACKET_TYPE_responce_screen_ver22
-				) {
+				tt == PACKET_TYPE_responce_screen_ver22 ||
+				tt == PACKET_TYPE_responce_screen_ver33
 
+				) {
+				sudp("sss end");
 
 				if (responce_screen_in_queue > 0) {
 					enter_crit(20);
@@ -933,7 +964,8 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 	***/
 
 	if ( *type == PACKET_TYPE_request_start_screenflow_ver11 ||
-		 *type == PACKET_TYPE_request_start_screenflow_ver22
+		 *type == PACKET_TYPE_request_start_screenflow_ver22 ||
+		 *type == PACKET_TYPE_request_start_screenflow_ver33
 		) {
 		reserv3 = (unsigned int *)&(buf[24]);
 		reserv4 = (unsigned int *)&(buf[28]);
@@ -1121,6 +1153,7 @@ void NET_SERVER_SESSION::send_event_in_to_session(int session_no, unsigned int e
 	}
 }
 
+////
 void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf) {
 
 	if (screen_one_byte_ == nullptr) screen_one_byte_ = new SCREEN_LIGHT_one_byte();
@@ -1150,9 +1183,9 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGE
 	};
 	screen_one_byte_->screen_id++;
 
-	if (screen_encoded == NULL) screen_encoded = new SCREEN_LIGHT_encoded_8bit_first();
+	if (screen_encoded_8bit_first == NULL) screen_encoded_8bit_first = new SCREEN_LIGHT_encoded_8bit_first();
 
-	screen_encoded->encode_screen_ONE_BYTE(screen_one_byte_, last_set_mouse_x, last_set_mouse_y);
+	screen_encoded_8bit_first->encode_screen_ONE_BYTE(screen_one_byte_, last_set_mouse_x, last_set_mouse_y);
 
 	//char ss[300];
 
@@ -1177,13 +1210,13 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGE
 		fatal_error("screen_for_client->encode() error");
 		return;
 	}
-*/
+    */
 	unsigned char *buf;
 	unsigned int buf_len, *sz, *crc, *sol, *type, zz;
 
 
-	buf = screen_encoded->encoded_buffer;
-	buf_len = screen_encoded->encoded_buffer_len;
+	buf = screen_encoded_8bit_first->encoded_buffer;
+	buf_len = screen_encoded_8bit_first->encoded_buffer_len;
 
 	zz = buf_len / 16;
 	zz *= 16;
@@ -1200,7 +1233,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGE
 	*crc = 0;
 	*type = PACKET_TYPE_responce_screen_ver11;
 	*sol = get_sol();
-	hhh = (ENCODED_SCREEN_8bit_header *)screen_encoded->encoded_buffer;
+	hhh = (ENCODED_SCREEN_8bit_header *)screen_encoded_8bit_first->encoded_buffer;
 
 	unsigned int sscr_id;
 	sscr_id = hhh->screen_id;
@@ -1268,7 +1301,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AG
 
 
 	_buf = screen_encoded_12bit->encoded_buffer;
-	_buf_len = screen_encoded_12bit->encoded_buffer_len;
+	_buf_len = screen_encoded_12bit->encoded_buffer_len + sizeof(ENCODED_SCREEN_12bit_header);
 
 	zz = _buf_len / 16;
 	zz *= 16;
@@ -1305,3 +1338,115 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AG
 	}
 
 };
+
+void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_second(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf) {
+
+	if (screen_one_byte_ == nullptr) screen_one_byte_ = new SCREEN_LIGHT_one_byte();
+
+
+	//screen_one_byte->emulate_red();
+
+	if (jj < 3) {
+		screen_one_byte_->emulate_red();
+		jj++;
+	}
+	else {
+		if (app_attributes.is_desktop == true) {
+
+			init_encode_color_matrix_all();
+
+			if (get_screenshot(screen_one_byte_, nullptr) == false) {
+
+				screen_one_byte_->emulate_red();
+			}
+		}
+		else {
+			if (service->interaction_with_agent_GET_SCREEN(w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
+				screen_one_byte_->emulate_red();
+			}
+		};
+	};
+	screen_one_byte_->screen_id++;
+
+	if (screen_encoded_8bit_second == NULL) screen_encoded_8bit_second = new SCREEN_LIGHT_encoded_8bit_second();
+
+	screen_encoded_8bit_second->encode_screen_ONE_BYTE_second(screen_one_byte_, last_set_mouse_x, last_set_mouse_y);
+
+	//char ss[300];
+
+	//sprintf_ s(ss, 290, "send_ screen %d %d %d", screen_one_byte_->header.w, screen_one_byte_->header.h, screen_one_byte_->header.mouse_cursor_type_id );
+	//send_udp(ss);
+
+	/*
+
+	if (responce_screen_in_queue > 0) { return; };
+
+	if (screen_for_client == NULL) return;
+
+	//send_udp("get screen");
+
+	if (screen_for_client->get_raw_screen_from_session() == false) {
+		return;
+	}
+
+	//send_udp("encode");
+
+	if (screen_for_client->encode() == false) {
+		fatal_error("screen_for_client->encode() error");
+		return;
+	}
+	*/
+	unsigned char *buf;
+	unsigned int buf_len, *sz, *crc, *sol, *type, zz;
+
+
+	buf = screen_encoded_8bit_second->encoded_buffer;
+	buf_len = screen_encoded_8bit_second->encoded_buffer_len + sizeof(ENCODED_SCREEN_8bit_header);
+
+	zz = buf_len / 16;
+	zz *= 16;
+	if (zz < buf_len) zz += 16;
+	buf_len = zz;
+
+	sz = (unsigned int *)&(buf[0]);
+	crc = (unsigned int *)&(buf[4]);
+	type = (unsigned int *)&(buf[8]);
+	sol = (unsigned int *)&(buf[12]);
+	ENCODED_SCREEN_8bit_header *hhh;
+
+	*sz = buf_len;
+	*crc = 0;
+	*type = PACKET_TYPE_responce_screen_ver33;
+	*sol = get_sol();
+	hhh = (ENCODED_SCREEN_8bit_header *)screen_encoded_8bit_second->encoded_buffer;
+
+	unsigned int sscr_id;
+	sscr_id = hhh->screen_id;
+	//send_udp( "SCREEN prepared " , hhh->screen_id );
+
+	//sprintf_ s(ss, 290, "encoded = %d", hhh->mouse_cursor_type_id);
+	//send_udp(ss);
+
+	responce_screen_in_queue++;
+
+	//send_udp("encrypt");
+
+	aes_partner.encrypt_stream(buf, buf_len);
+
+	//c3 = clock();
+
+	//wchar_t cc[ 250 ];
+	//wsprintf(cc, L"encode  %d  %d ", c2 - c1, c3-c2 );
+	//set_status(cc);
+
+	//send_udp("add SCREEN into queue");
+					   // 100003
+	sudp("SERVER send responce screen (8bit_second)");
+	if (out_queue_command.add_element_(PACKET_TYPE_responce_screen_ver33, sscr_id, buf, buf_len) == false) {  // TODO encr ???
+		responce_screen_in_queue--;
+	}
+	else {
+		need_start_screenflow = false;
+	}
+
+}
