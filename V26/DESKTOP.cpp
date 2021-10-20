@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "DESKTOP.h"
 #include "APPLICATION_ATTRIBUTES.h"
 #include "GUI.h"

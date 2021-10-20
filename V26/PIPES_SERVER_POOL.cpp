@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "PIPES_SERVER_POOL.h"
 #include "APPLICATION_ATTRIBUTES.h"
 #include "tools.h"

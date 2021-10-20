@@ -13,7 +13,7 @@
 #include "GUI.h"
 #include "GUI_element.h"
 #include "NET_CLIENT_SESSION.h"
-//#include "TRANSFER_DIALOG2.h"
+#include "TRANSFER_DIALOG2.h"
 #include "TRANSFER_DIALOG2_DirsFiles_TREE_element.h"
 
 #define VIEW_MODE_NOCONNECT 0
@@ -34,7 +34,11 @@ public:
 	GUI_Element *gui_viewer = nullptr
 		, *gui_viewer_small_top_panel = nullptr
 		, *gui_viewer_transfer_dialog = nullptr;
-	//TRANSFER_DIALOG2 *file_transfer_dialog = nullptr;
+	TRANSFER_DIALOG2 *file_transfer_dialog = nullptr;
+
+	void transfer_dialog_use();
+	void transfer_dialog_SHOW();
+	void transfer_dialog_HIDE();
 
 	bool connect_ok = false;
 

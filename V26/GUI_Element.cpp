@@ -1,4 +1,4 @@
-
+#include "stdafx.h"
 
 #include "GUI_Element.h"
 #include "GUI_low_level.h"

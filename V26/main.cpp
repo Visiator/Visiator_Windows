@@ -1,31 +1,6 @@
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-#ifndef WIN32
+#include "stdafx.h"
 
-#define WIN32_LEAN_AND_MEAN
-#define WIN32_WINNT 0x0501
-
-
-#define _WINSOCKAPI_ 
-#include <windows.h>
-#undef _WINSOCKAPI_
-#include <winsock2.h>
-#include <stdlib.h>
-#include <iphlpapi.h>
-#include <stdio.h>
-#undef _WINSOCKAPI_
-
-
-
-#endif
-
-#include <stdio.h>
-#include <io.h>
-#include <fcntl.h>
-#include <conio.h>
-#include <signal.h>
-
-#include "tools.h"
 #include "GUI_low_level.h"
 #include "GUI.h"
 #include "APPLICATION_ATTRIBUTES.h"

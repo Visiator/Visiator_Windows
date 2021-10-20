@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "HIGHLEVEL_COMMAND_QUEUE.h"
 #include "PIPES_SERVER_POOL.h"

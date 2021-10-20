@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "VIEWER.h"
 #include "VIEWER_small_top_panel.h"
 #include "Application_Attributes.h"

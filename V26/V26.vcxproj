@@ -79,8 +79,8 @@
       </ConformanceMode>
       <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_77_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile />
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -112,6 +112,7 @@
       </ConformanceMode>
       <AdditionalIncludeDirectories>C:\Program Files\boost\boost_1_77_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -151,16 +152,30 @@
     <ClCompile Include="HIGHLEVEL_COMMAND_QUEUE.cpp" />
     <ClCompile Include="KERNEL.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="minilzo.c" />
+    <ClCompile Include="minilzo.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="NET_CLIENT_SESSION.cpp" />
     <ClCompile Include="NET_SERVER_SESSION.cpp" />
     <ClCompile Include="NET_SERVER_SESSION_POOL.cpp" />
     <ClCompile Include="PIPES_SERVER_POOL.cpp" />
     <ClCompile Include="SCREEN.cpp" />
     <ClCompile Include="SERVICE.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="TEXTURA.cpp" />
     <ClCompile Include="tools.cpp" />
     <ClCompile Include="TOTAL_CONTROL.cpp" />
+    <ClCompile Include="TRANSFER_DIALOG2.cpp" />
     <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.cpp" />
     <ClCompile Include="VIEWER.cpp" />
     <ClCompile Include="VIEWER_small_top_panel.cpp" />
@@ -183,9 +198,11 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="SCREEN.h" />
     <ClInclude Include="SERVICE.h" />
+    <ClInclude Include="stdafx.h" />
     <ClInclude Include="TEXTURA.h" />
     <ClInclude Include="tools.h" />
     <ClInclude Include="TOTAL_CONTROL.h" />
+    <ClInclude Include="TRANSFER_DIALOG2.h" />
     <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.h" />
     <ClInclude Include="VIEWER.h" />
     <ClInclude Include="VIEWER_small_top_panel.h" />

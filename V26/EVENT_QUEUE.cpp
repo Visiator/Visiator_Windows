@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "EVENT_QUEUE.h"
 
 

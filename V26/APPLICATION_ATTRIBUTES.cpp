@@ -1,5 +1,7 @@
+#include "stdafx.h"
+
 #include "APPLICATION_ATTRIBUTES.h"
-#include "tools.h"
+
 
 APPLICATION_ATTRIBUTES::APPLICATION_ATTRIBUTES() {
 	proxy_list = new PROXY_LIST();

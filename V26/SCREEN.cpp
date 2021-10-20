@@ -1,4 +1,5 @@
-
+#include "stdafx.h"
+/*
 #ifndef WIN32
 
 #define WIN32_LEAN_AND_MEAN
@@ -18,6 +19,7 @@
 
 #endif
 #include <stdio.h>
+*/
 //#include "bzlib.h"
 
 //#include "lzoconf.h"

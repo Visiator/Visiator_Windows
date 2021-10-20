@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "NET_SERVER_SESSION_POOL.h"
 #include "APPLICATION_ATTRIBUTES.h"
 #include "tools.h"

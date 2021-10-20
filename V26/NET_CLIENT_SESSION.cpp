@@ -1,3 +1,6 @@
+#include "stdafx.h"
+
+#include "tools.h"
 #include "APPLICATION_ATTRIBUTES.h"
 #include "NET_CLIENT_SESSION.h"
 #include "NET_SERVER_SESSION.h"
@@ -425,7 +428,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 		res = my_recv(sos, bb, 500000, &recv__counter);
 		if (res > 0) { // arrived
 
-			
+			 
 
 			//recv__counter__time = GetTickCount();
 

@@ -90,6 +90,12 @@
     <ClCompile Include="minilzo.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TRANSFER_DIALOG2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -159,6 +165,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HIGHLEVEL_COMMAND_QUEUE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TRANSFER_DIALOG2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

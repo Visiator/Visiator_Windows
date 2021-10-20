@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "VIEWER.h"
 #include "APPLICATION_ATTRIBUTES.h"
 #include "tools.h"
@@ -63,7 +65,8 @@ void VIEWER::init_gui_VIEWER() {
 	gui_viewer_small_top_panel->is_visible = false;
 
 	gui_viewer_transfer_dialog = gui->add_element(GUI_Element_Type_transfer_dialog, 200, 20, 60, 25, 0);
-	//file_transfer_dialog = new TRANSFER_DIALOG2(this);
+	
+	file_transfer_dialog = new TRANSFER_DIALOG2(this);
 	
 	//gui_viewer_transfer_dialog->file_transfer_dialog_ptr = file_transfer_dialog;
 
@@ -909,7 +912,7 @@ LRESULT VIEWER::WM_SYSCOMMAND_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		viewer->change_view_mode(VIEW_MODE_STRETCH);
 	}
 	if ((int)wp == MY_MENU_TRANSFER_FILE) {
-		// 2021 09 viewer->transfer_dialog_use();
+		viewer->transfer_dialog_use();
 	}
 
 
@@ -1803,3 +1806,34 @@ void VIEWER::request_FILE_LIST_from_partner_RESPONCE_2(unsigned char *buf, int b
 	// 2021 09 file_transfer_dialog->transfer_PARTNER_to_MY->request_folder_content_RESPONCE(buf, buf_size);
 };
 
+
+void VIEWER::transfer_dialog_use() {
+	if (gui_viewer_transfer_dialog == NULL) return;
+	if (gui_viewer_transfer_dialog->is_visible == false) {
+		transfer_dialog_SHOW();
+	}
+	else {
+		transfer_dialog_HIDE();
+	}
+
+}
+
+void VIEWER::transfer_dialog_SHOW() {
+	if (gui_viewer_transfer_dialog == nullptr) return;
+	gui_viewer_transfer_dialog->is_visible = true;
+	file_transfer_dialog->set_visible(gui->low_level, true);
+
+	ModifyMenu(h_system_menu, MY_MENU_TRANSFER_FILE, MF_STRING | MF_CHECKED, MY_MENU_TRANSFER_FILE, L"Transfer files");
+
+	gui->low_level->invalidate();
+}
+
+void VIEWER::transfer_dialog_HIDE() {
+	if (gui_viewer_transfer_dialog == NULL) return;
+	gui_viewer_transfer_dialog->is_visible = false;
+	file_transfer_dialog->set_visible(gui->low_level, false);
+
+	ModifyMenu(h_system_menu, MY_MENU_TRANSFER_FILE, 0, MY_MENU_TRANSFER_FILE, L"Transfer files");
+
+	gui->low_level->invalidate();
+}

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 #include "GUI.h"
 #include "FONT.h"

@@ -1,7 +1,7 @@
+#include "stdafx.h"
 
 
-
-#include "tools.h"
+//#include "tools.h"
 #include "APPLICATION_ATTRIBUTES.h"
 #include "FONT.h"
 #include "resource.h"

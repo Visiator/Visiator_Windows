@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "tools.h"
 #include "TOTAL_CONTROL.h"
 #include "APPLICATION_ATTRIBUTES.h"

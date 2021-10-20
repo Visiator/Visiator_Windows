@@ -1,4 +1,6 @@
+#include "stdafx.h"
 
+/*
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #ifndef WIN32
@@ -19,7 +21,7 @@
 
 
 #endif
-
+*/
 
 #include "TEXTURA.h"
 #include "GUI_low_level.h"
