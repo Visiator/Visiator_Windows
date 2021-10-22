@@ -41,6 +41,7 @@ public:
 	void set_pixx(int x, int y, unsigned int color);
 	unsigned int get_pix(int x, int y);
 	void line_v(int x, int y, int h, unsigned int color);
+	void line_h(int x, int y, int w, unsigned int color);
 	void fill_color(unsigned int col);
 
 	void rectangle(int x, int y, int w, int h, unsigned int color);
@@ -52,6 +53,15 @@ public:
 	void change_size(HWND hw, int w_, int h_);
 	void invalidate();
 	void Paint();
+
+	bool paint_text_rect(int font_idx, int x, int y, int w, int h, wchar_t *text, unsigned int color);
+	int  text_height(int font_idx);
+	int  text_width(int font_idx, wchar_t *text);
+
+	void paint_text(int font_idx, int x, int y, int w, int h, wchar_t *text, unsigned int color, int aligment, int edit_cursor_position);
+	void paint_text(int font_idx, int x, int y, int w, int h, char *text, unsigned int color, int aligment, int edit_cursor_position);
+
+	void paint_close_krest(int x, int y, int w, unsigned int color);
 
 	GUI_low_level(HWND hw_);
 };

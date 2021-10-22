@@ -89,6 +89,12 @@ void GUI_Element::Paint(GUI_low_level *low_level) {
 		return;
 	}
 
+	if (type == GUI_Element_Type_transfer_dialog) {
+		Pain_TRANSFER_DIALOG(low_level);
+		return;
+	}
+
+
 	if (color != 1) low_level->rectangle(x, y, w, h, color);
 
 	wchar_t ss[500];
@@ -720,5 +726,26 @@ void GUI_Element::Pain_MESSAGE_BOX(GUI_low_level *low_level) {
 
 		fnt->paint_dummy(low_level, x + ddx + w / 2 - fnt->text_width(text.c_str()) / 2, y + ddy + h / 2 - fnt->text_height() / 2, text.c_str(), 0xffffff);
 	};
+
+}
+
+void GUI_Element::Pain_TRANSFER_DIALOG(GUI_low_level *low_level) {
+
+	if (is_visible == false) return;
+
+	int ddx, ddy;
+	ddx = 0;
+	ddy = 0;
+
+	GUI_Element *q;
+	q = parent;
+
+	while (q != NULL) {
+		ddx += q->x;
+		ddy += q->y;
+		q = q->parent;
+	};
+
+	if (file_transfer_dialog_ptr != NULL) file_transfer_dialog_ptr->Paint(low_level);
 
 }

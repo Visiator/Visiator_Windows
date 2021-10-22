@@ -27,8 +27,39 @@
 
 #include <boost/thread.hpp>
 
+#define TrDialog_Border_bgColor 0x4D361D
+#define TrDialog_Border_alpha 0xff
+
+
+#define TrDialog_Toolbar_bgColor 0x675037
+#define TrDialog_Toolbar_bgColor_alpha 0xff
+
+
+#define TrDialog_ScrollBar_bgColor_Tri_Normal 0xd1c9c1
+#define TrDialog_ScrollBar_bgColor_Tri_Pressed 0xc1b9b1
+
+#define TrDialog_ScrollBar_bgColor_Polzunok_Normal 0xB0A8A0
+#define TrDialog_ScrollBar_bgColor_Polzunok_Pressed 0xA09890
+
+#define TrDialog_ScrollBar_bgColor_Bar_Normal 0xE0D8D0
+#define TrDialog_ScrollBar_bgColor_Bar_Pressed 0xeeeeee
+
+
+
+#define TrDialog_Button_normal 0x675037
+#define TrDialog_Button_pressed 0x877057
+
+#define TrDialog_Button_font_normal 0xc7b097
+#define TrDialog_Button_font_pressed 0xc7b097
+
+#define TrDialog_Button_border_normal 0x978067
+#define TrDialog_Button_border_pressed 0x978067
+
+
 #define view_visiator_com "view.visiator.com"
 #define SERVER_PORT 443
+
+
 
 #define PROXY_TYPE_HTTPS 1
 #define PROXY_TYPE_HTTP  2 // пока не реализовано
@@ -46,6 +77,9 @@
 #define _Caption_h 28
 
 //unsigned long long gg;
+
+
+
 
 class CMDLINE
 {

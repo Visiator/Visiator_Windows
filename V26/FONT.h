@@ -15,6 +15,8 @@ public:
 	
 	int paintAAA(GUI_low_level *low_level, int x, int y, uint32_t color, bool show_cursor);
 	int paint_dummy(GUI_low_level *low_level, int x, int y, uint32_t color);
+	int paint2(GUI_low_level *low_level, int x, int y, unsigned int color, bool show_cursor = false);
+
 
 	BUKVA();
 	BUKVA(int idx_, int w_, int h_, uint8_t *buf_);
@@ -26,6 +28,8 @@ class FONT
 public:
 
 	std::map <int, BUKVA> bukva;
+
+	int  text_width(const char *txt);
 	int  text_width(const wchar_t *txt);
 	int  text_height();
 	void paintAAA(GUI_low_level *low_level, int x, int y, const wchar_t *txt, uint32_t color_, int cursor_position, bool is_pass);

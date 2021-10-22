@@ -96,6 +96,24 @@
     <ClCompile Include="TRANSFER_DIALOG2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MODAL_DIALOG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_Button.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_Toolbar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_Label.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TRANSFER_DIALOG2_Splitter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -171,6 +189,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TRANSFER_DIALOG2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MODAL_DIALOG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_Button.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_Toolbar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_Label.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TRANSFER_DIALOG2_Splitter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

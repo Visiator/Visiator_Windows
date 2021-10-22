@@ -68,9 +68,11 @@ void VIEWER::init_gui_VIEWER() {
 	
 	file_transfer_dialog = new TRANSFER_DIALOG2(this);
 	
-	//gui_viewer_transfer_dialog->file_transfer_dialog_ptr = file_transfer_dialog;
+	//
+	gui_viewer_transfer_dialog->file_transfer_dialog_ptr = file_transfer_dialog;
 
-	// 2021 file_transfer_dialog->set_size(low_level, 100, 50, 900, 500);
+	// 2021 
+	file_transfer_dialog->set_size(gui->low_level, 100, 50, 900, 500);
 
 	gui_viewer_transfer_dialog->is_visible = false;
 
@@ -813,7 +815,8 @@ LRESULT VIEWER::WM_SIZE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 
 	//gui->low_level->set_window_size(x, y); // lock ok
-	// 2021 09 if (file_transfer_dialog != nullptr) { file_transfer_dialog->AutoArrangeSizes(low_level); };
+	 
+	if (file_transfer_dialog != nullptr) { file_transfer_dialog->AutoArrangeSizes( gui->low_level ); };
 
 	if (wp == SIZE_MAXIMIZED) {
 		return 0;

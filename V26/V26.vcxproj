@@ -162,6 +162,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="MODAL_DIALOG.cpp" />
     <ClCompile Include="NET_CLIENT_SESSION.cpp" />
     <ClCompile Include="NET_SERVER_SESSION.cpp" />
     <ClCompile Include="NET_SERVER_SESSION_POOL.cpp" />
@@ -176,7 +177,12 @@
     <ClCompile Include="tools.cpp" />
     <ClCompile Include="TOTAL_CONTROL.cpp" />
     <ClCompile Include="TRANSFER_DIALOG2.cpp" />
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles.cpp" />
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_Button.cpp" />
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_Label.cpp" />
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_Toolbar.cpp" />
     <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.cpp" />
+    <ClCompile Include="TRANSFER_DIALOG2_Splitter.cpp" />
     <ClCompile Include="VIEWER.cpp" />
     <ClCompile Include="VIEWER_small_top_panel.cpp" />
   </ItemGroup>
@@ -191,6 +197,7 @@
     <ClInclude Include="GUI_low_level.h" />
     <ClInclude Include="HIGHLEVEL_COMMAND_QUEUE.h" />
     <ClInclude Include="KERNEL.h" />
+    <ClInclude Include="MODAL_DIALOG.h" />
     <ClInclude Include="NET_CLIENT_SESSION.h" />
     <ClInclude Include="NET_SERVER_SESSION.h" />
     <ClInclude Include="NET_SERVER_SESSION_POOL.h" />
@@ -203,7 +210,12 @@
     <ClInclude Include="tools.h" />
     <ClInclude Include="TOTAL_CONTROL.h" />
     <ClInclude Include="TRANSFER_DIALOG2.h" />
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles.h" />
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_Button.h" />
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_Label.h" />
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_Toolbar.h" />
     <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.h" />
+    <ClInclude Include="TRANSFER_DIALOG2_Splitter.h" />
     <ClInclude Include="VIEWER.h" />
     <ClInclude Include="VIEWER_small_top_panel.h" />
   </ItemGroup>

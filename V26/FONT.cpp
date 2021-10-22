@@ -130,6 +130,41 @@ int BUKVA::paintAAA(GUI_low_level *low_level, int x, int y, uint32_t color, bool
 	return w;
 }
 
+int BUKVA::paint2(GUI_low_level *low_level, int x, int y, unsigned int color, bool show_cursor) {
+	if (low_level == nullptr) {
+		return 0;
+	}
+	unsigned int vv;
+	int i, j;
+	if (idx != 10) {
+		for (i = 0; i < w; i++) {
+			for (j = 0; j < h; j++) {
+				if (i + j * w > buf_size) {
+					return 0;
+				}
+				if (buf[i + j * w] == '1') {
+					vv = low_level->get_pix(x + i - 1, y + j - 1);
+					//if( vv != color && vv != 0 ) set_pix(x + i - 1, y + j - 1, 0xffffffff);
+					low_level->set_pixx(x + i, y + j, color);
+					//set_pix(x+i+1, y+j+1, 0xff000000);
+					//set_pix(x + i + 1, y + j + 0, 0xff000000);
+				}
+			}
+
+		}
+	};
+	if (show_cursor) {
+		low_level->line_v(x - 1, y, h, 255);
+		//for (j = 0; j < h; j++) {
+			//vv = low_level_gui->get_pix(x + i - 1, y + j - 1);
+			//if( vv != color && vv != 0 ) set_pix(x + i - 1, y + j - 1, 0xffffffff);
+			//low_level_gui->set_pixx(x -1, y + j, color);
+		//};
+	}
+	return w;
+
+}
+
 
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -163,6 +198,19 @@ void FONT::load_from_buffer(unsigned char *buf, int buf_size) {
 int FONT::text_height() {
 	return bukva['$'].h;
 }
+
+int FONT::text_width(const char *txt) {
+	int i, ww;
+	i = 0;
+	ww = 0;
+	while (txt[i] != 0) {
+		ww += bukva[ txt[i] ].w;
+		i++;
+	}
+	return ww;
+}
+
+
 int FONT::text_width(const wchar_t *txt) {
 	int i, ww;
 	i = 0;
