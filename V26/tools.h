@@ -27,9 +27,8 @@
 
 #include <boost/thread.hpp>
 
-#define TrDialog_Border_bgColor 0x4D361D
-#define TrDialog_Border_alpha 0xff
-
+#define TrDialog_Border_bgColor 0x00cc00
+#define TrDialog_Border_alpha 0x99
 
 #define TrDialog_Toolbar_bgColor 0x675037
 #define TrDialog_Toolbar_bgColor_alpha 0xff
@@ -43,7 +42,6 @@
 
 #define TrDialog_ScrollBar_bgColor_Bar_Normal 0xE0D8D0
 #define TrDialog_ScrollBar_bgColor_Bar_Pressed 0xeeeeee
-
 
 
 #define TrDialog_Button_normal 0x675037

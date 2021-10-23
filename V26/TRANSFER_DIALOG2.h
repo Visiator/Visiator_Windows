@@ -37,7 +37,7 @@ class MODAL_DIALOG;
 
 class TRANSFER_DIALOG2_Caption;
 class TRANSFER_DIALOG2_Splitter;
-
+class TRANSFER_DIALOG2_DirsFiles_TREE_element;
 
 
 class TRANSFER_DIALOG2_Close_btn
@@ -71,10 +71,23 @@ private:
 	bool is_visible = false;
 
 public:
+	VIEWER *viewer = nullptr; // parent object
+
+	TRANSFER_DIALOG2_DirsFiles_TREE_element *current_transfer_element_local = nullptr; // копируем от нас к партнеру
+	TRANSFER_DIALOG2_DirsFiles_TREE_element *current_transfer_element_dest = nullptr; // копироуем от партнера к нам
+	TRANSFER_DIALOG2_DirsFiles_TREE_element *current_delete_element_dest = nullptr;
+
+	int transfer_ASYNC_stage = 0; // 0 - передача не идет
+						// 1 - нужно определить следующий файл для передачи 
+						// 2 - нужно передать текущий файл
+						// 20 - удаляем
+
 
 	TRANSFER_DIALOG2_DirsFiles *Local_DirsFiles = nullptr, *Dest_DirsFiles = nullptr;
 	TRANSFER_DIALOG2_Caption   *Caption = nullptr;
 	TRANSFER_DIALOG2_Splitter  *Splitter = nullptr;
+	int Splitter_x = 0;
+	float Splitter_percent = 50;
 
 	MODAL_DIALOG *modal_dialog_progress = nullptr;
 	MODAL_DIALOG *modal_dialog_confirm_overwrite = nullptr;
@@ -88,7 +101,7 @@ public:
 	void set_size(GUI_low_level *low_level, int x_, int y_, int w_, int h_);
 
 	void set_visible(GUI_low_level *low_level, bool val);
-	bool get_visible();
+	bool get_visible() { return is_visible; }
 
 	int get_global_x() { return x; };
 	int get_global_y() { return y; };

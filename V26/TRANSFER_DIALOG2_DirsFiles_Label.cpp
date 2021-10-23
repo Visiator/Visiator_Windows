@@ -37,7 +37,7 @@ void TRANSFER_DIALOG2_DirsFiles_Label::Paint(GUI_low_level *low_level) {
 
 	//low_level->fill_rectangle(x + parent->get_global_x(), y + parent->get_global_y(), w, h, 0xff, 0x7f);
 	if (label != nullptr) {
-		// 2021 
+		
 		low_level->paint_text_rect(font_idx, x + parent->get_global_x(), y + parent->get_global_y(), w, h, label, label_color);
 	}
 }
@@ -72,7 +72,7 @@ void TRANSFER_DIALOG2_DirsFiles_Label::Paint_center(GUI_low_level *low_level) {
 			py = parent->get_global_y();
 		}
 		// 2021 
-		// font->paint_text_rect(x + parent->get_global_x() + w/2 - ww/2, y + parent->get_global_y(), w, h, label, label_color);
+		//             font->paint_text_rect(x + parent->get_global_x() + w/2 - ww/2, y + parent->get_global_y(), w, h, label, label_color);
 		low_level->paint_text_rect(font_idx, x + px + w/2 - ww/2, y + py, w, h, label, label_color);
 	}
 }

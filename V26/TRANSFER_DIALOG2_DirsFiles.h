@@ -8,6 +8,10 @@ class TRANSFER_DIALOG2_DirsFiles_TREE;
 
 class TRANSFER_DIALOG2_DirsFiles
 {
+private:
+	GUI_low_level *low_level = nullptr;
+
+
 public:
 	TRANSFER_DIALOG2 *parent = nullptr;
 	int x = 0, y = 0, w = 0, h = 0;
@@ -28,6 +32,9 @@ public:
 	TRANSFER_DIALOG2_DirsFiles_VScroll *VScroll = nullptr;
 	TRANSFER_DIALOG2_DirsFiles_TREE    *Tree = nullptr;
 
+	void recalc_v_scroll_sizes(GUI_low_level *low_level);
+
+	void Paint(GUI_low_level *low_level);
 
 	TRANSFER_DIALOG2_DirsFiles(int local_or_dest_, TRANSFER_DIALOG2 *parent_);
 	~TRANSFER_DIALOG2_DirsFiles();

@@ -274,7 +274,158 @@ void MODAL_DIALOG::Paint(GUI_low_level *low_level) {
 		return;
 	}
 
+}
+
+void MODAL_DIALOG::recalc_size(GUI_low_level *low_level, int w_, int h_) {
+
+	int btn_w = 60, btn_h = 20, label_h = 15, x1 = 0, y1 = 0, w1 = 0, h1 = 0, ww, yy, dy;
+
+	if (MD_type == MD_INFO) {
+
+		x = w_ / 2 - w / 2;
+		y = h_ / 2 - h / 2;
+
+		TRANSFER_DIALOG2_DirsFiles_Label *q;
+
+		yy = 20;
+		dy = 30;
 
 
+		//label_warning->set_size(w / 2 - label_warning->font->text_width(label_warning->label) / 2, yy, 50, label_h);
+
+
+		q = label_info;
+		ww = low_level->text_width(q->font_idx, q->label);
+		q->set_size(w / 2 - ww / 2, yy, ww + 1, label_h);
+		yy += dy;
+
+
+		x1 = w / 2 - btn_w / 2;
+		y1 = h - btn_h - 12;
+
+		btn_OK->set_size(x1, yy, btn_w, btn_h);
+
+
+
+		return;
+
+	};
+
+
+	if (MD_type == MD_SKIP) {
+
+		x = w_ / 2 - w / 2;
+		y = h_ / 2 - h / 2;
+
+		TRANSFER_DIALOG2_DirsFiles_Label *q;
+
+		yy = 10;
+		dy = 20;
+
+
+		//label_warning->set_size(w / 2 - label_warning->font->text_width(label_warning->label) / 2, yy, 50, label_h);
+
+		q = label_warning;
+		ww = low_level->text_width(q->font_idx, q->label);
+		q->set_size(10, yy, w - 20, label_h);
+		yy += dy;
+
+		q = label_info;
+		ww = low_level->text_width(q->font_idx, q->label);
+		q->set_size(10, yy, w - 20, label_h);
+		yy += dy;
+
+		label_file_name->set_size(10, yy, w - 20, label_h);
+		yy += dy;
+		yy += dy / 4;
+
+		chbox_REMEMBER->set_size(10, yy, w - 20, label_h);
+		yy += dy;
+
+		x1 = w / 2 - btn_w / 2;
+		y1 = h - btn_h - 12;
+
+		btn_SKIP->set_size(x1 - btn_w, yy, btn_w, btn_h);
+
+		//btn_OVERWRITE->set_size(x1 - btn_w - btn_w / 2, yy, btn_w, btn_h);
+
+		btn_CANCEL->set_size(x1 + btn_w, yy, btn_w, btn_h);
+
+
+		return;
+
+	};
+
+	if (MD_type == MD_OVERWRITE) {
+
+		x = w_ / 2 - w / 2;
+		y = h_ / 2 - h / 2;
+
+		TRANSFER_DIALOG2_DirsFiles_Label *q;
+
+		yy = 10;
+		dy = 20;
+
+
+		//label_warning->set_size(w / 2 - label_warning->font->text_width(label_warning->label) / 2, yy, 50, label_h);
+
+		q = label_warning;
+		ww = low_level->text_width(q->font_idx, q->label);
+		q->set_size(10, yy, w - 20, label_h);
+		yy += dy;
+
+		q = label_info;
+		ww = low_level->text_width(q->font_idx, q->label);
+		q->set_size(10, yy, w - 20, label_h);
+		yy += dy;
+
+		label_file_name->set_size(10, yy, w - 20, label_h);
+		yy += dy;
+
+		label_new_txt->set_size(10, yy, 50, label_h);
+
+		label_new_file_info->set_size(100, yy, (w - 100) - 10, label_h);
+		yy += dy;
+
+		label_old_txt->set_size(10, yy, 50, label_h);
+
+		label_old_file_info->set_size(100, yy, (w - 100) - 10, label_h);
+		yy += dy;
+		yy += dy / 4;
+
+		chbox_REMEMBER->set_size(10, yy, w - 20, label_h);
+		yy += dy;
+
+		x1 = w / 2 - btn_w / 2;
+		y1 = h - btn_h - 12;
+
+		btn_SKIP->set_size(x1, yy, btn_w, btn_h);
+
+		btn_OVERWRITE->set_size(x1 - btn_w - btn_w / 2, yy, btn_w, btn_h);
+
+		btn_CANCEL->set_size(x1 + btn_w + btn_w / 2, yy, btn_w, btn_h);
+
+		return;
+	};
+
+	if (MD_type == MD_TRANSFER) {
+
+		x = w_ / 2 - w / 2;
+		y = h_ / 2 - h / 2;
+
+		yy = 8;
+
+		ww = low_level->text_width(label_info->font_idx, label_info->label);
+
+		label_info->set_size(10, yy, w - 20, label_h);
+		yy += 20;
+		label1->set_size(10, yy, w - 20, label_h);
+		yy += 20;
+		label3->set_size(10, yy, w - 20, label_h);
+
+
+		btn_CANCEL->set_size(w / 2 - btn_w / 2, h - btn_h - 10, btn_w, btn_h);
+		return;
+	};
 
 }

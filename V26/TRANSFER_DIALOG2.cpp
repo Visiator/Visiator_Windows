@@ -7,7 +7,7 @@
 #include "TRANSFER_DIALOG2_Splitter.h"
 #include "MODAL_DIALOG.h"
 
-
+extern bool GLOBAL_STOP;
 extern VIEWER *viewer;
 
 TRANSFER_DIALOG2::TRANSFER_DIALOG2(VIEWER *viewer_) {
@@ -58,7 +58,7 @@ void TRANSFER_DIALOG2::set_visible(GUI_low_level *low_level, bool val) {
 		is_visible = true;
 	}
 	else {
-		/* 2021 10
+		
 		if (modal_dialog_info->get_visible() == true) {
 			modal_dialog_info->modal__result = MR_CANCEL;
 			modal_dialog_info->set_visible(low_level, false);
@@ -75,7 +75,7 @@ void TRANSFER_DIALOG2::set_visible(GUI_low_level *low_level, bool val) {
 			modal_dialog_skip->modal__result = MR_CANCEL;
 			modal_dialog_skip->set_visible(low_level, false);
 		}
-		*/
+		
 		is_visible = false;
 	}
 
@@ -96,7 +96,7 @@ void TRANSFER_DIALOG2::AutoArrangeSizes(GUI_low_level *low_level) {
 	if (w < panel_min_width * 2 + 40) w = panel_min_width * 2 + 40;
 	if (h < 350) h = 350;
 
-	/* 2021 10
+	
 
 	if (Splitter_percent < 1) Splitter_percent = 1;
 	if (Splitter_percent > 99) Splitter_percent = 99;
@@ -126,7 +126,7 @@ void TRANSFER_DIALOG2::AutoArrangeSizes(GUI_low_level *low_level) {
 	modal_dialog_confirm_overwrite->recalc_size(low_level, w, h);
 	modal_dialog_skip->recalc_size(low_level, w, h);
 	modal_dialog_info->recalc_size(low_level, w, h);
-	*/
+	
 }
 
 void TRANSFER_DIALOG2::set_size(GUI_low_level *low_level, int x_, int y_, int w_, int h_) {
@@ -154,18 +154,18 @@ void TRANSFER_DIALOG2::Paint(GUI_low_level *low_level) {
 
 	low_level->fill_rectangle(x, y, w, h, TrDialog_Border_bgColor, TrDialog_Border_alpha);
 	
-	/* 2021 10
+	
 	Caption->Paint(low_level);
 	Local_DirsFiles->Paint(low_level);
 	Dest_DirsFiles->Paint(low_level);
 	Splitter->Paint(low_level);
-	*/
-
+	
+	
 	modal_dialog_progress->Paint(low_level);
 	modal_dialog_confirm_overwrite->Paint(low_level);
 	modal_dialog_skip->Paint(low_level);
 	modal_dialog_info->Paint(low_level);
-
+	
 
 }
 
@@ -300,7 +300,7 @@ void TRANSFER_DIALOG2::START_TRANSFER(GUI_low_level *low_level, int mode) {
 
 void TRANSFER_DIALOG2::FINISH_TRANSFER_from_Partner_to_MY(GUI_low_level *low_level) {
 
-	/* 2021 10
+	
 
 	viewer->net_client_session->need_send_TRANSFER_CANCELED = true;
 	while (GLOBAL_STOP == false && viewer->net_client_session->need_send_TRANSFER_CANCELED == true) {
@@ -312,12 +312,12 @@ void TRANSFER_DIALOG2::FINISH_TRANSFER_from_Partner_to_MY(GUI_low_level *low_lev
 	modal_dialog_progress->set_visible(low_level, false);
 
 	viewer->file_transfer_dialog->Local_DirsFiles->refresh(low_level);
-	*/
+	
 };
 
 void TRANSFER_DIALOG2::FINISH_TRANSFER(GUI_low_level *low_level) {
 
-	/* 2021 10
+	
 
 	transfer_ASYNC_stage = 0;
 	current_transfer_element_local = nullptr;
@@ -325,12 +325,12 @@ void TRANSFER_DIALOG2::FINISH_TRANSFER(GUI_low_level *low_level) {
 
 	viewer->file_transfer_dialog->Dest_DirsFiles->refresh(low_level);
 
-	*/
+	
 }
 
 void TRANSFER_DIALOG2::FINISH_DELETE(GUI_low_level *low_level) {
 
-	/* 2021 10
+	
 
 	transfer_ASYNC_stage = 0;
 	current_delete_element_dest = nullptr;
@@ -338,24 +338,24 @@ void TRANSFER_DIALOG2::FINISH_DELETE(GUI_low_level *low_level) {
 
 	viewer->file_transfer_dialog->Dest_DirsFiles->refresh(low_level);
 
-	*/
+	
 
 }
 
 void TRANSFER_DIALOG2::REFRESH(GUI_low_level *low_level, int mode) {
-	/* 2021 10
+	
 	if (mode == 1) {
 		Local_DirsFiles->refresh(low_level);
 	}
 	if (mode == 2) {
 		Dest_DirsFiles->refresh(low_level);
 	}
-	*/
+	
 };
 
 void TRANSFER_DIALOG2::START_DELETE(GUI_low_level *low_level, int mode) {
 
-	/* 2021 10
+	/* 2021
 
 	viewer->net_client_session->transfer_files_canceled = false;
 

@@ -627,6 +627,30 @@ void load_fonts() {
 	sz_font2 = SizeofResource(hMod, hRes_font2);
 
 	font[2]->load_dummy( lpbArray_font2, sz_font2 );
+
+	//////////////////////////////////////////////////////////////////////
+
+	font[3] = new FONT();
+
+	HRSRC hRes_font3 = FindResource(hMod, MAKEINTRESOURCE(20002), L"BINARY");
+	HGLOBAL hGlob_font3 = LoadResource(hMod, hRes_font3);
+	BYTE *lpbArray_font3 = (BYTE*)LockResource(hGlob_font3);
+	DWORD sz_font3;
+	sz_font3 = SizeofResource(hMod, hRes_font3);
+
+	font[3]->load_dummy(lpbArray_font3, sz_font3);
+
+	//////////////////////////////////////////////////////////////////////
+
+	font[4] = new FONT();
+
+	HRSRC hRes_font4 = FindResource(hMod, MAKEINTRESOURCE(20002), L"BINARY");
+	HGLOBAL hGlob_font4 = LoadResource(hMod, hRes_font4);
+	BYTE *lpbArray_font4 = (BYTE*)LockResource(hGlob_font4);
+	DWORD sz_font4;
+	sz_font4 = SizeofResource(hMod, hRes_font4);
+
+	font[4]->load_dummy(lpbArray_font2, sz_font4);
 }
 
 uint32_t transparent_color(uint32_t old_color, uint32_t new_color, int percent) {

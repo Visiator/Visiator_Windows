@@ -29,6 +29,8 @@ public:
 
 	std::map <int, BUKVA> bukva;
 
+	bool it_is_AAA = false;
+
 	int  text_width(const char *txt);
 	int  text_width(const wchar_t *txt);
 	int  text_height();

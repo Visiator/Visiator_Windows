@@ -9,7 +9,7 @@
 
 TEXTURA *folder_ico2 = nullptr;
 TEXTURA *file_ico2 = nullptr;
-
+extern FONT *font[10];
 
 TRANSFER_DIALOG2_DirsFiles_TREE_element::TRANSFER_DIALOG2_DirsFiles_TREE_element(wchar_t *name_, bool is_folder_, unsigned long long size_, unsigned long long date_, TRANSFER_DIALOG2_DirsFiles_TREE_element *parent_, TRANSFER_DIALOG2_DirsFiles_TREE_element *prev_) {
 	
@@ -106,12 +106,12 @@ void TRANSFER_DIALOG2_DirsFiles_TREE_element::paint_element_and_all_opened_sub_e
 
 void TRANSFER_DIALOG2_DirsFiles_TREE_element::paint_one_element(GUI_low_level *low_level, int x, int y, int w, int h) {
 	
-	/* 2021 09
+	
 	unsigned int clr1 = 0x777777;
 
 	FONT *fnt;
 
-	fnt = fontt[4];
+	fnt = font[4];
 
 	if (fnt == nullptr) return;
 
@@ -201,7 +201,7 @@ void TRANSFER_DIALOG2_DirsFiles_TREE_element::paint_one_element(GUI_low_level *l
 			else { low_level->paint_tri_1_close(x + 15 * lvl, y, clr); }
 		};
 	};	
-	*/
+	
 }
 
 TRANSFER_DIALOG2_DirsFiles_TREE_element *TRANSFER_DIALOG2_DirsFiles_TREE_element::get_element_by_fullname(wchar_t * val) {

@@ -57,6 +57,8 @@ public:
 	bool paint_text_rect(int font_idx, int x, int y, int w, int h, wchar_t *text, unsigned int color);
 	int  text_height(int font_idx);
 	int  text_width(int font_idx, wchar_t *text);
+	void paint_tre_up(int x, int y, int w, unsigned int color);
+	void paint_tre_down(int x, int y, int w, unsigned int color);
 
 	void paint_text(int font_idx, int x, int y, int w, int h, wchar_t *text, unsigned int color, int aligment, int edit_cursor_position);
 	void paint_text(int font_idx, int x, int y, int w, int h, char *text, unsigned int color, int aligment, int edit_cursor_position);

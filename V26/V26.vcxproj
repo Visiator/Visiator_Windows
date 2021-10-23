@@ -145,6 +145,7 @@
     <ClCompile Include="CRYPTO.cpp" />
     <ClCompile Include="DESKTOP.cpp" />
     <ClCompile Include="EVENT_QUEUE.cpp" />
+    <ClCompile Include="FILE__LIST.cpp" />
     <ClCompile Include="FONT.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="GUI_Element.cpp" />
@@ -181,7 +182,9 @@
     <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_Button.cpp" />
     <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_Label.cpp" />
     <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_Toolbar.cpp" />
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_TREE.cpp" />
     <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.cpp" />
+    <ClCompile Include="TRANSFER_DIALOG2_DirsFiles_VScroll.cpp" />
     <ClCompile Include="TRANSFER_DIALOG2_Splitter.cpp" />
     <ClCompile Include="VIEWER.cpp" />
     <ClCompile Include="VIEWER_small_top_panel.cpp" />
@@ -191,6 +194,7 @@
     <ClInclude Include="APPLICATION_ATTRIBUTES.h" />
     <ClInclude Include="DESKTOP.h" />
     <ClInclude Include="EVENT_QUEUE.h" />
+    <ClInclude Include="FILE__LIST.h" />
     <ClInclude Include="FONT.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="GUI_Element.h" />
@@ -214,7 +218,9 @@
     <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_Button.h" />
     <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_Label.h" />
     <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_Toolbar.h" />
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_TREE.h" />
     <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_TREE_element.h" />
+    <ClInclude Include="TRANSFER_DIALOG2_DirsFiles_VScroll.h" />
     <ClInclude Include="TRANSFER_DIALOG2_Splitter.h" />
     <ClInclude Include="VIEWER.h" />
     <ClInclude Include="VIEWER_small_top_panel.h" />

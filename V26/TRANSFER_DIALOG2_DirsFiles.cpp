@@ -1,5 +1,9 @@
 #include "stdafx.h"
+
 #include "TRANSFER_DIALOG2_DirsFiles.h"
+#include "TRANSFER_DIALOG2_DirsFiles_Toolbar.h"
+#include "TRANSFER_DIALOG2_DirsFiles_VScroll.h"
+#include "TRANSFER_DIALOG2_DirsFiles_TREE.h"
 #include "VIEWER.h"
 
 extern VIEWER *viewer;
@@ -15,11 +19,11 @@ TRANSFER_DIALOG2_DirsFiles::TRANSFER_DIALOG2_DirsFiles(int local_or_dest_, TRANS
 {
 	parent = parent_;
 
-	/* 2021 10
+	
 	Toolbar = new TRANSFER_DIALOG2_DirsFiles_Toolbar(local_or_dest_, this);
 	VScroll = new TRANSFER_DIALOG2_DirsFiles_VScroll(this);
 	Tree = new TRANSFER_DIALOG2_DirsFiles_TREE(this);
-	*/
+	
 }
 
 TRANSFER_DIALOG2_DirsFiles::~TRANSFER_DIALOG2_DirsFiles() {
@@ -34,17 +38,17 @@ void TRANSFER_DIALOG2_DirsFiles::set_size(GUI_low_level *low_level, int x_, int 
 	if (w < 0) w = 0;
 	if (h < 0) h = 0;
 
-	/* 2021 10
+	
 	Toolbar->set_size(0, 0, w, _Toolbar_h);
 
 	VScroll->set_size(w_ - _V_Scroll_w, _Toolbar_h, _V_Scroll_w, h - _Toolbar_h);
 
 	Tree->set_size(low_level, 0, _Toolbar_h, w_ - _V_Scroll_w, h - _Toolbar_h);
-	*/
+	
 }
 
 void TRANSFER_DIALOG2_DirsFiles::START(GUI_low_level *low_level, int LOCAL_or_PARTNER_files) {
-	// 2021 10 Tree->START(low_level, LOCAL_or_PARTNER_files);
+	Tree->START(low_level, LOCAL_or_PARTNER_files);
 }
 
 bool TRANSFER_DIALOG2_DirsFiles::its_me(int local_mx, int local_my) {
@@ -89,7 +93,7 @@ void button_pressed_DirFilesTree_dest_delete_files(GUI_low_level *low_level, int
 
 void TRANSFER_DIALOG2_DirsFiles::refresh(GUI_low_level *low_level) {
 
-	/* 2021 10
+	
 
 	if (Tree->current_active_element == nullptr) return;
 	if (Tree->need_ASYNC_load != nullptr) return;
@@ -120,5 +124,21 @@ void TRANSFER_DIALOG2_DirsFiles::refresh(GUI_low_level *low_level) {
 	};
 	Tree->set_current_active_element(nullptr);
 	Tree->top->UNSELECT_all_elements();
-	*/
+	
+}
+
+void TRANSFER_DIALOG2_DirsFiles::recalc_v_scroll_sizes(GUI_low_level *low_level) {
+
+}
+
+void TRANSFER_DIALOG2_DirsFiles::Paint(GUI_low_level *low_level) {
+	int xx, yy;
+	xx = x + parent->get_global_x();
+	yy = y + parent->get_global_y();
+	low_level->fill_rectangle(xx, yy + _Toolbar_h, w - _V_Scroll_w, h - _Toolbar_h, 0xffffff, 220);
+
+	Tree->Paint(low_level);
+
+	Toolbar->Paint(low_level);
+	VScroll->Paint(low_level);
 }

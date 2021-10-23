@@ -71,7 +71,7 @@ void VIEWER::init_gui_VIEWER() {
 	//
 	gui_viewer_transfer_dialog->file_transfer_dialog_ptr = file_transfer_dialog;
 
-	// 2021 
+	 
 	file_transfer_dialog->set_size(gui->low_level, 100, 50, 900, 500);
 
 	gui_viewer_transfer_dialog->is_visible = false;
@@ -311,12 +311,12 @@ LRESULT CALLBACK MainWinProcViewer(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 		GetWindowRect(hw, &rr);
 
-		// 2021 09	if (viewer->is_sync_clipboards == true)
-		// 2021 09	{
-		// 2021 09		viewer->is_sync_clipboards = false;
-		// 2021 09		viewer->re_set_clipboard_view(viewer->is_sync_clipboards);
-		// 2021 09	};
-
+		/* 2021 09	if (viewer->is_sync_clipboards == true)
+			{
+				viewer->is_sync_clipboards = false;
+				viewer->re_set_clipboard_view(viewer->is_sync_clipboards);
+			};
+		*/
 		/*2019 app_attributes.set_last_screenposition(&rr);
 		if (app_attributes.hwnd_window_moved == 1) {
 			app_attributes.hwnd_window_moved = 0;
@@ -992,7 +992,7 @@ LRESULT VIEWER::WM_PAINT_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		//sprintf__s_c(ss, 290, "null", "");
 	}*/
 
-	/*
+	
 	if (view_mode == VIEW_MODE_NOCONNECT) {
 
 		gui->low_level->fill_color(0xeeeeee);
@@ -1003,23 +1003,29 @@ LRESULT VIEWER::WM_PAINT_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 		InvalidateRect(hw, NULL, FALSE);
 		return 0;
-	}*/
+	}
 
 	gui->low_level->fill_color(0xeeeeee);
 
 	gui->Paint();
 	
-	/* 2021 09
+	char ww[500];
+	ww[0] = 'S';
+	ww[1] = 0;
+	if (net_client_session != nullptr) {
+		sprintf_s(ww, 450, " r=%lld s=%lld ", net_client_session->recv__counter, net_client_session->send__countern);
+	}
+	
 	gui->low_level->paint_text(0, 50 - 1, 50 - 1, 500, 30, ww, 0, 0, -1);
 	gui->low_level->paint_text(0, 50 + 1, 50 - 1, 500, 30, ww, 0, 0, -1);
 	gui->low_level->paint_text(0, 50 - 1, 50 + 1, 500, 30, ww, 0, 0, -1);
 	gui->low_level->paint_text(0, 50 + 1, 50 + 1, 500, 30, ww, 0, 0, -1);
 
 	gui->low_level->paint_text(0, 50, 50, 500, 30, ww, 0x99ff00, 0, -1);
-	*/
+	
 	gui->low_level->Paint();
 
-	//gui->invalidate();
+	gui->invalidate();
 
 	//InvalidateRect(hw, NULL, FALSE);
 
@@ -1327,11 +1333,11 @@ void VIEWER::callback__disconnect() {
 	connect_ok = false;
 	//set_view_mode(VIEW_MODE_NOCONNECT);
 	change_view_mode(VIEW_MODE_NOCONNECT);
-	/* 2021 09
+	
 	if (file_transfer_dialog->get_visible() == true) {
-		file_transfer_dialog->set_visible(low_level, false);
+		file_transfer_dialog->set_visible(gui->low_level, false);
 	}
-	*/
+	
 }
 
 void resize_screen(GUI_low_level *low_level, SCREEN_LIGHT *src, SCREEN_LIGHT *dest, int new_window_w, int new_window_h) {

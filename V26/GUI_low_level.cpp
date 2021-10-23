@@ -641,3 +641,42 @@ void GUI_low_level::paint_close_krest(int x, int y, int w, unsigned int color) {
 	}
 
 };
+
+void GUI_low_level::paint_tre_up(int x, int y, int w, unsigned int color) {
+	if (x < 0 || y < 0) return;
+	if (x + w + 1 > window_w) return;
+	if (y + w + 1 > window_h) return;
+
+	unsigned int *qq;
+
+
+	int i, j;
+
+	for (j = 0; j < 5; j++) {
+
+		qq = buf + x + j + (y - j)* window_w;
+
+		for (i = 0; i < 10 - j * 2; i++) {
+			*(qq + i) = color;
+		};
+	};
+};
+void GUI_low_level::paint_tre_down(int x, int y, int w, unsigned int color) {
+	if (x < 0 || y < 0) return;
+	if (x + w + 1 > window_w) return;
+	if (y + w + 1 > window_h) return;
+
+	unsigned int *qq;
+
+
+	int i, j;
+
+	for (j = 0; j < 5; j++) {
+
+		qq = buf + x + j + (y + j)* window_w;
+
+		for (i = 0; i < 10 - j * 2; i++) {
+			*(qq + i) = color;
+		};
+	};
+};

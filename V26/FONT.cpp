@@ -193,7 +193,7 @@ void FONT::load_from_buffer(unsigned char *buf, int buf_size) {
 		jj++;
 		i += w * h;
 	};
-
+	it_is_AAA = true;
 };
 int FONT::text_height() {
 	return bukva['$'].h;
@@ -271,8 +271,12 @@ int FONT::paint_text_in_width(GUI_low_level *low_level, int x, int y, int max_w,
 		};
 
 		ww += w;
-
-		x += bukva[wchar_to_ascii(text[i])].paintAAA(low_level, x, y, color, false);
+		if (it_is_AAA) {
+			x += bukva[wchar_to_ascii(text[i])].paintAAA(low_level, x, y, color, false);
+		}
+		else {
+			x += bukva[wchar_to_ascii(text[i])].paint2(low_level, x, y, color, false);
+		}
 		i++;
 	}
 
