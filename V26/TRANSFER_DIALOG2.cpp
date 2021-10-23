@@ -10,6 +10,19 @@
 extern bool GLOBAL_STOP;
 extern VIEWER *viewer;
 
+#define BORDER_TOP 1
+#define BORDER_LEFT 2
+#define BORDER_RIGHT 3
+#define BORDER_BOTTOM 4
+
+#define BORDER_TOPLEFT 5
+#define BORDER_TOPRIGHT 6
+#define BORDER_BOTTOMLEFT 7
+#define BORDER_BOTTOMRIGHT 8
+
+#define BORDER_SPLITTER 9
+
+
 TRANSFER_DIALOG2::TRANSFER_DIALOG2(VIEWER *viewer_) {
 	//low_level = low_level_;
 	viewer = viewer_;
@@ -481,3 +494,275 @@ void TRANSFER_DIALOG2_Close_btn::set_size(int x_, int y_, int w_, int h_) {
 	w = w_;
 	h = h_;
 };
+
+void TRANSFER_DIALOG2::char_keydown(GUI_low_level *low_level, int msg, int wp, int lp) {
+	if (is_modal_lock()) return;
+	if (current_ACTIVE_object == _Local_Dirs_) {
+		Local_DirsFiles->char_keydown(low_level, msg, wp, lp);
+	}
+	if (current_ACTIVE_object == _Dest_Dirs_) {
+		Dest_DirsFiles->char_keydown(low_level, msg, wp, lp);
+	}
+}
+
+bool TRANSFER_DIALOG2::is_modal_lock() {
+	if (modal_dialog_info->get_visible()) return true;
+	if (modal_dialog_progress->get_visible()) return true;
+	if (modal_dialog_skip->get_visible()) return true;
+	if (modal_dialog_confirm_overwrite->get_visible()) return true;
+
+	return false;
+}
+
+void TRANSFER_DIALOG2::mouse_left_button_up(GUI_low_level *low_level, int mx, int my) {
+	int local_mx, local_my;
+	local_mx = mx - x;
+	local_my = my - y;
+
+	modal_dialog_info->mouse_left_button_up(low_level);
+	modal_dialog_skip->mouse_left_button_up(low_level);
+	modal_dialog_confirm_overwrite->mouse_left_button_up(low_level);
+	modal_dialog_progress->mouse_left_button_up(low_level);
+
+	Local_DirsFiles->mouse_left_button_up(low_level);
+	Dest_DirsFiles->mouse_left_button_up(low_level);
+
+	if (_WORK_MODE_ == _MOVE_from_CAPTION_) {
+		set_new_WORK_MODE(low_level, _NORMAL_);
+		return;
+	};
+	if (_WORK_MODE_ == _CloseBtn_Pressed_) {
+		set_new_WORK_MODE(low_level, _NORMAL_);
+		if (Caption->Close_btn->its_me(local_mx, local_my)) {
+			Close_btn_Click();
+		};
+		return;
+	};
+
+	if (_WORK_MODE_ == _MOVE_SPLITTER_) {
+		set_new_WORK_MODE(low_level, _NORMAL_);
+		return;
+	};
+	if (_WORK_MODE_ == _RESIZE_top_border_
+		|| _WORK_MODE_ == _RESIZE_left_border_
+		|| _WORK_MODE_ == _RESIZE_right_border_
+		|| _WORK_MODE_ == _RESIZE_bottom_border_
+		|| _WORK_MODE_ == _RESIZE_topleft_border_
+		|| _WORK_MODE_ == _RESIZE_topright_border_
+		|| _WORK_MODE_ == _RESIZE_bottomleft_border_
+		|| _WORK_MODE_ == _RESIZE_bottomright_border_
+		) {
+		set_new_WORK_MODE(low_level, _NORMAL_);
+		return;
+	};
+
+	//WTF?
+	return;
+};
+
+void TRANSFER_DIALOG2::set_new_WORK_MODE(GUI_low_level *low_level, int new_WORK_MODE) {
+	if (_WORK_MODE_ == new_WORK_MODE) return;
+
+	if (new_WORK_MODE == _NORMAL_
+		|| new_WORK_MODE == _MOVE_from_CAPTION_
+		|| new_WORK_MODE == _CloseBtn_Pressed_
+		|| new_WORK_MODE == _MOVE_SPLITTER_
+		|| new_WORK_MODE == _RESIZE_top_border_
+		|| new_WORK_MODE == _RESIZE_left_border_
+		|| new_WORK_MODE == _RESIZE_right_border_
+		|| new_WORK_MODE == _RESIZE_bottom_border_
+
+		|| new_WORK_MODE == _RESIZE_topleft_border_
+		|| new_WORK_MODE == _RESIZE_topright_border_
+		|| new_WORK_MODE == _RESIZE_bottomleft_border_
+		|| new_WORK_MODE == _RESIZE_bottomright_border_
+
+		) {
+		_WORK_MODE_ = new_WORK_MODE;
+		low_level->invalidate();
+		return;
+	}
+
+	low_level->invalidate();
+	// WTF ??
+	return;
+}
+
+void TRANSFER_DIALOG2::Close_btn_Click() {
+	viewer->transfer_dialog_HIDE();
+}
+
+
+void TRANSFER_DIALOG2::mouse_leave(GUI_low_level *low_level) {
+
+}
+
+void TRANSFER_DIALOG2::mouse_left_button_down(GUI_low_level *low_level, int mx, int my) {
+
+	int local_mx, local_my, bt;
+	local_mx = mx - x;
+	local_my = my - y;
+
+	if (modal_dialog_info->its_me(local_mx, local_my)) {
+		modal_dialog_info->mouse_left_button_down(low_level, local_mx, local_my);
+		return;
+	}
+
+	if (modal_dialog_skip->its_me(local_mx, local_my)) {
+		modal_dialog_skip->mouse_left_button_down(low_level, local_mx, local_my);
+		return;
+	}
+
+	if (modal_dialog_confirm_overwrite->its_me(local_mx, local_my)) {
+		modal_dialog_confirm_overwrite->mouse_left_button_down(low_level, local_mx, local_my);
+		return;
+	}
+
+	if (is_modal_lock()) {
+		if (modal_dialog_progress->its_me(local_mx, local_my)) {
+			modal_dialog_progress->mouse_left_button_down(low_level, local_mx, local_my);
+		}
+		return;
+	};
+
+
+	if (_WORK_MODE_ == _NORMAL_) {
+
+
+
+		if (Caption->Close_btn->its_me(local_mx, local_my)) {
+			set_new_WORK_MODE(low_level, _CloseBtn_Pressed_);
+			return;
+		};
+		if (Caption->its_me(local_mx, local_my)) {
+			mouse_pressed_local_mx_delta = mx - x;
+			mouse_pressed_local_my_delta = my - y;
+			set_new_WORK_MODE(low_level, _MOVE_from_CAPTION_);
+			return;
+		}
+
+		if (Splitter->its_me(local_mx, local_my)) {
+			//mouse_pressed_local_mx_delta = mx - x;
+			//mouse_pressed_local_my_delta = my - y;
+			set_new_WORK_MODE(low_level, _MOVE_SPLITTER_);
+			return;
+		}
+
+
+
+
+		bt = recognize_border_type(mx, my);
+
+		if (bt == BORDER_TOP) {
+			set_new_WORK_MODE(low_level, _RESIZE_top_border_);
+			return;
+		}
+		if (bt == BORDER_LEFT) {
+			set_new_WORK_MODE(low_level, _RESIZE_left_border_);
+			return;
+		}
+		if (bt == BORDER_RIGHT) {
+			set_new_WORK_MODE(low_level, _RESIZE_right_border_);
+			return;
+		}
+		if (bt == BORDER_BOTTOM) {
+			set_new_WORK_MODE(low_level, _RESIZE_bottom_border_);
+			return;
+		}
+
+		if (bt == BORDER_TOPRIGHT) {
+			set_new_WORK_MODE(low_level, _RESIZE_topright_border_);
+			return;
+		}
+		if (bt == BORDER_TOPLEFT) {
+			set_new_WORK_MODE(low_level, _RESIZE_topleft_border_);
+			return;
+		}
+		if (bt == BORDER_BOTTOMLEFT) {
+			set_new_WORK_MODE(low_level, _RESIZE_bottomleft_border_);
+			return;
+		}
+		if (bt == BORDER_BOTTOMRIGHT) {
+			set_new_WORK_MODE(low_level, _RESIZE_bottomright_border_);
+			return;
+		}
+
+
+		if (Local_DirsFiles->its_me(local_mx, local_my)) {
+			set_ACTIVE_object(_Local_Dirs_);
+			Local_DirsFiles->mouse_left_button_down(low_level, local_mx, local_my);
+			return;
+		}
+
+		if (Dest_DirsFiles->its_me(local_mx, local_my)) {
+			set_ACTIVE_object(_Dest_Dirs_);
+			Dest_DirsFiles->mouse_left_button_down(low_level, local_mx, local_my);
+			return;
+		}
+
+	}
+
+	// WTF ?
+	return;
+}
+
+int TRANSFER_DIALOG2::recognize_border_type(int mx, int my) {
+
+	int d;
+	d = 20;
+
+	if (mx >= x && mx < x + _Border && my >= y + d && my < y + h - d) { // левая граница
+
+		return BORDER_LEFT;
+	}
+	if (mx >= x + w - _Border && mx < x + w && my >= y + d && my < y + h - d) { // правая граница
+
+		return BORDER_RIGHT;
+	}
+
+	if (mx >= x + d && mx < x + w - d && my >= y && my < y + _Border) { // верхнаяя граница
+
+		return BORDER_TOP;
+	}
+
+	if (mx >= x + d && mx < x + w - d && my >= y + h - _Border && my < y + h) { // нижняя граница
+
+		return BORDER_BOTTOM;
+	}
+
+	if ((mx >= x && mx < x + d && my >= y && my < y + _Border) ||
+		(mx >= x && mx < x + _Border && my >= y && my < y + d)) { // левый верхний
+
+		return BORDER_TOPLEFT;
+	}
+
+	if ((mx >= x + w - d && mx < x + w && my >= y && my < y + _Border) ||
+		(mx >= x + w - _Border && mx < x + w && my >= y && my < y + d)) { // правый верхний
+
+		return BORDER_TOPRIGHT;
+	}
+
+	if ((mx >= x + w - _Border && mx < x + w && my > y + h - d && my < y + h) ||
+		(mx >= x + w - d && mx < x + w && my >= y + h - _Border && my < y + h)) { // правый нижний
+
+		return BORDER_BOTTOMRIGHT;
+	}
+
+
+
+	if ((mx >= x && mx < x + _Border && my >= y + h - d && my < y + h) ||
+		(mx >= x && mx < x + d && my >= y + h - _Border && my < y + h)) {
+
+		return BORDER_BOTTOMLEFT;
+	}
+
+	if (mx >= x + _Border + Splitter_x - _Border / 2 && mx < x + _Border + Splitter_x + _Border / 2) {
+		return BORDER_SPLITTER;
+	}
+
+	return 0;
+};
+
+void TRANSFER_DIALOG2::set_ACTIVE_object(int _id_) { // 0-unset, 1-_Local_Dirs_, 2-_Dest_Dirs_
+	current_ACTIVE_object = _id_;
+}

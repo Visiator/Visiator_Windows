@@ -165,6 +165,9 @@ public:
 
 	void RUN_VIEWER(uint8_t *partner_id, uint8_t *pass_encrypted, uint8_t *pass_no_encripted);
 
+	TRACKMOUSEEVENT tme;
+	void set_track(HWND hw);
+
 	VIEWER();
 	~VIEWER();
 };

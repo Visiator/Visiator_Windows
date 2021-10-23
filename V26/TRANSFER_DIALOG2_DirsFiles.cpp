@@ -142,3 +142,35 @@ void TRANSFER_DIALOG2_DirsFiles::Paint(GUI_low_level *low_level) {
 	Toolbar->Paint(low_level);
 	VScroll->Paint(low_level);
 }
+
+void TRANSFER_DIALOG2_DirsFiles::mouse_wheel(GUI_low_level *low_level, int type) {
+	if (type == 2) for (int i = 0; i < 3; i++) Tree->top_arrow_click(low_level);
+	if (type == 1) for (int i = 0; i < 3; i++) Tree->bottom_arrow_click(low_level);
+}
+
+void TRANSFER_DIALOG2_DirsFiles::char_keydown(GUI_low_level *low_level, int msg, int wp, int lp) {
+	Tree->char_keydown(low_level, msg, wp, lp);
+}
+
+void TRANSFER_DIALOG2_DirsFiles::mouse_left_button_up(GUI_low_level *low_level) {
+	Toolbar->mouse_left_button_up(low_level);
+	VScroll->mouse_left_button_up(low_level);
+	Tree->mouse_left_button_up(low_level);
+}
+
+void TRANSFER_DIALOG2_DirsFiles::mouse_left_button_down(GUI_low_level *low_level, int local_mx, int local_my) {
+	int local_local_mx, local_local_my;
+
+	local_local_mx = local_mx - x;
+	local_local_my = local_my - y;
+
+	if (Toolbar->its_me(local_local_mx, local_local_my)) {
+		Toolbar->mouse_left_button_down(low_level, local_local_mx, local_local_my);
+	}
+	if (VScroll->its_me(local_local_mx, local_local_my)) {
+		VScroll->mouse_left_button_down(low_level, local_local_mx, local_local_my);
+	}
+	if (Tree->its_me(local_local_mx, local_local_my)) {
+		Tree->mouse_left_button_down(low_level, local_local_mx, local_local_my);
+	}
+}

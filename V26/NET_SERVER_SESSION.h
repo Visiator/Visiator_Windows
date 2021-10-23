@@ -64,6 +64,9 @@
 
 #define PACKET_TYPE_TRANSFER_from_SRV_to_CLI_CANCELED 20051
 
+#define filefolder_part_buf_max_size 150000
+
+
 // 20052 already used
 // 20053 already used
 // 20054 already used

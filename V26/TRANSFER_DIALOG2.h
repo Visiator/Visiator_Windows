@@ -38,6 +38,7 @@ class MODAL_DIALOG;
 class TRANSFER_DIALOG2_Caption;
 class TRANSFER_DIALOG2_Splitter;
 class TRANSFER_DIALOG2_DirsFiles_TREE_element;
+class TRANSFER_DIALOG2_transfer_from_PARTNER_to_MY;
 
 
 class TRANSFER_DIALOG2_Close_btn
@@ -71,6 +72,10 @@ private:
 	bool is_visible = false;
 
 public:
+
+	TRANSFER_DIALOG2_transfer_from_PARTNER_to_MY *transfer_PARTNER_to_MY = nullptr;
+
+
 	VIEWER *viewer = nullptr; // parent object
 
 	TRANSFER_DIALOG2_DirsFiles_TREE_element *current_transfer_element_local = nullptr; // копируем от нас к партнеру
@@ -115,6 +120,7 @@ public:
 	void REFRESH(GUI_low_level *low_level, int mode);
 	void START_DELETE(GUI_low_level *low_level, int mode);
 
+	void set_new_WORK_MODE(GUI_low_level *low_level, int new_WORK_MODE);
 	int _WORK_MODE_ = _NORMAL_; // рабочий режим
 						 // 1 - _NORMAL_ основной рабочий режим
 						 // 2 - _MOVE_from_CAPTION_ перетаскиваем за заголовок
@@ -133,6 +139,24 @@ public:
 						 // 15 - _PRESSED_VScroll_local_PGdown_
 						 // 16 - _PRESSED_VScroll_dest_PGup_
 						 // 17 - _PRESSED_VScroll_dest_PGdown_
+
+	void mouse_wheel(GUI_low_level *low_level, int type, int mx, int my);//+
+	void char_keydown(GUI_low_level *low_level, int msg, int wp, int lp); //+
+	void mouse_over(GUI_low_level *low_level, int mx, int my);//+
+	void mouse_left_button_down(GUI_low_level *low_level, int mx, int my);//+
+	void mouse_left_button_up(GUI_low_level *low_level, int mx, int my);
+	void mouse_right_button_down(GUI_low_level *low_level, int mx, int my);//+
+	void mouse_right_button_up(GUI_low_level *low_level, int mx, int my);
+	void mouse_leave(GUI_low_level *low_level);
+
+	int  current_ACTIVE_object = 0; // 0-unset, 1-_Local_Dirs_, 2-_Dest_Dirs_
+	bool is_modal_lock();
+
+	void Close_btn_Click();
+
+	void set_ACTIVE_object(int _id_);
+
+	int recognize_border_type(int mx, int my);
 
 	 TRANSFER_DIALOG2(VIEWER *viewer_);
 	~TRANSFER_DIALOG2();

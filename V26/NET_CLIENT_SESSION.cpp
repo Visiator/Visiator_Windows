@@ -6,6 +6,7 @@
 #include "NET_SERVER_SESSION.h"
 #include "CRYPTO.h"
 #include "VIEWER.h"
+#include "tools.h"
 
 extern APPLICATION_ATTRIBUTES app_attributes;
 extern bool GLOBAL_STOP;
@@ -19,19 +20,19 @@ NET_CLIENT_SESSION::~NET_CLIENT_SESSION() {
 
 }
 
-void NET_CLIENT_SESSION::mouse_left_button_down(int mx, int my) {
+void NET_CLIENT_SESSION::mouse_left_button_down(GUI_low_level *low_level, int mx, int my) {
 	out_event_queue.addd(0, WM_LBUTTONDOWN__, (uint16_t)mx, (uint16_t)my, "5");
 }
 
-void NET_CLIENT_SESSION::mouse_left_button_up(int mx, int my) {
+void NET_CLIENT_SESSION::mouse_left_button_up(GUI_low_level *low_level, int mx, int my) {
 	out_event_queue.addd(0, WM_LBUTTONUP__, (uint16_t)mx, (uint16_t)my, "5");
 }
 
-void NET_CLIENT_SESSION::mouse_right_button_down(int mx, int my) {
+void NET_CLIENT_SESSION::mouse_right_button_down(GUI_low_level *low_level, int mx, int my) {
 	out_event_queue.addd(0, WM_RBUTTONDOWN__, (uint16_t)mx, (uint16_t)my, "5");
 }
 
-void NET_CLIENT_SESSION::mouse_right_button_up(int mx, int my) {
+void NET_CLIENT_SESSION::mouse_right_button_up(GUI_low_level *low_level, int mx, int my) {
 	out_event_queue.addd(0, WM_RBUTTONUP__, (uint16_t)mx, (uint16_t)my, "5");
 }
 void NET_CLIENT_SESSION::get_statistic(char *ss, int ss_max_size_) {
@@ -39,20 +40,20 @@ void NET_CLIENT_SESSION::get_statistic(char *ss, int ss_max_size_) {
 	sprintf__s_ull_ull(ss, ss_max_size_, "rcv:%lld snd:%lld ", recv__counter, send__countern);
 
 }
-void NET_CLIENT_SESSION::mouse_move(int mx, int my) {
+void NET_CLIENT_SESSION::mouse_move(GUI_low_level *low_level, int mx, int my) {
 	//out_event_queue.add(0, 5555, mx, my, "5");
 	need_set_mouse_x = mx;
 	need_set_mouse_y = my;
 }
-void NET_CLIENT_SESSION::mouse_whell(int msg, int wp, int lp) {
+void NET_CLIENT_SESSION::mouse_whell(GUI_low_level *low_level, int msg, int wp, int lp) {
 	out_event_queue.addd(0, (uint16_t)msg, (uint16_t)wp, (uint16_t)lp, "6");
 }
 
-void NET_CLIENT_SESSION::char_keydown(int msg, int wp, int lp) {
+void NET_CLIENT_SESSION::char_keydown(GUI_low_level *low_level, int msg, int wp, int lp) {
 	out_event_queue.addd(0, (uint16_t)msg, (uint16_t)wp, (uint16_t)lp, "5");
 }
 
-void NET_CLIENT_SESSION::char_keyup(int msg, int wp, int lp) {
+void NET_CLIENT_SESSION::char_keyup(GUI_low_level *low_level, int msg, int wp, int lp) {
 	out_event_queue.addd(0, (uint16_t)msg, (uint16_t)wp, (uint16_t)lp, "5");
 }
 
@@ -1326,4 +1327,288 @@ void NET_CLIENT_SESSION::send_Change_LNG() {
 	out_event_queue.addd(0, WM_KEYDOWN, 0, 0x80, "eq 25");
 }
 
+unsigned int NET_CLIENT_SESSION::request_filefolder_stat(wchar_t *partner_name_, unsigned int *_is_file_folder, unsigned long long *_size, unsigned long long *_date, unsigned int file_ID, int *modal_result) {
+	if (partner_name_ == nullptr) return false;
+	if (partner_name_[0] == 0) return false;
 
+	*_is_file_folder = 0;
+	*_size = 0;
+	*_date = 0;
+
+	//unsigned char *buf;
+	unsigned int i, j;
+
+	i = my_strlen(partner_name_);
+	j = (i + 1) * 2 + 32;
+
+	if (i >= 5000) return false;
+
+	//buf = new unsigned char[j + 100];
+
+	unsigned int *sz, *crc, *sol, *type, zz, *GID;
+
+	zz = j / 16;
+	zz *= 16;
+	if (zz < j) zz += 16;
+	buf_tdn_len = zz;
+
+
+
+	if (buf_tdn_max_size < buf_tdn_len + 20) {
+		delete[] buf_tdn;
+		buf_tdn_max_size = buf_tdn_len + 20;
+		buf_tdn = new unsigned char[buf_tdn_max_size + 2];
+	}
+
+	sz = (unsigned int *)&(buf_tdn[0]);
+	crc = (unsigned int *)&(buf_tdn[4]);
+	type = (unsigned int *)&(buf_tdn[8]);
+	sol = (unsigned int *)&(buf_tdn[12]);
+	GID = (unsigned int *)&(buf_tdn[16]);
+
+	*sz = buf_tdn_len;
+	*crc = 0;
+	*type = PACKET_TYPE_request_filefolder_stat;
+	*sol = get_sol();
+	*GID = file_ID;
+
+	wchar_t *w;
+
+	w = (wchar_t *)&buf_tdn[20];
+
+	my_strcpy(w, partner_name_);
+
+	aes_partner.encrypt_stream(buf_tdn, buf_tdn_len);
+
+	responce_from_partner_result = 0;
+	responce_from_partner_FILE_ID = 0;
+
+	buf_tdn_need_send = true;
+	DWORD timeout = GetTickCount();
+	while (GLOBAL_STOP == false && buf_tdn_need_send == true) { // ждем пока мы отправим запрос партнеру
+
+
+
+		::Sleep(0);
+		if (timeout + 5000 < GetTickCount()) {
+
+			return false;
+		}
+	};
+
+
+
+	timeout = GetTickCount();
+	while (responce_from_partner_result == 0 && GLOBAL_STOP == false) { // ждем пока партнер нам ответит
+
+
+
+		::Sleep(0);
+		if (timeout + 15000 < GetTickCount()) {
+			return false;
+		}
+	}
+
+	if (responce_from_partner_result == 1) { // папка
+
+	}
+	if (responce_from_partner_result == 2) { // файл
+
+	}
+	if (responce_from_partner_result == 3) { // нет файла
+
+	}
+	if (responce_from_partner_result == 4) { // access deny
+
+	}
+
+
+	*_is_file_folder = responce_from_partner_result;
+	*_size = responce_from_partner_FILE_size;
+	*_date = responce_from_partner_FILE_date;
+
+
+	return responce_from_partner_result;
+}
+
+bool NET_CLIENT_SESSION::request_file_part(unsigned int file_ID, unsigned char *buf, unsigned int buf_size, unsigned int *buf_size_readed, unsigned int start_from, int *modal_result) {
+
+	unsigned int j;
+
+	j = 32;
+
+
+	unsigned int *sz, *crc, *sol, *type, zz, *GID, *ii;
+
+	zz = j / 16;
+	zz *= 16;
+	if (zz < j) zz += 16;
+	buf_tdn_len = zz;
+
+	if (buf_tdn_max_size < buf_tdn_len + 20) {
+		delete[] buf_tdn;
+		buf_tdn_max_size = buf_tdn_len + 20;
+		buf_tdn = new unsigned char[buf_tdn_max_size + 2];
+	}
+
+	sz = (unsigned int *)&(buf_tdn[0]);
+	crc = (unsigned int *)&(buf_tdn[4]);
+	type = (unsigned int *)&(buf_tdn[8]);
+	sol = (unsigned int *)&(buf_tdn[12]);
+	GID = (unsigned int *)&(buf_tdn[16]);
+	ii = (unsigned int *)&(buf_tdn[20]);
+
+	*sz = buf_tdn_len;
+	*crc = 0;
+	*type = PACKET_TYPE_request_filefolder_part;
+	*sol = get_sol();
+	*GID = file_ID;
+	*ii = start_from;
+
+
+
+
+	aes_partner.encrypt_stream(buf_tdn, buf_tdn_len);
+
+	responce_from_partner_arrived = 0;
+
+	responce_from_partner_result = 0;
+	responce_from_partner_FILE_ID = 0;
+
+	buf_tdn_need_send = true;
+	DWORD timeout = GetTickCount();
+	while (GLOBAL_STOP == false && buf_tdn_need_send == true) { // ждем пока мы отправим запрос партнеру
+
+
+
+		::Sleep(0);
+		if (timeout + 5000 < GetTickCount()) {
+
+			return false;
+		}
+	};
+
+
+
+	timeout = GetTickCount();
+	while (responce_from_partner_result == 0 && GLOBAL_STOP == false) { // ждем пока партнер нам ответит
+
+
+
+		::Sleep(0);
+		if (timeout + 15000 < GetTickCount()) {
+			return false;
+		}
+	}
+
+	if (buf_size < responce_from_partner_part_szie) return false;
+	unsigned int i;
+	i = 0;
+
+	while (i < responce_from_partner_part_szie) {
+		buf[i] = transfer_file_buffer[i];
+		i++;
+	}
+	*buf_size_readed = responce_from_partner_part_szie;
+
+	/*
+	transfer_file_buffer
+
+	responce_from_partner_FILE_ID
+	responce_from_partner_part_szie
+
+	responce_from_partner_result
+
+	responce_from_partner_arrived
+	*/
+	//*_is_file_folder = responce_from_partner_r0esult;
+	//*_size = responce_from_partner_FILE_size;
+	//*_date = responce_from_partner_FILE_date;
+
+
+
+	return true;
+}
+
+bool NET_CLIENT_SESSION::request_folder_content(unsigned int file_ID, wchar_t *partner_folder_name_, int *modal_result) {
+
+	unsigned int j;
+
+	j = (my_strlen(partner_folder_name_) + 1) * 2 + 32;
+
+
+	unsigned int *sz, *crc, *sol, *type, zz, *GID, *ii;
+
+	zz = j / 16;
+	zz *= 16;
+	if (zz < j) zz += 16;
+	buf_tdn_len = zz;
+
+	if (buf_tdn_max_size < buf_tdn_len + 20) {
+		delete[] buf_tdn;
+		buf_tdn_max_size = buf_tdn_len + 20;
+		buf_tdn = new unsigned char[buf_tdn_max_size + 2];
+	}
+
+	zero_unsigned_char(buf_tdn, zz);
+
+	sz = (unsigned int *)&(buf_tdn[0]);
+	crc = (unsigned int *)&(buf_tdn[4]);
+	type = (unsigned int *)&(buf_tdn[8]);
+	sol = (unsigned int *)&(buf_tdn[12]);
+	GID = (unsigned int *)&(buf_tdn[16]);
+	ii = (unsigned int *)&(buf_tdn[20]);
+
+	*sz = buf_tdn_len;
+	*crc = 0;
+	*type = PACKET_TYPE_request_file_list_2;
+	*sol = get_sol();
+	*GID = file_ID;
+
+	wchar_t *w;
+
+	w = (wchar_t*)&(buf_tdn[24]);
+
+	my_strcpy(w, partner_folder_name_);
+
+
+	aes_partner.encrypt_stream(buf_tdn, buf_tdn_len);
+
+	responce_from_partner_arrived = 0;
+
+	responce_from_partner_result = 0;
+	responce_from_partner_FILE_ID = 0;
+
+	buf_tdn_need_send = true;
+	DWORD timeout = GetTickCount();
+	while (GLOBAL_STOP == false && buf_tdn_need_send == true) { // ждем пока мы отправим запрос партнеру
+
+		if (*modal_result != 0) return false;
+
+		::Sleep(0);
+		if (timeout + 5000 < GetTickCount()) {
+
+			return false;
+		}
+	};
+
+	timeout = GetTickCount();
+	while (responce_from_partner_result == 0 && GLOBAL_STOP == false) { // ждем пока партнер нам ответит
+
+		if (*modal_result != 0) return false;
+
+		::Sleep(0);
+		if (timeout + 15000 < GetTickCount()) {
+			return false;
+		}
+	}
+
+	return true;
+};
+
+bool NET_CLIENT_SESSION::need_request_FilesList(wchar_t *folder_name) {
+	if (need_request_files_list != false) return false;
+	my_strcpy_s(need_request_files_list_DIR, 5000, folder_name);
+	need_request_files_list = true;
+	return true;
+}

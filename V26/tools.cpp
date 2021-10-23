@@ -2295,6 +2295,65 @@ void Load_ProxySettings_from_reg(unsigned int *proxy_ip, unsigned int *proxy_por
 
 }
 
+void my_strcpy_s(wchar_t *dest, int max_len, wchar_t *source) {
+	if (source == NULL && dest != NULL) {
+		dest[0] = 0;
+		return;
+	}
+	if (source == NULL || dest == NULL) return;
+	int i;
+	i = 0;
+	while (source[i] != 0 && i < max_len - 1) {
+		dest[i] = source[i];
+		i++;
+	};
+	dest[i] = 0;
+}
+void my_strcat_s(wchar_t *dest, int max_len, wchar_t *source) {
+	if (source == NULL || dest == NULL) return;
+	int i, j;
+	j = 0;
+	while (dest[j] != 0 && j < max_len - 1) j++;
+	i = 0;
+	while (source[i] != 0 && j < max_len) {
+		dest[j + 1] = 0;
+		dest[j] = source[i];
+		i++;
+		j++;
+	};
+	dest[j] = 0;
+
+}
+
+void my_strcpy_s(char *dest, int max_len, char *source) {
+	if (source == NULL && dest != NULL) {
+		dest[0] = 0;
+		return;
+	}
+	if (source == NULL || dest == NULL) return;
+	int i;
+	i = 0;
+	while (source[i] != 0 && i < max_len-1) {
+		dest[i] = source[i];
+		i++;
+	};
+	dest[i] = 0;
+}
+void my_strcat_s(char *dest, int max_len, char *source) {
+	if (source == NULL || dest == NULL) return;
+	int i, j;
+	j = 0;
+	while (dest[j] != 0 && j < max_len-1) j++;
+	i = 0;
+	while (source[i] != 0 && j < max_len) {
+		dest[j + 1] = 0;
+		dest[j] = source[i];
+		i++;
+		j++;
+	};
+	dest[j] = 0;
+}
+
 
 void my_strcpy(wchar_t *dest, wchar_t *source) {
 	if (source == NULL && dest != NULL) {
@@ -4742,3 +4801,65 @@ void convert_wchart_to_char_PASS(unsigned char *c_32size, wchar_t *w) {
 	WideCharToMultiByte( CP_ACP, 0, w, -1, (char *)c_32size, 16, NULL, NULL);
 
 }
+
+bool GetFileAttributes_(wchar_t *name, unsigned long long *fs, unsigned long long *dt) {
+
+	LARGE_INTEGER FileSize;
+	unsigned long long xxx;
+	HANDLE hFile;
+	BOOL r;
+
+	hFile = CreateFile(name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE) return false;
+
+	r = GetFileSizeEx(hFile, &FileSize);
+
+	if (r == FALSE) {
+		CloseHandle(hFile);
+		return false;
+	}
+
+	FILETIME CreationTime, LastAccessTime, LastWriteTime;
+
+	r = GetFileTime(hFile, &CreationTime, &LastAccessTime, &LastWriteTime);
+
+	if (r == FALSE) {
+		CloseHandle(hFile);
+		return false;
+	}
+
+	CloseHandle(hFile);
+
+	//FileTimeToLocalFileTime( &LastWriteTime, &LastWriteTime); //GetFileAttributes_
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	*fs = (unsigned long long)FileSize.LowPart | ((unsigned long long)FileSize.HighPart << 32);
+
+	xxx = LastWriteTime.dwHighDateTime;
+	xxx = xxx << 32;
+	xxx = xxx | LastWriteTime.dwLowDateTime;
+	*dt = xxx;
+
+
+
+	return true;
+};
+
+bool my_deletefile(wchar_t *name) {
+	if (name == nullptr) return false;
+	if (DeleteFile(name) == FALSE) {
+		SetFileAttributes(name, FILE_ATTRIBUTE_NORMAL);
+		if (DeleteFile(name) == FALSE) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+	else {
+		return true;
+	}
+}
+

@@ -7,7 +7,9 @@
 #include "GUI_low_level.h"
 #include "VIEWER_small_top_panel.h"
 #include "NET_SERVER_SESSION.h"
-
+#include "TRANSFER_DIALOG2_transfer_from_PARTNER_to_MY.h"
+#include "TRANSFER_DIALOG2_DirsFiles.h"
+#include "TRANSFER_DIALOG2_DirsFiles_TREE.h"
 
 extern APPLICATION_ATTRIBUTES app_attributes;
 extern bool GLOBAL_STOP;
@@ -477,11 +479,11 @@ void VIEWER::change_view_mode(int p) {
 }
 
 void VIEWER::char_keydown(int msg, int wp, int lp) {
-	if (net_client_session != NULL) net_client_session->char_keydown(msg, wp, lp);
+	if (net_client_session != NULL) net_client_session->char_keydown(gui->low_level, msg, wp, lp);
 }
 
 void VIEWER::char_keyup(int msg, int wp, int lp) {
-	if (net_client_session != NULL) net_client_session->char_keyup(msg, wp, lp);
+	if (net_client_session != NULL) net_client_session->char_keyup(gui->low_level, msg, wp, lp);
 }
 
 void VIEWER::send_CtrlAltDel() {
@@ -941,13 +943,13 @@ LRESULT VIEWER::WM_RBUTTONDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (view_mode == VIEW_MODE_STRETCH) {
 		if (net_client_session != NULL) {
-			net_client_session->mouse_right_button_down((int)(mx * aspect_w), (int)(my * aspect_h));
+			net_client_session->mouse_right_button_down(gui->low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
 		}
 	}
 
 	if (view_mode == VIEW_MODE_FULLSCREEN) {
 		if (net_client_session != NULL) {
-			net_client_session->mouse_right_button_down(mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
+			net_client_session->mouse_right_button_down(gui->low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
 		}
 	}
 
@@ -967,13 +969,13 @@ LRESULT VIEWER::WM_RBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (view_mode == VIEW_MODE_STRETCH) {
 		if (net_client_session != NULL) {
-			net_client_session->mouse_right_button_up((int)(mx * aspect_w), (int)(my * aspect_h));
+			net_client_session->mouse_right_button_up(gui->low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
 		}
 	}
 
 	if (view_mode == VIEW_MODE_FULLSCREEN) {
 		if (net_client_session != NULL) {
-			net_client_session->mouse_right_button_up(mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
+			net_client_session->mouse_right_button_up(gui->low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
 		}
 	}
 
@@ -1047,8 +1049,8 @@ LRESULT VIEWER::WM_NCLBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	if (small_top_panel->l_mouse_up(gui->low_level, mx, my) == true) return 0;
 
 	if (file_transfer_dialog_IS_ACTIVE()) {
-		// 2021 09 if (view_mode == VIEW_MODE_STRETCH)    file_transfer_dialog->mouse_left_button_up(low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
-		// 2021 09 if (view_mode == VIEW_MODE_FULLSCREEN) file_transfer_dialog->mouse_left_button_up(low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
+		if (view_mode == VIEW_MODE_STRETCH)    file_transfer_dialog->mouse_left_button_up(gui->low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
+		if (view_mode == VIEW_MODE_FULLSCREEN) file_transfer_dialog->mouse_left_button_up(gui->low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
 		return 0;
 	}
 
@@ -1094,13 +1096,13 @@ LRESULT VIEWER::WM_MOUSEMOVE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 		if (view_mode == VIEW_MODE_STRETCH) {
 			if (net_client_session != NULL) {
-				net_client_session->mouse_move((int)(mx * aspect_w), (int)(my * aspect_h));
+				net_client_session->mouse_move(gui->low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
 			}
 		}
 
 		if (view_mode == VIEW_MODE_FULLSCREEN) {
 			if (net_client_session != NULL) {
-				net_client_session->mouse_move(mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
+				net_client_session->mouse_move(gui->low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
 			}
 		}
 
@@ -1135,17 +1137,17 @@ LRESULT VIEWER::WM_MOUSEWHEEL_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (net_client_session == NULL) return 0;
 	if ((wp & 0x80000000) == 0x80000000) {
-		net_client_session->mouse_whell(WM_MOUSEWHEEL__, 1, 0);
+		net_client_session->mouse_whell(gui->low_level, WM_MOUSEWHEEL__, 1, 0);
 	}
 	else {
-		net_client_session->mouse_whell(WM_MOUSEWHEEL__, 2, 0);
+		net_client_session->mouse_whell(gui->low_level, WM_MOUSEWHEEL__, 2, 0);
 	}
 
 	return 0;
 };
 LRESULT VIEWER::WM_MOUSELEAVE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
-	// 2021 09 if (file_transfer_dialog_IS_ACTIVE()) { file_transfer_dialog->mouse_leave(low_level); return 0; }
+	if (file_transfer_dialog_IS_ACTIVE()) { file_transfer_dialog->mouse_leave(gui->low_level); return 0; }
 
 	return DefWindowProc(hw, msg, wp, lp);
 };
@@ -1158,35 +1160,35 @@ LRESULT VIEWER::WM_LBUTTONDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (small_top_panel->l_mouse_down(gui->low_level, mx, my) == true) return 0;
 
-	/* 2021 09
+	
 	if (file_transfer_dialog_IS_ACTIVE()) {
 		if (view_mode == VIEW_MODE_STRETCH) { 
-			file_transfer_dialog->mouse_left_button_down(low_level, mx, my);
+			file_transfer_dialog->mouse_left_button_down(gui->low_level, mx, my);
 			set_track(hw);
 			return 0;
 		};
 		if (view_mode == VIEW_MODE_FULLSCREEN) {
-			file_transfer_dialog->mouse_left_button_down(low_level, mx, my);
+			file_transfer_dialog->mouse_left_button_down(gui->low_level, mx, my);
 			set_track(hw);
 			return 0;
 		};
 
-		file_transfer_dialog->Close_btn_Click(low_level);
+		file_transfer_dialog->Close_btn_Click();
 
 		set_track(hw);
 		return 0;
 	} 
-	*/
+	
 
 	if (view_mode == VIEW_MODE_STRETCH) {
 		if (net_client_session != NULL) {
-			net_client_session->mouse_left_button_down((int)(mx * aspect_w), (int)(my * aspect_h));
+			net_client_session->mouse_left_button_down(gui->low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
 		}
 	}
 
 	if (view_mode == VIEW_MODE_FULLSCREEN) {
 		if (net_client_session != NULL) {
-			net_client_session->mouse_left_button_down(mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
+			net_client_session->mouse_left_button_down(gui->low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
 		}
 	}
 
@@ -1200,23 +1202,23 @@ LRESULT VIEWER::WM_LBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (small_top_panel->l_mouse_up(gui->low_level, mx, my) == true) return 0;
 
-	/* 2021 09
+	
 	if (file_transfer_dialog_IS_ACTIVE()) {
-		if (view_mode == VIEW_MODE_STRETCH)    file_transfer_dialog->mouse_left_button_up(low_level, mx, my);
-		if (view_mode == VIEW_MODE_FULLSCREEN) file_transfer_dialog->mouse_left_button_up(low_level, mx, my);
+		if (view_mode == VIEW_MODE_STRETCH)    file_transfer_dialog->mouse_left_button_up( gui->low_level, mx, my);
+		if (view_mode == VIEW_MODE_FULLSCREEN) file_transfer_dialog->mouse_left_button_up( gui->low_level, mx, my);
 		return 0;
 	}
-	*/
+	
 
 	if (view_mode == VIEW_MODE_STRETCH) {
 		if (net_client_session != NULL) {
-			net_client_session->mouse_left_button_up((int)(mx * aspect_w), (int)(my * aspect_h));
+			net_client_session->mouse_left_button_up(gui->low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
 		}
 	}
 
 	if (view_mode == VIEW_MODE_FULLSCREEN) {
 		if (net_client_session != NULL) {
-			net_client_session->mouse_left_button_up(mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
+			net_client_session->mouse_left_button_up(gui->low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
 		}
 	}
 
@@ -1251,10 +1253,10 @@ LRESULT VIEWER::WM_KEYDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		};
 	};
 
-	/* 2021 09 if (file_transfer_dialog_IS_ACTIVE()) {
-		file_transfer_dialog->char_keydown(low_level, msg, wp, lp);
+	if (file_transfer_dialog_IS_ACTIVE()) {
+		file_transfer_dialog->char_keydown(gui->low_level, msg, wp, lp);
 		return 0;
-	}; */
+	}; 
 	
 
 	char_keydown(msg, wp, lp);
@@ -1781,7 +1783,7 @@ void VIEWER::callback__arrived_screen(unsigned char *buf, int buf_size, unsigned
 }
 
 void VIEWER::request_FILE_LIST_from_partner(TRANSFER_DIALOG2_DirsFiles_TREE_element *e) {
-	/* 2021 09
+	
 	if (e == nullptr) return;
 	wchar_t w[5100];
 
@@ -1796,23 +1798,24 @@ void VIEWER::request_FILE_LIST_from_partner(TRANSFER_DIALOG2_DirsFiles_TREE_elem
 
 
 	}
-	*/
+	
 }
 
 void VIEWER::request_FILE_LIST_from_partner_RESPONCE_1(unsigned char *buf, int buf_size) {
-	/* 2021 09
+	
 	if (file_transfer_dialog != nullptr &&
 		file_transfer_dialog->Dest_DirsFiles != nullptr &&
 		file_transfer_dialog->Dest_DirsFiles->Tree != nullptr
 		)
 	{
-		file_transfer_dialog->Dest_DirsFiles->Tree->file_list_from_partner_RESPONCE(low_level, buf, buf_size);
+		file_transfer_dialog->Dest_DirsFiles->Tree->file_list_from_partner_RESPONCE(gui->low_level, buf, buf_size);
 	}
-	*/
+	
 }
 
 void VIEWER::request_FILE_LIST_from_partner_RESPONCE_2(unsigned char *buf, int buf_size) {
-	// 2021 09 file_transfer_dialog->transfer_PARTNER_to_MY->request_folder_content_RESPONCE(buf, buf_size);
+	
+	file_transfer_dialog->transfer_PARTNER_to_MY->request_folder_content_RESPONCE(buf, buf_size);
 };
 
 
@@ -1846,3 +1849,15 @@ void VIEWER::transfer_dialog_HIDE() {
 
 	gui->low_level->invalidate();
 }
+
+void VIEWER::set_track(HWND hw) {
+
+	//send_udp("set track");
+
+	tme.cbSize = sizeof(tme);
+	tme.dwFlags = TME_LEAVE;
+	tme.dwHoverTime = HOVER_DEFAULT;
+	tme.hwndTrack = hw; // hMainWnd;
+	TrackMouseEvent(&tme);
+
+};

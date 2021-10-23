@@ -239,6 +239,12 @@ unsigned int get_ip_view_visiator_com();
 void my_strcpy(wchar_t *dest, wchar_t *source);
 void my_strcat(wchar_t *dest, wchar_t *source);
 
+void my_strcpy_s(wchar_t *dest, int max_len, wchar_t *source);
+void my_strcat_s(wchar_t *dest, int max_len, wchar_t *source);
+
+void my_strcpy_s(char *dest, int max_len, char *source);
+void my_strcat_s(char *dest, int max_len, char *source);
+
 int get_hexch_w(wchar_t v);
 unsigned int decode_dig(char v);
 bool REG_check_and_create_key(HKEY root, wchar_t *reg_key);
@@ -303,5 +309,6 @@ void generate_easy_pass(unsigned char *psw, wchar_t *psw_w);
 unsigned int GetFromProxy_ip_to_server_connect(unsigned long long public_id, unsigned long long private_id);
 void generate_ID_to_text(char *txt_, unsigned long long local_id_);
 void convert_wchart_to_char_PASS(unsigned char *c_32size, wchar_t *w);
-
+bool GetFileAttributes_(wchar_t *name, unsigned long long *fs, unsigned long long *dt);
+bool my_deletefile(wchar_t *name);
 

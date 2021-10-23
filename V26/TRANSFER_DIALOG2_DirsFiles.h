@@ -36,6 +36,13 @@ public:
 
 	void Paint(GUI_low_level *low_level);
 
+	void mouse_wheel(GUI_low_level *low_level, int type);
+	void mouse_left_button_down(GUI_low_level *low_level, int mouse_x, int mouse_y);
+	void mouse_left_button_up(GUI_low_level *low_level);
+	void mouse_over(GUI_low_level *low_level, int mouse_x, int mouse_y);
+	void char_keydown(GUI_low_level *low_level, int msg, int wp, int lp);
+	
+
 	TRANSFER_DIALOG2_DirsFiles(int local_or_dest_, TRANSFER_DIALOG2 *parent_);
 	~TRANSFER_DIALOG2_DirsFiles();
 

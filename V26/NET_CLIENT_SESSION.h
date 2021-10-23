@@ -72,19 +72,19 @@ public:
 
 	void get_statistic(char *ss, int ss_max_size_);
 
-	void mouse_move(int mx, int my);
-	void mouse_whell(int msg, int wp, int lp);
+	void mouse_move(GUI_low_level *low_level, int mx, int my);
+	void mouse_whell(GUI_low_level *low_level, int msg, int wp, int lp);
 
-	void mouse_left_button_down(int mx, int my);
-	void mouse_left_button_up(int mx, int my);
-	void mouse_right_button_down(int mx, int my);
-	void mouse_right_button_up(int mx, int my);
+	void mouse_left_button_down(GUI_low_level *low_level, int mx, int my);
+	void mouse_left_button_up(GUI_low_level *low_level, int mx, int my);
+	void mouse_right_button_down(GUI_low_level *low_level, int mx, int my);
+	void mouse_right_button_up(GUI_low_level *low_level, int mx, int my);
 
 	void send_CtrlAltDel();
 	void send_Change_LNG();
 	
-	void char_keydown(int msg, int wp, int lp);
-	void char_keyup(int msg, int wp, int lp);
+	void char_keydown(GUI_low_level *low_level, int msg, int wp, int lp);
+	void char_keyup(GUI_low_level *low_level, int msg, int wp, int lp);
 
 	bool need_send_delete_cancel = false;
 	void add_to_low_level_buffer(unsigned char *buf, int size);
@@ -124,6 +124,11 @@ public:
 	bool transfer_FILE_to_parnter_RAUND_2(unsigned char *transfer_file_buffer, int len, int kusok_idx, unsigned int file_ID);
 	void transfer_FILE_to_parnter_RAUND_cancel_transfer(unsigned int file_ID);
 	//*****************************************************************************************
+
+	unsigned int request_filefolder_stat(wchar_t *partner_name_, unsigned int *_is_file_folder, unsigned long long *_size, unsigned long long *_date, unsigned int file_ID, int *modal_result); // запросим у партнера информацию о файле/папке размер, дата, тд
+	bool request_file_part(unsigned int file_ID, unsigned char *buf, unsigned int buf_size, unsigned int *buf_size_readed, unsigned int start_from, int *modal_result);
+	bool request_folder_content(unsigned int file_ID, wchar_t *partner_folder_name_, int *modal_result);
+
 
 	NET_CLIENT_SESSION();
 	~NET_CLIENT_SESSION();

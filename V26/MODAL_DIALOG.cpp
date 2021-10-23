@@ -429,3 +429,87 @@ void MODAL_DIALOG::recalc_size(GUI_low_level *low_level, int w_, int h_) {
 	};
 
 }
+
+void MODAL_DIALOG::mouse_left_button_up(GUI_low_level *low_level) {
+	if (is_visible == false) return;
+	if (MD_type == MD_TRANSFER) {
+		btn_CANCEL->mouse_left_button_up(low_level);
+	};
+	if (MD_type == MD_OVERWRITE) {
+		btn_OVERWRITE->mouse_left_button_up(low_level);
+		btn_SKIP->mouse_left_button_up(low_level);
+		btn_CANCEL->mouse_left_button_up(low_level);
+	};
+	if (MD_type == MD_SKIP) {
+		btn_SKIP->mouse_left_button_up(low_level);
+		btn_CANCEL->mouse_left_button_up(low_level);
+	};
+	if (MD_type == MD_INFO) {
+		btn_OK->mouse_left_button_up(low_level);
+	};
+}
+
+void MODAL_DIALOG::mouse_left_button_down(GUI_low_level *low_level, int mx, int my) {
+
+	int local_mx, local_my;
+
+	local_mx = mx - x;
+	local_my = my - y;
+
+	if (MD_type == MD_TRANSFER) {
+
+		if (btn_CANCEL->its_me(local_mx, local_my)) {
+			btn_CANCEL->mouse_left_button_down(low_level, local_mx, local_my);
+		}
+		return;
+	};
+	if (MD_type == MD_OVERWRITE) {
+
+		if (chbox_REMEMBER->its_me(local_mx, local_my)) {
+			chbox_REMEMBER->mouse_left_button_down(low_level, local_mx, local_my);
+		}
+		if (btn_OVERWRITE->its_me(local_mx, local_my)) {
+			btn_OVERWRITE->mouse_left_button_down(low_level, local_mx, local_my);
+		}
+		if (btn_SKIP->its_me(local_mx, local_my)) {
+			btn_SKIP->mouse_left_button_down(low_level, local_mx, local_my);
+		}
+		if (btn_CANCEL->its_me(local_mx, local_my)) {
+			btn_CANCEL->mouse_left_button_down(low_level, local_mx, local_my);
+		}
+		//if (btn_CANCEL->its_me(local_mx, local_my)) {
+		//	btn_CANCEL->mouse_left_button_down(local_mx, local_my);
+		//}
+		return;
+	};
+	if (MD_type == MD_SKIP) {
+
+		if (chbox_REMEMBER->its_me(local_mx, local_my)) {
+			chbox_REMEMBER->mouse_left_button_down(low_level, local_mx, local_my);
+		}
+		if (btn_SKIP->its_me(local_mx, local_my)) {
+			btn_SKIP->mouse_left_button_down(low_level, local_mx, local_my);
+		}
+		if (btn_CANCEL->its_me(local_mx, local_my)) {
+			btn_CANCEL->mouse_left_button_down(low_level, local_mx, local_my);
+		}
+
+		return;
+	};
+	if (MD_type == MD_INFO) {
+
+		if (btn_OK->its_me(local_mx, local_my)) {
+			btn_OK->mouse_left_button_down(low_level, local_mx, local_my);
+		}
+	};
+}
+
+bool MODAL_DIALOG::its_me(int m_x, int m_y) {
+	if (is_visible == false) return false;
+
+	if (m_x >= x && m_x < x + w && m_y >= y && m_y < y + h) {
+		return true;
+	}
+	return false;
+}
+

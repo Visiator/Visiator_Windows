@@ -123,6 +123,9 @@
     <ClCompile Include="FILE__LIST.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TRANSFER_DIALOG2_transfer_from_PARTNER_to_MY.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -225,6 +228,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FILE__LIST.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TRANSFER_DIALOG2_transfer_from_PARTNER_to_MY.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
