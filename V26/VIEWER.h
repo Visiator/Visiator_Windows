@@ -62,9 +62,10 @@ public:
 	MY_SHA3 sha3;
 	int prepare_pass_tik = 99;
 	NET_CLIENT_SESSION *net_client_session = nullptr;
-	boost::thread* thread_EXECUTE = nullptr;
-	bool EXECUTE_is_run = false;
-	void EXECUTE();
+
+	//boost::thread* thread_EXECUTE = nullptr;
+	//bool EXECUTE_is_run = false;
+	//void EXECUTE();
 
 	int view_mode = VIEW_MODE_NOCONNECT;
 	//void set_view_mode(int new_mode);
@@ -159,6 +160,18 @@ public:
 	LRESULT WM_DRAWCLIPBOARD_(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 	LRESULT WM_CHANGECBCHAIN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 
+	
+	boost::thread* EXECUTE_thread = nullptr;
+	bool EXECUTE_thread_is_run = false;
+	void EXECUTE();
+	void start_EXECUTE();
+
+	boost::thread* ASYNC_LOAD_EXECUTE_thread = nullptr;
+	bool ASYNC_LOAD_thread_is_run = false;
+	void ASYNC_LOAD_EXECUTE();
+	void start_ASYNC_LOAD_EXECUTE();
+
+	
 
 
 	void calc_start_size(int &x, int &y, int &w, int &h);

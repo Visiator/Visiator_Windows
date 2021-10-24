@@ -34,6 +34,10 @@
 #define IDF_FONT1                       20001
 #define IDF_FONT2                       20002
 
+#define IDB__BMP__folder_ico    	1060
+#define IDB__BMP__file_ico      	1061
+
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

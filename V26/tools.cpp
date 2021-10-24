@@ -2995,6 +2995,36 @@ void format_sz(wchar_t *s, unsigned long long sz) {
 
 }
 
+void format_sz_2(wchar_t *s, unsigned long long sz) {
+
+	s[0] = 0;
+
+	double f;
+
+	if (sz >= 1000000000L) {
+		f = (double)sz / (double)1000000000L;
+		swprintf_s(s, 500, L"%1.1f GB", f);
+	}
+	else {
+		if (sz >= 1000000L) {
+			f = (double)sz / (double)1000000;
+			swprintf_s(s, 500, L"%1.1f MB", f);
+		}
+		else {
+			if (sz >= 1000L) {
+				f = (double)sz / (double)1000;
+
+				swprintf_s(s, 500, L"%.1f KB", f);
+			}
+			else {
+				swprintf_s(s, 500, L"%I64d", sz);
+			};
+		}
+	}
+
+}
+
+
 int my_big_send(unsigned int socket_, unsigned char *buf, int len, unsigned long long *send_counter) {
 
 	int snd, need_send, send_ok, timeout;
@@ -4861,5 +4891,50 @@ bool my_deletefile(wchar_t *name) {
 	else {
 		return true;
 	}
+}
+
+void my_str_del_from_left(wchar_t *str, int del_len) {
+
+	if (str == nullptr) return;
+
+	int i, j;
+	i = 0;
+	while (i < del_len) {
+		if (str[i] == 0) {
+			str[0] = 0;
+			return;
+		}
+		i++;
+	}
+	j = 0;
+	while (str[i] != 0) {
+		str[j++] = str[i++];
+	}
+	str[j] = 0;
+}
+
+bool my_str_append(int max_len, wchar_t *dest, wchar_t *str1, wchar_t *str2) {
+	int i, j;
+
+	if (dest == nullptr) return false;
+
+	zero_wchar_t(dest, max_len);
+
+	if (str1 == nullptr || str2 == nullptr) return false;
+
+	i = 0;
+	while (str1[i] != 0) {
+		dest[i] = str1[i];
+		i++;
+		if (i >= max_len) return false;
+	}
+	if (i > 0 && str2[0] != 0) dest[i++] = '\\';
+	j = 0;
+	while (str2[j] != 0) {
+		dest[i++] = str2[j++];
+		if (i >= max_len) return false;
+	}
+
+	return true;
 }
 

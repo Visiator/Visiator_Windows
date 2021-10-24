@@ -21,6 +21,8 @@ public:
 
 	void START(GUI_low_level *low_level, int LOCAL_or_PARTNER);
 
+	void ASYNC(GUI_low_level *low_level);
+
 	void set_size(GUI_low_level *low_level, int x_, int y_, int w_, int h_);
 
 	int get_global_x();

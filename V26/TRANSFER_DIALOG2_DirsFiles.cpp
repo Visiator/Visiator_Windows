@@ -174,3 +174,36 @@ void TRANSFER_DIALOG2_DirsFiles::mouse_left_button_down(GUI_low_level *low_level
 		Tree->mouse_left_button_down(low_level, local_local_mx, local_local_my);
 	}
 }
+
+void TRANSFER_DIALOG2_DirsFiles::mouse_over(GUI_low_level *low_level, int mouse_x, int mouse_y) {
+	if (VScroll->polzunok_is_pressed) {
+		VScroll->mouse_over(low_level, mouse_x, mouse_y);
+	}
+
+	if (Tree->its_me(mouse_x - x, mouse_y - y) || 1 == 1) {
+		Tree->mouse_over(low_level, mouse_x - x, mouse_y - y);
+
+	}
+
+}
+
+void TRANSFER_DIALOG2_DirsFiles::ASYNC(GUI_low_level *low_level) {
+
+	if (VScroll->top_arrow_is_pressed_tick > 0 && VScroll->top_arrow_is_pressed_tick < GetTickCount()) {
+		VScroll->top_arrow_is_pressed_tick = GetTickCount() + 90;
+		Tree->top_arrow_click(low_level);
+	}
+	if (VScroll->bottom_arrow_is_pressed_tick > 0 && VScroll->bottom_arrow_is_pressed_tick < GetTickCount()) {
+		VScroll->bottom_arrow_is_pressed_tick = GetTickCount() + 90;
+		Tree->bottom_arrow_click(low_level);
+	}
+	if (VScroll->PgUp_polzunok_is_pressed_tick > 0 && VScroll->PgUp_polzunok_is_pressed_tick < GetTickCount()) {
+		VScroll->PgUp_polzunok_is_pressed_tick = GetTickCount() + 90;
+		Tree->PgUp_polzunok_click(low_level);
+	}
+	if (VScroll->PgDown_polzunok_is_pressed_tick > 0 && VScroll->PgDown_polzunok_is_pressed_tick < GetTickCount()) {
+		VScroll->PgDown_polzunok_is_pressed_tick = GetTickCount() + 90;
+		Tree->PgDown_polzunok_click(low_level);
+	}
+	Tree->ASYNC(low_level);
+}

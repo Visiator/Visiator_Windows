@@ -5,6 +5,8 @@
 #include "TRANSFER_DIALOG2_DirsFiles.h"
 #include "TRANSFER_DIALOG2_DirsFiles_Label.h"
 #include "TRANSFER_DIALOG2_Splitter.h"
+#include "TRANSFER_DIALOG2_DirsFiles_TREE.h"
+#include "TRANSFER_DIALOG2_transfer_from_PARTNER_to_MY.h"
 #include "MODAL_DIALOG.h"
 
 extern bool GLOBAL_STOP;
@@ -191,7 +193,7 @@ int TRANSFER_DIALOG2_Caption::get_global_h() { return h + parent->get_global_h()
 
 void TRANSFER_DIALOG2::START_TRANSFER(GUI_low_level *low_level, int mode) {
 
-	/* 2021 10
+	
 
 	TRANSFER_DIALOG2_DirsFiles *local_tree, *dest_tree;
 	TRANSFER_DIALOG2_DirsFiles_TREE_element *dest_target_element, *local_target_element;
@@ -308,7 +310,7 @@ void TRANSFER_DIALOG2::START_TRANSFER(GUI_low_level *low_level, int mode) {
 		modal_dialog_progress->set_visible(low_level, true);
 	}
 
-	*/
+	
 }
 
 void TRANSFER_DIALOG2::FINISH_TRANSFER_from_Partner_to_MY(GUI_low_level *low_level) {
@@ -368,7 +370,7 @@ void TRANSFER_DIALOG2::REFRESH(GUI_low_level *low_level, int mode) {
 
 void TRANSFER_DIALOG2::START_DELETE(GUI_low_level *low_level, int mode) {
 
-	/* 2021
+	
 
 	viewer->net_client_session->transfer_files_canceled = false;
 
@@ -393,7 +395,7 @@ void TRANSFER_DIALOG2::START_DELETE(GUI_low_level *low_level, int mode) {
 		modal_dialog_progress->set_visible(low_level, true);
 
 	};
-	*/
+	
 };
 
 bool TRANSFER_DIALOG2_Caption::its_me(int local_mx, int local_my) {
@@ -765,4 +767,343 @@ int TRANSFER_DIALOG2::recognize_border_type(int mx, int my) {
 
 void TRANSFER_DIALOG2::set_ACTIVE_object(int _id_) { // 0-unset, 1-_Local_Dirs_, 2-_Dest_Dirs_
 	current_ACTIVE_object = _id_;
+}
+
+void TRANSFER_DIALOG2::mouse_right_button_up(GUI_low_level *low_level, int mx, int my) {
+
+}
+
+void TRANSFER_DIALOG2::mouse_right_button_down(GUI_low_level *low_level, int mx, int my) {
+	if (is_modal_lock()) return;
+
+}
+
+void TRANSFER_DIALOG2::mouse_over(GUI_low_level *low_level, int mx, int my) {
+	if (is_modal_lock()) return;
+	int local_mx, local_my, dx, xx, ww;
+
+	local_mx = mx - x;
+	local_my = my - y;
+
+	if (_WORK_MODE_ == _MOVE_from_CAPTION_) {
+
+		set_size(low_level, mx - mouse_pressed_local_mx_delta, my - mouse_pressed_local_my_delta, w, h);
+
+		return;
+	}
+
+	if (_WORK_MODE_ == _MOVE_SPLITTER_) {
+
+		xx = x + _Border;
+		ww = w - _Border * 2;
+		dx = local_mx - _Border;
+
+		Splitter_percent = ((float)dx / (float)ww) * (float)100;
+
+		AutoArrangeSizes(low_level);
+
+		return;
+	}
+
+	/*
+	|| new_WORK_MODE == _RESIZE_top_border_
+		|| new_WORK_MODE == _RESIZE_left_border_
+		|| new_WORK_MODE == _RESIZE_right_border_
+		|| new_WORK_MODE == _RESIZE_bottom_border_
+		*/
+
+	if (_WORK_MODE_ == _RESIZE_topleft_border_) {
+		h -= (my - y);
+		y = my;
+		w -= (mx - x);
+		x = mx;
+		AutoArrangeSizes(low_level);
+		return;
+	}
+	if (_WORK_MODE_ == _RESIZE_topright_border_) {
+		h -= (my - y);
+		y = my;
+		w = mx - x;
+		AutoArrangeSizes(low_level);
+		return;
+	}
+	if (_WORK_MODE_ == _RESIZE_bottomleft_border_) {
+		h = my - y;
+		w -= (mx - x);
+		x = mx;
+		AutoArrangeSizes(low_level);
+		return;
+	}
+	if (_WORK_MODE_ == _RESIZE_bottomright_border_) {
+		h = my - y;
+		w = mx - x;
+		AutoArrangeSizes(low_level);
+		return;
+	}
+
+	if (_WORK_MODE_ == _RESIZE_top_border_) {
+		h -= (my - y);
+		y = my;
+		AutoArrangeSizes(low_level);
+		return;
+	}
+	if (_WORK_MODE_ == _RESIZE_bottom_border_) {
+		h = my - y;
+		AutoArrangeSizes(low_level);
+		return;
+	}
+
+	if (_WORK_MODE_ == _RESIZE_left_border_) {
+		w -= (mx - x);
+		x = mx;
+		AutoArrangeSizes(low_level);
+		return;
+	}
+	if (_WORK_MODE_ == _RESIZE_right_border_) {
+		w = mx - x;
+		AutoArrangeSizes(low_level);
+		return;
+	}
+
+	if (_WORK_MODE_ == _NORMAL_) {
+
+		int bt;
+
+		bt = recognize_border_type(mx, my);
+
+
+
+
+		if (bt == BORDER_TOP) {
+			need_cursor = 111;
+			return;
+		}
+		if (bt == BORDER_LEFT) {
+			need_cursor = 110;
+			return;
+		}
+		if (bt == BORDER_RIGHT) {
+			need_cursor = 110;
+			return;
+		}
+		if (bt == BORDER_BOTTOM) {
+			need_cursor = 111;
+			return;
+		}
+		if (bt == BORDER_TOPLEFT) {
+			need_cursor = 108;
+			return;
+		}
+		if (bt == BORDER_TOPRIGHT) {
+			need_cursor = 109;
+			return;
+		}
+		if (bt == BORDER_BOTTOMLEFT) {
+			need_cursor = 109;
+			return;
+		}
+		if (bt == BORDER_BOTTOMRIGHT) {
+			need_cursor = 108;
+			return;
+		}
+
+		if (bt == BORDER_SPLITTER) {
+			need_cursor = 110;
+			return;
+		}
+
+		need_cursor = 0;
+
+
+		Local_DirsFiles->mouse_over(low_level, local_mx, local_my);
+		Dest_DirsFiles->mouse_over(low_level, local_mx, local_my);
+
+
+		return;
+	}
+}
+
+void TRANSFER_DIALOG2::ASYNC_TRANSFER_EXECUTE(GUI_low_level *low_level) {
+	if (transfer_ASYNC_stage == 0) return;
+	if (current_transfer_element_local == nullptr && current_delete_element_dest == nullptr && current_transfer_element_dest == nullptr) return;
+
+	wchar_t name[5100], local_path[5100], dest_path[5100];
+
+
+	if (viewer->net_client_session->transfer_files_canceled == true) { // где то асинхронно нажали CANCEL
+		if (transfer_ASYNC_stage == 1 || transfer_ASYNC_stage == 2) {
+			FINISH_TRANSFER(low_level);
+		};
+		if (transfer_ASYNC_stage == 20 || transfer_ASYNC_stage == 21) {
+			FINISH_DELETE(low_level);
+		}
+		return;
+	}
+
+	if (transfer_ASYNC_stage == 20) { // удаление
+
+		// Составим список файлов/папок на удаление, отправим партнеру. Партнер будет периодически присылать нам информацию о ходе удаления.
+
+		wchar_t *w, *f_name;
+
+		unsigned char *buf;
+		int buf_size = 50000;
+		buf = new unsigned char[50000];
+
+		f_name = new wchar_t[5100];
+		zero_wchar_t(f_name, 5100);
+
+		zero_unsigned_char(buf, 50000);
+		w = (wchar_t *)&buf[32];
+
+		int i, j;
+		j = 0;
+
+		while (current_delete_element_dest != nullptr) {
+			f_name[0] = 0;
+			current_delete_element_dest->get_folder_full_name(f_name);
+			my_str_del_from_left(f_name, 18);
+			//send_udp2(L"ADD ", f_name);
+			i = 0;
+			while (i < 5000 && f_name[i] != 0) {
+				if (j >= buf_size - 50) {
+					FINISH_DELETE(low_level);
+					return;
+				}
+				w[j++] = f_name[i++];
+			}
+			w[j++] = 0;
+
+			current_delete_element_dest = current_delete_element_dest->get_next_selected_element();
+		}
+		w[j++] = 0;
+
+		viewer->net_client_session->delete_files_list_from_partner(buf, 32 + j * 2 + 2);
+
+		FINISH_DELETE(low_level);
+
+
+		transfer_ASYNC_stage = 0;
+
+		return;
+	};
+
+	if (transfer_ASYNC_stage == 200) { // копирование от партнера ко мне
+		// копируем от партнера к себе папку/файл
+
+		zero_wchar_t(name, 5100);
+		zero_wchar_t(dest_path, 5100);
+
+		current_transfer_element_dest->get_folder_full_path(dest_path);
+		my_str_del_from_left(dest_path, 18);
+		//current_transfer_element_dest->get_folder_full_name(name);
+		//my_str_del_from_left(name, 18);
+
+		current_transfer_element_dest->get_name(name);
+		my_strcat(dest_path, L"\\");
+		my_strcat(dest_path, name);
+
+
+		//send_udp2(L"COPY from PARTNER to MY -> ", name);
+
+		if (transfer_PARTNER_to_MY == nullptr) transfer_PARTNER_to_MY = new TRANSFER_DIALOG2_transfer_from_PARTNER_to_MY(this);
+
+		zero_wchar_t(local_path, 5100);
+		my_strcpy(local_path, local_target);
+		my_strcat(local_path, L"\\");
+		my_strcat(local_path, name);
+
+		if (transfer_PARTNER_to_MY->RUN_TRANSFER_from_PARTNER_to_MY(dest_path, local_path, &modal_dialog_progress->modal__result) == false) {
+			FINISH_TRANSFER_from_Partner_to_MY(low_level);
+			return;
+
+		}
+		else
+		{
+			transfer_ASYNC_stage = 201;
+		};
+	}
+
+	if (transfer_ASYNC_stage == 201) {
+
+		current_transfer_element_dest = current_transfer_element_dest->get_next_selected_element();
+		if (current_transfer_element_dest == nullptr) {
+			FINISH_TRANSFER_from_Partner_to_MY(low_level);
+			return;
+		}
+		modal_dialog_progress->label1->set_label(low_level, current_transfer_element_dest->get_name());
+		modal_dialog_progress->label3->set_label(low_level, L".");
+
+		transfer_ASYNC_stage = 200;
+
+		return;
+	}
+
+	if (transfer_ASYNC_stage == 1) {
+		current_transfer_element_local = current_transfer_element_local->get_next_selected_element();
+		if (current_transfer_element_local == nullptr) {
+			FINISH_TRANSFER(low_level);
+			return;
+		}
+		modal_dialog_progress->label1->set_label(low_level, current_transfer_element_local->get_name());
+		modal_dialog_progress->label3->set_label(low_level, L".");
+
+		transfer_ASYNC_stage = 2;
+
+		return;
+	}
+
+	if (transfer_ASYNC_stage == 2) { // копирование от меня к партнеру
+
+
+
+		zero_wchar_t(name, 5100);
+
+
+		current_transfer_element_local->get_name(name);
+
+
+		if (current_transfer_element_local->is_folder) {
+
+			zero_wchar_t(local_path, 5100);
+			current_transfer_element_local->get_folder_full_path(local_path);
+
+			if (viewer->net_client_session->transfer_DIRECTORY_to_parnter(dest_target, local_path, name) == false) {
+
+				// по какой то причине не удалось скопировать папку, мы выдали сообщение пользователю и пользователь нажал "CANCEL"
+				FINISH_TRANSFER(low_level);
+				return;
+			}
+		}
+		else {
+			zero_wchar_t(local_path, 5100);
+			current_transfer_element_local->get_folder_full_path(local_path);
+
+			if (viewer->net_client_session->transfer_FILE_to_parnter(dest_target, local_path, name, false) == false) {
+
+			}
+		}
+		transfer_ASYNC_stage = 1;
+
+		return;
+	};
+	if (transfer_ASYNC_stage == 1) {
+		current_transfer_element_local = current_transfer_element_local->get_next_selected_element();
+		if (current_transfer_element_local == nullptr) {
+			FINISH_TRANSFER(low_level);
+			return;
+		}
+		modal_dialog_progress->label1->set_label(low_level, current_transfer_element_local->get_name());
+		modal_dialog_progress->label3->set_label(low_level, L".");
+
+		transfer_ASYNC_stage = 2;
+
+		return;
+	}
+
+}
+
+void TRANSFER_DIALOG2::ASYNC_LOAD_EXECUTE(GUI_low_level *low_level) {
+	if (Local_DirsFiles != nullptr) Local_DirsFiles->ASYNC(low_level);
+	if (Dest_DirsFiles != nullptr)  Dest_DirsFiles->ASYNC(low_level);
 }

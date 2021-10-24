@@ -74,9 +74,14 @@ private:
 public:
 
 	TRANSFER_DIALOG2_transfer_from_PARTNER_to_MY *transfer_PARTNER_to_MY = nullptr;
-
+	unsigned long long need_cursor = 0; // курсор мыши который нужно показывать
 
 	VIEWER *viewer = nullptr; // parent object
+	bool OVERWRITE_ALL_FILES_mode = false;
+	bool SKIP_ALL_FILES_mode = false;
+	wchar_t *dest_target = nullptr; // путь куда пользователь хочет копировать файлы
+	wchar_t *local_target = nullptr; // путь куда пользователь хочет копировать файлы
+
 
 	TRANSFER_DIALOG2_DirsFiles_TREE_element *current_transfer_element_local = nullptr; // копируем от нас к партнеру
 	TRANSFER_DIALOG2_DirsFiles_TREE_element *current_transfer_element_dest = nullptr; // копироуем от партнера к нам
@@ -112,6 +117,8 @@ public:
 	int get_global_y() { return y; };
 	int get_global_w() { return w; };
 	int get_global_h() { return h; };
+
+	void ASYNC_TRANSFER_EXECUTE(GUI_low_level *low_level);
 
 	void START_TRANSFER(GUI_low_level *low_level, int mode);
 	void FINISH_TRANSFER_from_Partner_to_MY(GUI_low_level *low_level);
@@ -157,6 +164,10 @@ public:
 	void set_ACTIVE_object(int _id_);
 
 	int recognize_border_type(int mx, int my);
+
+	void need_ASYNC_LOAD_fileslist(TRANSFER_DIALOG2_DirsFiles_TREE_element *e);
+	void ASYNC_LOAD_EXECUTE(GUI_low_level *low_level);
+
 
 	 TRANSFER_DIALOG2(VIEWER *viewer_);
 	~TRANSFER_DIALOG2();

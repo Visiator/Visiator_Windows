@@ -67,6 +67,12 @@
 #define filefolder_part_buf_max_size 150000
 
 
+#define ROUND_1_RESULT_OK_target_file_created 1
+#define ROUND_1_RESULT_ERR_target_file_already_exists 2
+#define ROUND_1_RESULT_ERR_fatal 3
+#define ROUND_1_RESULT_OK_target_file_finish_ZEROSIZE 4
+
+
 // 20052 already used
 // 20053 already used
 // 20054 already used

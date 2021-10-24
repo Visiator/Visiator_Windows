@@ -9,9 +9,36 @@
 #include "CRYPTO.h"
 #include "EVENT_QUEUE.h"
 
+#define CLIENT_RAUND_1_result_OK 1 
+#define CLIENT_RAUND_1_result_SKIP 2 
+#define CLIENT_RAUND_1_result_OVERWRITE 3
+#define CLIENT_RAUND_1_result_CANCEL 4
+#define CLIENT_RAUND_1_result_FATAL_ERROR 5
+#define CLIENT_RAUND_1_result_OK_finish_ZEROSIZE 6
+
+class PERFOMANCE_COUNTER
+{
+private:
+	int max_count = 300;
+	int values[2][300]; // в одном элемента значение скорости, в другом жлементе отметка времени
+
+public:
+	DWORD last_time = 0;
+	void add(int val);
+	int get_per_sec();
+
+	void clean();
+
+	PERFOMANCE_COUNTER();
+	~PERFOMANCE_COUNTER();
+};
+
+
 class NET_CLIENT_SESSION
 {
 public:
+	PERFOMANCE_COUNTER perf_counter;
+
 	uint64_t my_pub_id = 0, my_priv_id = 0;
 	unsigned int SERVER_VER = 0;
 
@@ -86,7 +113,8 @@ public:
 	void char_keydown(GUI_low_level *low_level, int msg, int wp, int lp);
 	void char_keyup(GUI_low_level *low_level, int msg, int wp, int lp);
 
-	bool need_send_delete_cancel = false;
+	
+
 	void add_to_low_level_buffer(unsigned char *buf, int size);
 	DWORD last_set_need_set_mouse = 0;
 	unsigned int last_commit_scr_id = -1;
@@ -128,6 +156,10 @@ public:
 	unsigned int request_filefolder_stat(wchar_t *partner_name_, unsigned int *_is_file_folder, unsigned long long *_size, unsigned long long *_date, unsigned int file_ID, int *modal_result); // запросим у партнера информацию о файле/папке размер, дата, тд
 	bool request_file_part(unsigned int file_ID, unsigned char *buf, unsigned int buf_size, unsigned int *buf_size_readed, unsigned int start_from, int *modal_result);
 	bool request_folder_content(unsigned int file_ID, wchar_t *partner_folder_name_, int *modal_result);
+
+
+	bool need_send_delete_cancel = false;
+	void delete_files_list_from_partner(unsigned char *buf, unsigned int buf_len);
 
 
 	NET_CLIENT_SESSION();

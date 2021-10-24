@@ -265,6 +265,7 @@ int  check_IsWow64(DWORD pid);
 unsigned int get_sol();
 void format_sz(char *s, unsigned long long sz);
 void format_sz(wchar_t *s, unsigned long long sz);
+void format_sz_2(wchar_t *s, unsigned long long sz);
 
 int my_big_send(unsigned int socket_, unsigned char *buf, int len, unsigned long long *send_counter);
 int my_big_recv(unsigned int socket_, unsigned char *buf, int len, unsigned long long *recv_counter);
@@ -311,4 +312,7 @@ void generate_ID_to_text(char *txt_, unsigned long long local_id_);
 void convert_wchart_to_char_PASS(unsigned char *c_32size, wchar_t *w);
 bool GetFileAttributes_(wchar_t *name, unsigned long long *fs, unsigned long long *dt);
 bool my_deletefile(wchar_t *name);
+void my_str_del_from_left(wchar_t *str, int del_len);
+bool my_str_append(int max_len, wchar_t *dest, wchar_t *str1, wchar_t *str2);
+
 

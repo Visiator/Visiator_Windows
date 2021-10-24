@@ -6,11 +6,67 @@
 #include "NET_SERVER_SESSION.h"
 #include "CRYPTO.h"
 #include "VIEWER.h"
+#include "MODAL_DIALOG.h"
+#include "TRANSFER_DIALOG2_DirsFiles_Label.h"
+#include "TRANSFER_DIALOG2_DirsFiles_Button.h"
+
 #include "tools.h"
 
 extern APPLICATION_ATTRIBUTES app_attributes;
 extern bool GLOBAL_STOP;
 extern VIEWER  *viewer;
+
+void PERFOMANCE_COUNTER::add(int val) {
+	DWORD d;
+	d = GetTickCount() / 100;
+	if (values[0][0] == d) {
+		values[1][0] += val;
+		return;
+	}
+	int i;
+	i = max_count - 1;
+	while (i > 0) {
+		values[0][i] = values[0][i - 1];
+		values[1][i] = values[1][i - 1];
+		i--;
+	}
+	values[0][0] = d;
+	values[1][0] = val;
+}
+
+int PERFOMANCE_COUNTER::get_per_sec() {
+	int v, i, dd;
+	dd = GetTickCount() / 100 - 30;
+	i = 0;
+	v = 0;
+	while (i < max_count) {
+		if (values[0][i] < dd) {
+			return v / 3;
+		}
+		v += values[1][i];
+		i++;
+	}
+
+	return 0;
+}
+
+void PERFOMANCE_COUNTER::clean() {
+	for (int i = 0; i < max_count; i++) {
+		values[0][i] = 0;
+		values[1][i] = 0;
+	}
+}
+
+PERFOMANCE_COUNTER::PERFOMANCE_COUNTER() {
+	clean();
+}
+
+PERFOMANCE_COUNTER::~PERFOMANCE_COUNTER() {
+
+}
+
+//***********************************************************************
+
 
 NET_CLIENT_SESSION::NET_CLIENT_SESSION() {
 	
@@ -628,7 +684,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 		if (need_start_sendCLIPBOARD_to_server == true) {
 			need_start_sendCLIPBOARD_to_server = false;
 
-			/* 2021 09
+			/* 2021 09 clipboard
 			//send_udp("need_start_sendCLIPBOARD_to_server == true");
 
 			clipboard.clean();
@@ -682,7 +738,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 
 			};
-			2021 09 ***/
+			clipboard 2021 09 ***/
 		};
 
 		if (need_start_requestCLIPBOARD_from_server == true) {
@@ -1221,7 +1277,7 @@ void NET_CLIENT_SESSION::analiz_command(unsigned char *buf) {
 		//send_udp("ANALIZ PACKET_TYPE_responce_userCLIPBOARD_list = ", *sz, *ii);
 
 
-		/* 2021 09
+		/* 2021 09 clipboard
 		clipboard.clean();
 		clipboard.paste_from_buffer(buf + 32, *ii);
 		*/
@@ -1610,5 +1666,723 @@ bool NET_CLIENT_SESSION::need_request_FilesList(wchar_t *folder_name) {
 	if (need_request_files_list != false) return false;
 	my_strcpy_s(need_request_files_list_DIR, 5000, folder_name);
 	need_request_files_list = true;
+	return true;
+}
+
+void NET_CLIENT_SESSION::delete_files_list_from_partner(unsigned char *buf, unsigned int buf_len) {
+
+	if (buf_tdn_max_size < buf_len + 20) {
+		delete[] buf_tdn;
+		buf_tdn_max_size = buf_len + 20;
+		buf_tdn = new unsigned char[buf_tdn_max_size + 2];
+		zero_unsigned_char(buf_tdn, buf_tdn_max_size + 2);
+	}
+
+	unsigned int i;
+	i = 0;
+	while (i < buf_len) {
+		buf_tdn[i] = buf[i];
+		i++;
+	}
+
+	unsigned int *sz, *crc, *sol, *type, zz, *GID, file_ID;
+
+	file_ID = get_sol();
+
+	zz = buf_len / 16;
+	zz *= 16;
+	if (zz < buf_len) zz += 16;
+
+	sz = (unsigned int *)&(buf_tdn[0]);
+	crc = (unsigned int *)&(buf_tdn[4]);
+	type = (unsigned int *)&(buf_tdn[8]);
+	sol = (unsigned int *)&(buf_tdn[12]);
+	GID = (unsigned int *)&(buf_tdn[16]);
+
+	*sz = zz;
+	*crc = 0;
+	*type = PACKET_TYPE_need_delete_files_list;
+	*sol = get_sol();
+	*GID = file_ID;
+
+	aes_partner.encrypt_stream(buf_tdn, zz);
+
+
+	responce_from_partner_result = 0;
+	responce_from_partner_FILE_ID = 0;
+
+	buf_tdn_len = zz;
+	buf_tdn_need_send = true;
+	DWORD timeout = GetTickCount();
+	while (GLOBAL_STOP == false && buf_tdn_need_send == true) { // ждем пока мы отправим запрос партнеру
+
+		::Sleep(0);
+		if (timeout + 5000 < GetTickCount()) {
+			return;
+		}
+	};
+
+	responce_from_partner_intermediate = 0;
+	timeout = GetTickCount();
+	while (GLOBAL_STOP == false
+		&& responce_from_partner_result == 0
+
+		) {
+		::Sleep(0);
+		if (responce_from_partner_intermediate != 0) {
+
+			wchar_t ss[500];
+			swprintf_s(ss, 490, L" %X ", responce_from_partner_intermediate);
+			viewer->file_transfer_dialog->modal_dialog_progress->label3->set_label(nullptr, ss);
+
+			responce_from_partner_intermediate = 0;
+			timeout = GetTickCount();
+		}
+		if (viewer->file_transfer_dialog->modal_dialog_progress->modal__result != 0) { // ѕользователь асинхронно нажал CANCEL. Ќужно послать партнеру команду на остановку поцесса удалени€ файлов/папок
+
+			//send_udp2("MR=", viewer->file_transfer_dialog->modal_dialog_progress->modal_result);
+			need_send_delete_cancel = true;
+
+			while (GLOBAL_STOP == false && need_send_delete_cancel == true) { // ждем пока передадим партнеру
+				::Sleep(1);
+			}
+			return;
+		};
+
+
+		if (timeout + 15000 < GetTickCount()) {
+			return;
+		}
+	}
+
+
+}
+
+bool NET_CLIENT_SESSION::transfer_FILE_to_parnter(wchar_t *dest_target, wchar_t *local_path, wchar_t *name, bool overwrite_this_file) {
+
+	unsigned int file_ID;
+	BOOL r;
+	HANDLE hFile;
+	LARGE_INTEGER FileSize;
+
+	wchar_t dest_full_name[5100];
+	zero_wchar_t(dest_full_name, 5100);
+	my_str_append(5000, dest_full_name, dest_target, name);
+
+	file_ID = get_sol();
+
+	wchar_t local_full_name[5100];
+	zero_wchar_t(local_full_name, 5100);
+	my_str_append(5000, local_full_name, local_path, name);
+
+	if (viewer != nullptr && viewer->file_transfer_dialog != nullptr && viewer->file_transfer_dialog->modal_dialog_progress != nullptr) {
+		viewer->file_transfer_dialog->modal_dialog_progress->label1->set_label(nullptr, local_full_name);
+		viewer->file_transfer_dialog->modal_dialog_progress->label3->set_label(nullptr, L".");
+		//send_udp2("...2");
+	};
+
+	hFile = CreateFile(local_full_name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE) return false;
+
+	r = GetFileSizeEx(hFile, &FileSize);
+
+	if (r == FALSE) {
+		CloseHandle(hFile);
+		return false;
+	}
+
+	FILETIME CreationTime, LastAccessTime, LastWriteTime;
+
+	r = GetFileTime(hFile, &CreationTime, &LastAccessTime, &LastWriteTime);
+
+	if (r == FALSE) {
+		CloseHandle(hFile);
+		return false;
+	}
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	unsigned long long fs, dt, fs0, *z;
+	fs = (unsigned long long)FileSize.LowPart | (((unsigned long long)FileSize.HighPart) << 32);
+
+	z = (unsigned long long *)&CreationTime;
+
+	dt = *z;
+
+	unsigned int allow_overwrite;
+
+	allow_overwrite = 0;
+	if (overwrite_this_file) allow_overwrite = 1;
+
+	int result;
+
+	bool overwrite_one_file = false;
+
+	do
+	{
+		allow_overwrite = 0;
+		if (overwrite_one_file == true) allow_overwrite = 1;
+		overwrite_one_file = false;
+
+		result = transfer_FILE_to_parnter_RAUND_1(dest_full_name, fs, dt, file_ID, allow_overwrite);
+		if (result == CLIENT_RAUND_1_result_OK_finish_ZEROSIZE) {
+			CloseHandle(hFile);
+			return true;
+		}
+		if (result == CLIENT_RAUND_1_result_OK) break;
+		if (result == CLIENT_RAUND_1_result_SKIP) {
+			CloseHandle(hFile);
+			return true;
+		}
+		if (result == CLIENT_RAUND_1_result_CANCEL) {
+			CloseHandle(hFile);
+			return false;
+		}
+		if (result == CLIENT_RAUND_1_result_FATAL_ERROR) {
+			CloseHandle(hFile);
+			return false;
+		}
+		if (result == CLIENT_RAUND_1_result_OVERWRITE) {
+			overwrite_one_file = true;
+		}
+	} while (result == CLIENT_RAUND_1_result_OVERWRITE);
+
+	//if (transfer_FILE_to_parnter_RAUND_1(dest_full_name, fs, dt, file_ID, allow_overwrite) == false) {
+	//	CloseHandle(hFile);
+	//	return false;
+	//}
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	if (transfer_file_buffer == nullptr) transfer_file_buffer = new unsigned char[transfer_file_buffer_max_size + 32];
+
+	DWORD readed;
+
+	int kusok_idx;
+
+	perf_counter.clean();
+
+	kusok_idx = 0;
+	fs0 = 0;
+	do
+	{
+		readed = 0;
+		for (int i = 0; i < 32; i++) transfer_file_buffer[i] = 0;
+		r = ReadFile(hFile, transfer_file_buffer + 32, transfer_file_buffer_max_size, &readed, NULL);
+		if (r == FALSE) {
+			CloseHandle(hFile);
+			return false;
+		}
+		if (readed > 0) {
+
+			if (transfer_files_canceled == true) {
+				CloseHandle(hFile);
+				transfer_FILE_to_parnter_RAUND_cancel_transfer(file_ID);
+
+				return false;
+			};
+
+			if (transfer_FILE_to_parnter_RAUND_2(transfer_file_buffer, readed, kusok_idx++, file_ID) == false) {
+				CloseHandle(hFile);
+
+				// TODO 2020 показать сообщение об ошибке передачи
+
+				return false;
+			}
+			fs0 += readed;
+			perf_counter.add(readed);
+			wchar_t s[500], s1[500], s2[500], s3[500];
+			unsigned long long vv;
+			vv = perf_counter.get_per_sec();
+
+			format_sz(s1, fs0);
+			format_sz(s2, fs);
+			format_sz_2(s3, vv);
+
+
+
+			wsprintf(s, L"progress - %s/%s | %s/sec", s1, s2, s3);
+			viewer->file_transfer_dialog->modal_dialog_progress->label3->set_label(nullptr, s);
+			//send_udp2(s);
+		};
+
+	} while (readed > 0);
+
+	CloseHandle(hFile);
+
+	return true;
+}
+
+bool NET_CLIENT_SESSION::transfer_DIRECTORY_to_parnter(wchar_t *dest_target, wchar_t *local_path, wchar_t *name) {
+	// нужно передать партнеру папку со всеми содержащимис€ файлами
+	// 1 - передать название папки, что бы партнер ее создал у себ€
+	// 2 - передать файлы, если попадаютс€ папки - рекурси€
+
+	wchar_t full_name[5100];
+
+	if (my_str_append(5000, full_name, dest_target, name) == false) return false;
+
+
+	wchar_t dest_full_name[5100];
+	zero_wchar_t(dest_full_name, 5100);
+	my_str_append(5000, dest_full_name, dest_target, name);
+
+	wchar_t local_full_name[5100];
+	zero_wchar_t(local_full_name, 5100);
+	my_str_append(5000, local_full_name, local_path, name);
+
+	if (viewer != nullptr && viewer->file_transfer_dialog != nullptr && viewer->file_transfer_dialog->modal_dialog_progress != nullptr) {
+		viewer->file_transfer_dialog->modal_dialog_progress->label1->set_label(nullptr, local_full_name);
+		viewer->file_transfer_dialog->modal_dialog_progress->label3->set_label(nullptr, L".");
+	};
+
+
+	if (transfer_DIRECTORY_NAME(full_name, 123) == false) return false;
+	//PACKET_TYPE_need_create_folder
+
+	wchar_t ddir[5100];
+	zero_wchar_t(ddir, 5100);
+
+	my_str_append(5000, ddir, local_path, name);
+	my_strcat_s(ddir, 5000, L"\\*.*");
+
+
+	WIN32_FIND_DATA fd;
+
+	HANDLE h;
+
+
+	h = FindFirstFile(ddir, &fd);
+
+	if (h != INVALID_HANDLE_VALUE) {
+		do {
+
+			if (transfer_files_canceled == true) return false;// CLIENT_RAUND_1_result_CANCEL; // где то асинхронно нажали CANCEL
+
+			bool is_folder;
+			unsigned long long sz, dt;
+			sz = fd.nFileSizeLow;
+
+			if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY) {
+				sz = -1;
+				is_folder = true;
+			}
+			else {
+				is_folder = false;
+			}
+
+			dt = (unsigned long long)fd.ftLastWriteTime.dwHighDateTime << 32 | (unsigned long long)fd.ftLastWriteTime.dwLowDateTime;
+
+			//FileTimeToLocalFileTime((FILETIME *)&dt, (FILETIME *)&dt); //transfer_DIRECTORY_to_parnter
+
+			if ((fd.cFileName[0] == '.' && fd.cFileName[1] == 0) ||
+				(fd.cFileName[0] == '.' && fd.cFileName[1] == '.'))
+			{
+			}
+			else {
+				//add(fd.cFileName, is_folder, sz, dt);
+				if (is_folder == true) {
+					if (transfer_DIRECTORY_to_parnter(dest_full_name, local_full_name, fd.cFileName) == false) {
+						FindClose(h);
+						return false;
+					}
+				}
+				else {
+					if (transfer_FILE_to_parnter(dest_full_name, local_full_name, fd.cFileName, false) == false) {
+						FindClose(h);
+						return false;
+					}
+				}
+			};
+		} while (FindNextFile(h, &fd));
+
+		FindClose(h);
+	}
+
+	return true;
+}
+
+void NET_CLIENT_SESSION::transfer_FILE_to_parnter_RAUND_cancel_transfer(unsigned int file_ID) {
+
+	unsigned int j;
+	unsigned int *sz, *crc, *sol, *type, zz, *ii, *GID;
+
+
+
+	j = 32;
+
+	if (buf_tdn_max_size < j + 20) {
+		delete[] buf_tdn;
+		buf_tdn_max_size = j + 20;
+		buf_tdn = new unsigned char[buf_tdn_max_size + 2];
+	}
+
+	zz = j / 16;
+	zz *= 16;
+	if (zz < j) zz += 16;
+	buf_tdn_len = zz;
+
+	sz = (unsigned int *)&(buf_tdn[0]);
+	crc = (unsigned int *)&(buf_tdn[4]);
+	type = (unsigned int *)&(buf_tdn[8]);
+	sol = (unsigned int *)&(buf_tdn[12]);
+	GID = (unsigned int *)&(buf_tdn[16]);
+	ii = (unsigned int *)&(buf_tdn[20]);
+
+	*sz = buf_tdn_len;
+	*crc = 0;
+	*type = PACKET_TYPE_transfer_file_ROUND_1_cancel_transfer;
+	*sol = get_sol();
+	*GID = file_ID;
+	*ii = file_ID;
+
+	aes_partner.encrypt_stream(buf_tdn, 32);
+
+	//send_udp2("PACKET_TYPE_transfer_file_ROUND_1_cancel_transfer");
+
+	responce_from_partner_result = 0;
+	responce_from_partner_FILE_ID = 0;
+
+	buf_tdn_need_send = true;
+	DWORD timeout = GetTickCount();
+	while (GLOBAL_STOP == false && buf_tdn_need_send == true) { // ждем пока мы отправим запрос партнеру
+
+		::Sleep(0);
+		if (timeout + 5000 < GetTickCount()) {
+			return;
+		}
+	};
+
+}
+
+bool NET_CLIENT_SESSION::transfer_FILE_to_parnter_RAUND_2(unsigned char *transfer_file_buffer, int len, int kusok_idx, unsigned int file_ID) {
+
+	unsigned int j;
+	unsigned int *sz, *crc, *sol, *type, zz, *GID, *kosok_size;
+
+	j = len + 32;
+
+	zz = j / 16;
+	zz *= 16;
+	if (zz < j) zz += 16;
+	buf_tdn_len = zz;
+
+	sz = (unsigned int *)&(transfer_file_buffer[0]);
+	crc = (unsigned int *)&(transfer_file_buffer[4]);
+	type = (unsigned int *)&(transfer_file_buffer[8]);
+	sol = (unsigned int *)&(transfer_file_buffer[12]);
+	GID = (unsigned int *)&(transfer_file_buffer[16]);
+	kosok_size = (unsigned int *)&(transfer_file_buffer[20]);
+
+	*sz = zz;
+	*crc = 0;
+	*type = PACKET_TYPE_transfer_file_ROUND_2;
+	*sol = get_sol();
+	*GID = file_ID;
+	*kosok_size = len;
+
+	aes_partner.encrypt_stream(transfer_file_buffer, zz);
+	//send_udp2("PACKET_TYPE_transfer_file_ROUND_2");
+
+	responce_from_partner_result = 0;
+	responce_from_partner_FILE_ID = 0;
+
+	transfer_file_buffer_len = zz;
+	transfer_file_buffer_need_send = true;
+	transfer_file_buffer_commit_send_from_partner = 0;
+
+
+	DWORD timeout = GetTickCount();
+	while (GLOBAL_STOP == false && transfer_file_buffer_need_send == true) { // ждем пока мы отправим запрос партнеру
+		::Sleep(0);
+		if (timeout + 5000 < GetTickCount()) {
+			return false;
+		}
+	};
+
+	timeout = GetTickCount();
+	while (GLOBAL_STOP == false && transfer_file_buffer_commit_send_from_partner == false) { // ждем пока мы придет подтверждение приема от партнера
+		::Sleep(0);
+		if (timeout + 5000 < GetTickCount()) {
+			return false;
+		}
+	};
+
+
+
+	return true;
+}
+
+int NET_CLIENT_SESSION::transfer_FILE_to_parnter_RAUND_1(wchar_t *dest_full_name, unsigned long long FileSize, unsigned long long LastWriteTime, unsigned int file_ID, unsigned int allow_overwrite) {
+	// нужно передать партнеру им€ файла, размер и дату изменени€
+	// партнер сделает временный файл
+	// если у партнера нет столько места - выводим сообщение SKIP/CANSEL
+	// если у партнера уже есть такой файл - выводим сообщение OVERWRITE/SKIP/CANCEL
+	/*
+	#define CLIENT_RAUND_1_result_OK 1
+	#define CLIENT_RAUND_1_result_SKIP 2
+	#define CLIENT_RAUND_1_result_OVERWRITE 3
+	#define CLIENT_RAUND_1_result_FATAL_ERROR 4
+	*/
+	unsigned int j;
+	unsigned int *sz, *crc, *sol, *type, zz, *GID, *allow_overwrite_;
+	unsigned long long *iii;
+
+	if (dest_full_name == nullptr) return false;
+
+	j = 40 + my_strlen(dest_full_name) * 2 + 2;
+
+	if (buf_tdn_max_size < j + 20) {
+		delete[] buf_tdn;
+		buf_tdn_max_size = j + 20;
+		buf_tdn = new unsigned char[buf_tdn_max_size + 2];
+	}
+
+	zz = j / 16;
+	zz *= 16;
+	if (zz < j) zz += 16;
+	buf_tdn_len = zz;
+
+	sz = (unsigned int *)&(buf_tdn[0]);
+	crc = (unsigned int *)&(buf_tdn[4]);
+	type = (unsigned int *)&(buf_tdn[8]);
+	sol = (unsigned int *)&(buf_tdn[12]);
+	GID = (unsigned int *)&(buf_tdn[16]);
+	iii = (unsigned long long *)&(buf_tdn[20]);
+
+	*sz = buf_tdn_len;
+	*crc = 0;
+	*type = PACKET_TYPE_transfer_file_ROUND_1;
+	*sol = get_sol();
+	*GID = file_ID;
+
+	*iii = FileSize;
+	iii = (unsigned long long *)&(buf_tdn[28]);
+	*iii = LastWriteTime;
+
+	allow_overwrite_ = (unsigned int *)&(buf_tdn[36]);
+
+	*allow_overwrite_ = allow_overwrite;
+
+	wchar_t *w;
+
+	w = (wchar_t *)&buf_tdn[40];
+
+	my_strcpy(w, dest_full_name);
+
+	aes_partner.encrypt_stream(buf_tdn, buf_tdn_len);
+
+	//send_udp2("PACKET_TYPE_transfer_file_ROUND_1");
+
+	responce_from_partner_result = 0;
+	responce_from_partner_FILE_ID = 0;
+
+	buf_tdn_need_send = true;
+	DWORD timeout = GetTickCount();
+	while (GLOBAL_STOP == false && buf_tdn_need_send == true) { // ждем пока мы отправим запрос партнеру
+
+		::Sleep(0);
+		if (timeout + 5000 < GetTickCount()) {
+			return CLIENT_RAUND_1_result_FATAL_ERROR;
+		}
+	};
+
+	timeout = GetTickCount();
+	while (responce_from_partner_result == 0 && GLOBAL_STOP == false) { // ждем пока партнер нам ответит
+
+		::Sleep(0);
+		if (timeout + 5000 < GetTickCount()) {
+			return CLIENT_RAUND_1_result_FATAL_ERROR;
+		}
+	}
+	/*
+	responce_from_partner_result
+	#define ROUND_1_RESULT_OK_tmp_file_created 1
+	#define ROUND_1_RESULT_ERR_tmp_file_already_exists 2
+	#define ROUND_1_RESULT_ERR_target_file_already_exists 3
+	#define ROUND_1_RESULT_ERR_fatal 4
+	*/
+
+	if (responce_from_partner_result == ROUND_1_RESULT_OK_target_file_finish_ZEROSIZE) {
+		return CLIENT_RAUND_1_result_OK_finish_ZEROSIZE;
+	}
+	if (responce_from_partner_result == ROUND_1_RESULT_OK_target_file_created) { // все ок
+		return CLIENT_RAUND_1_result_OK;
+	}
+	if (responce_from_partner_result == ROUND_1_RESULT_ERR_target_file_already_exists) {
+
+		if (viewer->file_transfer_dialog->OVERWRITE_ALL_FILES_mode == true) return CLIENT_RAUND_1_result_OVERWRITE;
+		if (viewer->file_transfer_dialog->SKIP_ALL_FILES_mode == true) return CLIENT_RAUND_1_result_SKIP;
+
+		viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->modal__result = 0;
+		viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->label_file_name->set_label(nullptr, dest_full_name);
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		wchar_t txt[500];
+		SYSTEMTIME st;
+
+		FileTimeToSystemTime((FILETIME *)&LastWriteTime, &st); // dest_full_name
+		swprintf_s(txt, 490, L"sz=%lld %04d.%02d.%02d %02d:%02d:%02d", FileSize, st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+
+
+		//FileSize
+		//LastWriteTime
+
+		viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->label_new_file_info->set_label(nullptr, txt);
+
+
+
+		FileTimeToSystemTime((FILETIME *)&responce_from_partner_FILE_date, &st);
+		swprintf_s(txt, 490, L"sz=%lld %04d.%02d.%02d %02d:%02d:%02d", responce_from_partner_FILE_size, st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+
+		//swprintf_s(txt, 490, L"%lld %lld", responce_from_partner_FILE_size, responce_from_partner_FILE_date);
+		viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->label_old_file_info->set_label(nullptr, txt);
+
+		viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->set_visible(nullptr, true); // запрашиваем нашего пользовател€ OVERWRITE/SKIP/CANCEL
+
+		while (viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->modal__result == 0 && GLOBAL_STOP == false) {
+			::Sleep(1);
+		}
+
+		if (viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->modal__result == MR_OVERWRITE) { // наш пользователь выбрал OVERWRITE
+
+			if (viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->chbox_REMEMBER->is_pressed) viewer->file_transfer_dialog->OVERWRITE_ALL_FILES_mode = true;
+			return CLIENT_RAUND_1_result_OVERWRITE;
+		}
+
+		if (viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->modal__result == MR_CONFIRM_SKIP) { // наш пользователь выбрал SKIP
+			if (viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->chbox_REMEMBER->is_pressed) viewer->file_transfer_dialog->SKIP_ALL_FILES_mode = true;
+			return CLIENT_RAUND_1_result_SKIP;
+		}
+		if (viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->modal__result == MR_CONFIRM_CANCEL ||
+			viewer->file_transfer_dialog->modal_dialog_confirm_overwrite->modal__result == MR_CANCEL
+			) { // наш пользователь выбрал CANCEL
+			return CLIENT_RAUND_1_result_CANCEL;
+		}
+		return CLIENT_RAUND_1_result_FATAL_ERROR;
+	}
+	if (responce_from_partner_result == ROUND_1_RESULT_ERR_fatal) { // все плохо. прерываем
+		return CLIENT_RAUND_1_result_FATAL_ERROR;
+	}
+
+
+	if (responce_from_partner_result == 2) { // не удалось создатать файл на клиенте.  либо нет прав, либо есть папка с таким именем
+
+		viewer->file_transfer_dialog->modal_dialog_skip->modal__result = 0;
+
+		viewer->file_transfer_dialog->modal_dialog_skip->set_visible(nullptr, true); // тут асинхронно вызываетс€ модальный диалог SKIP/CANCEL
+
+		while (viewer->file_transfer_dialog->modal_dialog_skip->modal__result == 0 && GLOBAL_STOP == false) {
+
+			::Sleep(1);
+		}
+
+		if (viewer->file_transfer_dialog->modal_dialog_skip->modal__result == MR_SKIP_SKIP) {
+			return CLIENT_RAUND_1_result_SKIP;
+		}
+
+		if (viewer->file_transfer_dialog->modal_dialog_skip->modal__result == MR_SKIP_CANCEL ||
+			viewer->file_transfer_dialog->modal_dialog_skip->modal__result == MR_CANCEL
+			) {
+			return CLIENT_RAUND_1_result_CANCEL;
+		}
+	}
+
+
+	return CLIENT_RAUND_1_result_FATAL_ERROR;
+}
+
+bool NET_CLIENT_SESSION::transfer_DIRECTORY_NAME(wchar_t *full_name, unsigned int file_ID) {
+
+
+	unsigned int j;
+	unsigned int *sz, *crc, *sol, *type, zz, *GID;
+
+	if (full_name == nullptr) return false;
+
+	j = my_strlen(full_name) * 2 + 20 + 2;
+
+	if (buf_tdn_max_size < j + 20) {
+		delete[] buf_tdn;
+		buf_tdn_max_size = j + 20;
+		buf_tdn = new unsigned char[buf_tdn_max_size + 1];
+	}
+
+	zz = j / 16;
+	zz *= 16;
+	if (zz < j) zz += 16;
+	buf_tdn_len = zz;
+
+	sz = (unsigned int *)&(buf_tdn[0]);
+	crc = (unsigned int *)&(buf_tdn[4]);
+	type = (unsigned int *)&(buf_tdn[8]);
+	sol = (unsigned int *)&(buf_tdn[12]);
+	GID = (unsigned int *)&(buf_tdn[16]);
+
+
+	*sz = buf_tdn_len;
+	*crc = 0;
+	*type = PACKET_TYPE_need_create_folder;
+	*sol = get_sol();
+	*GID = file_ID;
+
+	wchar_t *w;
+
+	w = (wchar_t *)&buf_tdn[20];
+
+	my_strcpy(w, full_name);
+
+	aes_partner.encrypt_stream(buf_tdn, buf_tdn_len);
+
+	//send_udp2("PACKET_TYPE_need_create_folder");
+
+	responce_from_partner_result = 0;
+	responce_from_partner_FILE_ID = 0;
+
+	buf_tdn_need_send = true;
+	DWORD timeout = GetTickCount();
+	while (GLOBAL_STOP == false && buf_tdn_need_send == true) { // ждем пока мы отправим запрос партнеру
+
+
+
+		::Sleep(0);
+		if (timeout + 5000 < GetTickCount()) {
+			return false;
+		}
+	};
+
+	timeout = GetTickCount();
+	while (responce_from_partner_result == 0 && GLOBAL_STOP == false) { // ждем пока партнер нам ответит
+
+
+
+		::Sleep(0);
+		if (timeout + 15000 < GetTickCount()) {
+			return false;
+		}
+	}
+
+	if (responce_from_partner_result == 2) { // не удалось создатать папку на клиенте.  либо нет прав, либо есть файл с таким именем
+
+		viewer->file_transfer_dialog->modal_dialog_skip->modal__result = 0;
+		viewer->file_transfer_dialog->modal_dialog_skip->set_visible(nullptr, true);
+
+		while (viewer->file_transfer_dialog->modal_dialog_skip->modal__result == 0 && GLOBAL_STOP == false) {
+
+
+
+			::Sleep(1);
+		}
+
+		if (viewer->file_transfer_dialog->modal_dialog_skip->modal__result == MR_SKIP_SKIP) {
+			return true;
+		}
+
+		if (viewer->file_transfer_dialog->modal_dialog_skip->modal__result == MR_SKIP_CANCEL ||
+			viewer->file_transfer_dialog->modal_dialog_skip->modal__result == MR_CANCEL
+			) {
+			return false;
+		}
+	}
+
 	return true;
 }

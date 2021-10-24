@@ -357,7 +357,7 @@ LRESULT CALLBACK MainWinProcViewer(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 LRESULT VIEWER::WM_DRAWCLIPBOARD_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
-	/* 2021 09
+	/* 2021 09 clipboard
 	send_udp("WM_DRAWCLIPBOARD +++");
 
 	if (clipboard.last_set_clipboard > 0 && clipboard.last_set_clipboard + 1500 > GetTickCount()) {
@@ -377,7 +377,7 @@ LRESULT VIEWER::WM_DRAWCLIPBOARD_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 }
 
 LRESULT VIEWER::WM_CHANGECBCHAIN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
-	/* 2021 09
+	/* 2021 09 clipboard
 	send_udp("WM_CHANGECBCHAIN ");
 
 	if (Next_Clipboard_Viewer == (HWND)wp)
@@ -404,11 +404,11 @@ LRESULT VIEWER::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	SetTimer(hw, 1, 10, NULL);
 
 	//start_EXECUTE();
-	//start_ASYNC_LOAD_EXECUTE();
+	start_ASYNC_LOAD_EXECUTE();
 
 	if (small_top_panel == nullptr) { small_top_panel = new VIEWER_small_top_panel(this); }
 
-	thread_EXECUTE = app_attributes.tgroup.create_thread(boost::bind(&VIEWER::EXECUTE, this));
+	EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&VIEWER::EXECUTE, this));
 
 	if (net_client_session == nullptr) {
 		net_client_session = new NET_CLIENT_SESSION();
@@ -846,7 +846,7 @@ LRESULT VIEWER::WM_SETCURSOR_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (nHittest == 1) {
 		if (file_transfer_dialog_IS_ACTIVE()) {
-			// 2021 09 SetCursor((HCURSOR)decode_cursor_id(file_transfer_dialog->need_cursor)); return 0;
+			SetCursor((HCURSOR)decode_cursor_id(file_transfer_dialog->need_cursor)); return 0;
 		}
 		else {
 			SetCursor((HCURSOR)decode_cursor_id(need_cursor)); return 0;
@@ -858,8 +858,8 @@ LRESULT VIEWER::WM_SETCURSOR_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 };
 
 bool VIEWER::file_transfer_dialog_IS_ACTIVE() {
-	//if (gui_viewer_transfer_dialog == NULL || file_transfer_dialog == NULL) return false;
-	//if (gui_viewer_transfer_dialog->is_visible == true) return true;
+	if (gui_viewer_transfer_dialog == NULL || file_transfer_dialog == NULL) return false;
+	if (gui_viewer_transfer_dialog->is_visible == true) return true;
 
 	return false;
 }
@@ -874,7 +874,7 @@ LRESULT VIEWER::WM_SYSCOMMAND_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	}
 	if ((int)wp == MY_MENU_SYNC_CLIPBOARD) {
 
-		/* 2021 09 
+		/* 2021 09 clipboard
 		if (is_sync_clipboards == true) {
 
 			ModifyMenu(h_system_menu, MY_MENU_GET_CLIPBOARD, MF_STRING, MY_MENU_GET_CLIPBOARD, L"Get clipboard");
@@ -936,8 +936,8 @@ LRESULT VIEWER::WM_RBUTTONDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 
 	if (file_transfer_dialog_IS_ACTIVE()) {
-		// 2021 09 if (view_mode == VIEW_MODE_STRETCH)    file_transfer_dialog->mouse_right_button_down(low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
-		// 2021 09 if (view_mode == VIEW_MODE_FULLSCREEN) file_transfer_dialog->mouse_right_button_down(low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
+		if (view_mode == VIEW_MODE_STRETCH)    file_transfer_dialog->mouse_right_button_down(gui->low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
+		if (view_mode == VIEW_MODE_FULLSCREEN) file_transfer_dialog->mouse_right_button_down(gui->low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
 		return 0;
 	}
 
@@ -962,8 +962,8 @@ LRESULT VIEWER::WM_RBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	my = (int)HIWORD(lp);
 
 	if (file_transfer_dialog_IS_ACTIVE()) {
-		// 2021 09 if (view_mode == VIEW_MODE_STRETCH)    file_transfer_dialog->mouse_right_button_up(low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
-		// 2021 09 if (view_mode == VIEW_MODE_FULLSCREEN) file_transfer_dialog->mouse_right_button_up(low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
+		if (view_mode == VIEW_MODE_STRETCH)    file_transfer_dialog->mouse_right_button_up(gui->low_level, (int)(mx * aspect_w), (int)(my * aspect_h));
+		if (view_mode == VIEW_MODE_FULLSCREEN) file_transfer_dialog->mouse_right_button_up(gui->low_level, mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
 		return 0;
 	}
 
@@ -1087,8 +1087,8 @@ LRESULT VIEWER::WM_MOUSEMOVE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		old_m_y = my;
 
 		if (file_transfer_dialog_IS_ACTIVE()) {
-			//if (view_mode == VIEW_MODE_STRETCH)    file_transfer_dialog->mouse_over(low_level, mx, my);// ((int)(mx * aspect_w), (int)(my * aspect_h));
-			//if (view_mode == VIEW_MODE_FULLSCREEN) file_transfer_dialog->mouse_over(low_level, mx, my); // (mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
+			if (view_mode == VIEW_MODE_STRETCH)    file_transfer_dialog->mouse_over(gui->low_level, mx, my);// ((int)(mx * aspect_w), (int)(my * aspect_h));
+			if (view_mode == VIEW_MODE_FULLSCREEN) file_transfer_dialog->mouse_over(gui->low_level, mx, my); // (mx - step21_size_w - delta_x, my - step1_size_h - delta_y);
 			gui->low_level->invalidate();
 			return 0;
 		}
@@ -1276,7 +1276,7 @@ LRESULT VIEWER::WM_CAPTURECHANGED_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 void VIEWER::EXECUTE() {
 
-	EXECUTE_is_run = true;
+	EXECUTE_thread_is_run = true;
 
 	
 
@@ -1284,7 +1284,7 @@ void VIEWER::EXECUTE() {
 
 	if (pass_no_encripted[0] == 0) {
 		net_client_session->set_partner_pass_and_id(partner_id, pass__encripted);
-		EXECUTE_is_run = false;
+		EXECUTE_thread_is_run = false;
 		return;
 	};
 	prepare_pass_tik = 0;
@@ -1311,7 +1311,7 @@ void VIEWER::EXECUTE() {
 			if (prepare_pass_tik == 20) {
 				prepare_pass_tik++;
 				net_client_session->set_partner_pass_and_id(partner_id, pass_no_encripted);
-				EXECUTE_is_run = false;
+				EXECUTE_thread_is_run = false;
 				return;
 			};
 
@@ -1323,7 +1323,7 @@ void VIEWER::EXECUTE() {
 		};
 	}
 
-	EXECUTE_is_run = false;
+	EXECUTE_thread_is_run = false;
 }
 
 void VIEWER::callback__connect() {
@@ -1861,3 +1861,45 @@ void VIEWER::set_track(HWND hw) {
 	TrackMouseEvent(&tme);
 
 };
+
+
+
+
+
+
+void VIEWER::start_EXECUTE() {
+
+	//EXECUTE_thread_id = 0;
+	//my_Create_Thread(NULL, NULL, VIEWER_thread, NULL, NULL, &EXECUTE_thread_id, "VIEWER_thread");
+
+	EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&VIEWER::EXECUTE, this));
+
+
+}
+
+void VIEWER::ASYNC_LOAD_EXECUTE() {
+
+	boost::posix_time::milliseconds SleepTime(100);
+
+	while (GLOBAL_STOP == false) {
+
+		if (file_transfer_dialog != nullptr) {
+			file_transfer_dialog->ASYNC_LOAD_EXECUTE(gui->low_level);
+			file_transfer_dialog->ASYNC_TRANSFER_EXECUTE(gui->low_level);
+		}
+
+		boost::this_thread::sleep(SleepTime);
+	}
+
+}
+
+
+void VIEWER::start_ASYNC_LOAD_EXECUTE() {
+
+	//ASYNC_LOAD_EXECUTE_thread_id = 0;
+	//my_Create_Thread(NULL, NULL, ASYNC_LOAD_EXECUTE_thread, NULL, NULL, &ASYNC_LOAD_EXECUTE_thread_id, "ASYNC_LOAD_EXECUTE");
+
+	ASYNC_LOAD_EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&VIEWER::ASYNC_LOAD_EXECUTE, this));
+
+
+}
