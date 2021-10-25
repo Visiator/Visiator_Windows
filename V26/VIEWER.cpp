@@ -1126,10 +1126,10 @@ LRESULT VIEWER::WM_MOUSEWHEEL_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (file_transfer_dialog_IS_ACTIVE()) {
 		if ((wp & 0x80000000) == 0x80000000) {
-			// 20021 09 file_transfer_dialog->mouse_wheel(low_level, 1, pp.x, pp.y);
+			file_transfer_dialog->mouse_wheel(gui->low_level, 1, pp.x, pp.y);
 		}
 		else {
-			// 20021 09 file_transfer_dialog->mouse_wheel(low_level, 2, pp.x, pp.y);
+			file_transfer_dialog->mouse_wheel(gui->low_level, 2, pp.x, pp.y);
 		}
 		return 0;
 	};

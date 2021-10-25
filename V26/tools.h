@@ -27,10 +27,14 @@
 
 #include <boost/thread.hpp>
 
-#define TrDialog_Border_bgColor 0x00cc00
-#define TrDialog_Border_alpha 0x99
+//#define TrDialog_Border_bgColor 0x00cc00
+//#define TrDialog_Border_alpha 0x99
 
-#define TrDialog_Toolbar_bgColor 0x675037
+#define TrDialog_Border_bgColor 0xFDCA46
+#define TrDialog_Border_alpha 0xFF
+
+
+#define TrDialog_Toolbar_bgColor 0x0
 #define TrDialog_Toolbar_bgColor_alpha 0xff
 
 
@@ -44,14 +48,14 @@
 #define TrDialog_ScrollBar_bgColor_Bar_Pressed 0xeeeeee
 
 
-#define TrDialog_Button_normal 0x675037
-#define TrDialog_Button_pressed 0x877057
+#define TrDialog_Button_normal 0xFDCA46
+#define TrDialog_Button_pressed 0xFDDA66
 
-#define TrDialog_Button_font_normal 0xc7b097
-#define TrDialog_Button_font_pressed 0xc7b097
+#define TrDialog_Button_font_normal 0x0
+#define TrDialog_Button_font_pressed 0x0
 
-#define TrDialog_Button_border_normal 0x978067
-#define TrDialog_Button_border_pressed 0x978067
+#define TrDialog_Button_border_normal 0xFDCA46
+#define TrDialog_Button_border_pressed 0xFDCA46
 
 
 #define view_visiator_com "view.visiator.com"

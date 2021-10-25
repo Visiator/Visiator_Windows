@@ -38,17 +38,17 @@ TRANSFER_DIALOG2::TRANSFER_DIALOG2(VIEWER *viewer_) {
 
 	modal_dialog_confirm_overwrite = new MODAL_DIALOG(this, MD_OVERWRITE);
 	modal_dialog_confirm_overwrite->col_back = 0xeeeeff;
-	modal_dialog_confirm_overwrite->col_border = 0xaaaaff;
+	modal_dialog_confirm_overwrite->col_border = 0xFDCA46;
 	modal_dialog_confirm_overwrite->set_visible(nullptr, false);
 
 	modal_dialog_skip = new MODAL_DIALOG(this, MD_SKIP);
 	modal_dialog_skip->col_back = 0xeeeeff;
-	modal_dialog_skip->col_border = 0xaaaaff;
+	modal_dialog_skip->col_border = 0xFDCA46;
 	modal_dialog_skip->set_visible(nullptr, false);
 
 	modal_dialog_info = new MODAL_DIALOG(this, MD_INFO);
 	modal_dialog_info->col_back = 0xeeeeff;
-	modal_dialog_info->col_border = 0xaaaaff;
+	modal_dialog_info->col_border = 0xFDCA46;
 	modal_dialog_info->set_visible(nullptr, false);
 
 }
@@ -474,10 +474,10 @@ bool TRANSFER_DIALOG2_Close_btn::its_me(int local_mx, int local_my) {
 void TRANSFER_DIALOG2_Close_btn::Paint(GUI_low_level *low_level) {
 	unsigned int clr;
 
-	clr = 0xffffff;
+	clr = 0x0;
 
 	if (parent->parent->_WORK_MODE_ == _CloseBtn_Pressed_) {
-		clr = 0xff00ff;
+		clr = 0xaaaaaa;
 	}
 	else {
 
@@ -1106,4 +1106,17 @@ void TRANSFER_DIALOG2::ASYNC_TRANSFER_EXECUTE(GUI_low_level *low_level) {
 void TRANSFER_DIALOG2::ASYNC_LOAD_EXECUTE(GUI_low_level *low_level) {
 	if (Local_DirsFiles != nullptr) Local_DirsFiles->ASYNC(low_level);
 	if (Dest_DirsFiles != nullptr)  Dest_DirsFiles->ASYNC(low_level);
+}
+
+void TRANSFER_DIALOG2::mouse_wheel(GUI_low_level *low_level, int type, int mx, int my) {
+	if (is_modal_lock()) return;
+	// type = 1 scroll down
+	// type = 2 scroll up
+	int local_mx, local_my;
+	local_mx = mx - x;
+	local_my = my - y;
+	if (Local_DirsFiles->its_me(local_mx, local_my))	Local_DirsFiles->mouse_wheel(low_level, type);
+	if (Dest_DirsFiles->its_me(local_mx, local_my))	Dest_DirsFiles->mouse_wheel(low_level, type);
+	//Dest_DirsFiles->mouse_wheel(type);
+
 }

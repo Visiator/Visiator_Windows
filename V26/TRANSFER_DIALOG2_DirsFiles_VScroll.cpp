@@ -36,13 +36,13 @@ void TRANSFER_DIALOG2_DirsFiles_VScroll::Paint(GUI_low_level *low_level) {
 	if (top_arrow_is_pressed) { top_arrow_bg_color = TrDialog_ScrollBar_bgColor_Tri_Pressed; }
 	else { top_arrow_bg_color = TrDialog_ScrollBar_bgColor_Tri_Normal; }
 	low_level->fill_rectangle(x + global_x, y + global_y, w, _V_Scroll_w, top_arrow_bg_color, 255); // top arrow (up)
-	low_level->paint_tre_up(x + global_x+4, y + global_y+10, 12, 0xffffff);
+	low_level->paint_tre_up(x + global_x+4, y + global_y+10, 12, 0x0);
 
 	// нижн€€ стрелка
 	if (bottom_arrow_is_pressed) { bottom_arrow_bg_color = TrDialog_ScrollBar_bgColor_Tri_Pressed; }
 	else { bottom_arrow_bg_color = TrDialog_ScrollBar_bgColor_Tri_Normal; }
 	low_level->fill_rectangle(x + global_x, y + global_y + h - _V_Scroll_w , w, _V_Scroll_w, bottom_arrow_bg_color, 255);
-	low_level->paint_tre_down(x + global_x+4, y + global_y + h - _V_Scroll_w +7, w, 0xffffff);
+	low_level->paint_tre_down(x + global_x+4, y + global_y + h - _V_Scroll_w +7, w, 0x0);
 
 	// ползунок
 	if (polzunok_is_pressed) { polzunok_bg_color = TrDialog_ScrollBar_bgColor_Polzunok_Pressed; }

@@ -622,8 +622,8 @@ void GUI_low_level::paint_close_krest(int x, int y, int w, unsigned int color) {
 
 	for (int i = 0; i < w + 1; i++) {
 
-		if (i < w) *(qq + i + i * window_w + window_w * 2) = 0;
-		if (i > 0) *(qq + i + (w - i) * window_w + window_w * 2) = 0;
+		//if (i < w) *(qq + i + i * window_w + window_w * 2) = 0;
+		//if (i > 0) *(qq + i + (w - i) * window_w + window_w * 2) = 0;
 
 		*(qq + i + i * window_w) = color;
 		if (i < w) {

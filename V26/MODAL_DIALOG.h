@@ -36,7 +36,7 @@ public:
 	int modal__result = 0;
 
 	int x = 0, y = 0, w = 0, h = 0;
-	unsigned int col_back = 0xf5f5f5, col_border = 0xe7e7e7;
+	unsigned int col_back = 0xf5f5f5, col_border = 0xFDCA46;
 
 	bool its_me(int m_x, int m_y);
 

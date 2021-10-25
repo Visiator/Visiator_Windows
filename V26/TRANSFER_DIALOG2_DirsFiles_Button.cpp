@@ -169,7 +169,7 @@ void TRANSFER_DIALOG2_DirsFiles_Button::Paint(GUI_low_level *low_level) {
 		parent_y = parent_modal_dialog->get_global_y();
 	};
 
-	low_level->fill_rectangle(x + parent_x, y + parent_y, w, h, color_bg, 0xff);
+	low_level->fill_rectangle(x + parent_x+1, y + parent_y+1, w-1, h-1, color_bg, 0xff);
 
 	low_level->line_h(x + parent_x+1, y + parent_y, w-1, color_border);
 	low_level->line_h(x + parent_x+1, y + parent_y + h, w-1, color_border);
