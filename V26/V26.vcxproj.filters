@@ -126,6 +126,12 @@
     <ClCompile Include="TRANSFER_DIALOG2_transfer_from_PARTNER_to_MY.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="INDICATOR.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CLIPBOARD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="APPLICATION_ATTRIBUTES.h">
@@ -231,6 +237,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TRANSFER_DIALOG2_transfer_from_PARTNER_to_MY.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="INDICATOR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CLIPBOARD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

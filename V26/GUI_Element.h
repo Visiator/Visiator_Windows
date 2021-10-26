@@ -49,7 +49,7 @@ public:
 	bool is_edit_begin = false;
 	bool is_password = false;
 	
-
+	bool it_me(int mx, int my);
 
 	void edit_begin();
 	void edit_end();
@@ -58,7 +58,7 @@ public:
 	void set_mouse_pressed(bool val);
 
 	void(*func__mouse_press)(int mx, int my) = nullptr;
-	void(*func__mouse_unpress)(int mx, int my) = nullptr;
+	void(*func__mouse_unpress)(GUI_Element *e, int mx, int my) = nullptr;
 
 	bool (*func__edit_begin_autorun_pass)() = nullptr;
 

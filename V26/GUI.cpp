@@ -89,7 +89,7 @@ void GUI::left_button_mouse_up(int mx, int my) {
 	for (it = elements.begin(), end = elements.end(); it != end; ++it)
 	{
 		if (it->func__mouse_unpress != nullptr) {
-			it->func__mouse_unpress(mx, my);
+			it->func__mouse_unpress(&*it, mx, my);
 		}
 
 		/*
@@ -140,12 +140,14 @@ void GUI::left_button_mouse_down(int mx, int my) {
 					invalidate();
 				}
 				if (it->func__mouse_unpress != nullptr) {
-					it->func__mouse_unpress(mx, my);
+					it->func__mouse_unpress(&*it, mx, my);
 				}
 			}
 			else {
 				if (it->func__mouse_press != nullptr) {
-					it->func__mouse_press(mx, my);
+					if (it->it_me(mx, my)) {
+						it->func__mouse_press(mx, my);
+					};
 				}
 			}
 		
@@ -167,9 +169,9 @@ void GUI::left_button_mouse_down(int mx, int my) {
 				}
 			}
 		}
-		invalidate();
+		
 	}
-	
+	invalidate();
 }
 
 void GUI::mouse_move(int mx, int my) {
@@ -242,4 +244,12 @@ void GUI::char_keyup(int msg, int wp, int lp) {
 		}
 	}
 
+}
+
+void GUI::char_(int msg, int wp, int lp) {
+	/* 2021 -
+	if (app_attributes.modal_process == 0)
+		elements->char_(msg, wp, lp);
+	low_level->invalidate();
+	*/
 }

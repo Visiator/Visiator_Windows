@@ -216,6 +216,14 @@ void GUI_Element::set_text(wchar_t *txt_) {
 	text = txt_;
 }
 
+bool GUI_Element::it_me(int mx, int my) {
+	if (mx > x && mx < x + w &
+		my > y && my < y + h) {
+		return true;
+	}
+	return false;
+}
+
 void GUI_Element::edit_begin() {
 	if (is_edit_begin == true) return;
 
@@ -320,7 +328,7 @@ void GUI_Element::Pain_VIEWER(GUI_low_level *low_level) {
 
 		if (font != NULL) {
 
-			/* 2021 09
+			/* 2021 09 -
 			if (viewer->prepare_status.txt != NULL && viewer->prepare_status.txt[0] != 0) {
 				font->paint_text(1, 1, low_level->window_w, low_level->window_h, viewer->prepare_status.c_str(), 0xbe6100, 1, -1);
 				if (viewer->net_client_session != NULL) {

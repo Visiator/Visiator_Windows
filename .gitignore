@@ -8,6 +8,7 @@ Browse.VC.opendb
 *.pdb
 Debug
 Debug/V26.pdb
+Debug/V26.ilk
 V26/Debug/V26.tlog
 V26/Debug/*.*
 

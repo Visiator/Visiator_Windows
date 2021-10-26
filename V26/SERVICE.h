@@ -69,6 +69,7 @@ public:
 	// for "total_control"
 	int interaction_with_agent_GET_SCREEN_counter = 0;
 	int interaction_with_agent_GET_SCREEN_status = 0;
+	unsigned int SERVICE_PIPE_CONTROL_THREAD_EXECUTE = 0;
 
 	NET_SERVER_SESSION_POOL *net_server_session_pool = nullptr;
 
@@ -110,8 +111,7 @@ public:
 	// indicator thread
 	bool check_run_indicator();
 	void start_indicator();
-	void INDICATOR_THREAD_EXECUTE();
-	void start_INDICATOR_THREAD();
+	
 
 	//-------------------------------------------------------
 	// main thread
@@ -201,7 +201,7 @@ public:
 	void save_in_registry_last_run_ver_and_date();
 
 	//*****************************************************************************
-	// 2021 09
+	
 
 	//*****************************************************
 	// Thread для основного потока (reconnect) MASTER<->AGENT
@@ -230,6 +230,10 @@ public:
 	boost::thread* thread_EXECUTE_test = nullptr;
 	bool EXECUTE_test_is_run = false;
 	void EXECUTE_test(); // CONTROL Thread	
+
+	boost::thread* INDICATOR_EXECUTE_thread = nullptr;
+	void INDICATOR_THREAD_EXECUTE();
+	void start_INDICATOR_THREAD();
 
 	//
 	bool interaction_with_agent_PING();

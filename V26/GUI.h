@@ -27,7 +27,7 @@ public:
 
 	void char_keydown(int msg, int wp, int lp, wchar_t *wbuffer);
 	void char_keyup(int msg, int wp, int lp);
-
+	void char_(int msg, int wp, int lp);
 
 	void close_application();
 	void invalidate();

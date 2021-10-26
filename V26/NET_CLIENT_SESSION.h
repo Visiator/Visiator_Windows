@@ -20,7 +20,7 @@ class PERFOMANCE_COUNTER
 {
 private:
 	int max_count = 300;
-	int values[2][300]; // в одном элемента значение скорости, в другом жлементе отметка времени
+	int values[2][300]; // в одном элемента значение скорости, в другом элементе отметка времени
 
 public:
 	DWORD last_time = 0;

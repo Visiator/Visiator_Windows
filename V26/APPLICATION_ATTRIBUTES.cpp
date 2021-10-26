@@ -70,6 +70,14 @@ void APPLICATION_ATTRIBUTES::get_all_parametrs(HINSTANCE hInstance_) {
 
 }
 
+bool APPLICATION_ATTRIBUTES::WINDOWS_is_XP() {
+	if (OsMajorVersion <= 5) { // Windows XP
+		return true;
+	}
+	return false;
+}
+
+
 void APPLICATION_ATTRIBUTES::get_programm_version() {
 	//UINT vLen, langD;
 	//BOOL retVal;

@@ -49,7 +49,7 @@ void mouse_press_close(int mx, int my) {
 	}
 }
 
-void mouse_unpress_close(int mx, int my) {
+void mouse_unpress_close(GUI_Element *e, int mx, int my) {
 	
 	if (mx >= desktop->btn_close->x
 		&& mx < desktop->btn_close->x + desktop->btn_close->w
@@ -120,7 +120,7 @@ void mouse_press_btn_outgoing_connect(int mx, int my) {
 	}
 }
 
-void mouse_unpress_btn_outgoing_connect(int mx, int my) {
+void mouse_unpress_btn_outgoing_connect(GUI_Element *e, int mx, int my) {
 	if (desktop->btn_outgoing_connect->is_mouse_pressed == true) {		
 		desktop->btn_outgoing_connect->set_mouse_pressed(false);
 
@@ -149,7 +149,7 @@ void mouse_press_btn_save_pass(int mx, int my) {
 	}
 }
 
-void mouse_unpress_btn_save_pass(int mx, int my) {
+void mouse_unpress_btn_save_pass(GUI_Element *e, int mx, int my) {
 	if (desktop->btn_save_pass->is_mouse_pressed == true) {
 		desktop->btn_save_pass->set_mouse_pressed(false);
 		desktop->gui->invalidate();
@@ -175,7 +175,7 @@ void mouse_press_btn_www(int mx, int my) {
 	}
 }
 
-void mouse_unpress_btn_www(int mx, int my) {
+void mouse_unpress_btn_www(GUI_Element *e, int mx, int my) {
 	if (desktop->btn_www->is_mouse_pressed == true) {
 		desktop->btn_www->set_mouse_pressed(false);
 		desktop->gui->invalidate();
@@ -224,8 +224,10 @@ void mouse_press_checkbox_autorun(int mx, int my) {
 		}
 	}
 }
-void mouse_unpress_checkbox_autorun(int mx, int my) {
-
+void mouse_unpress_checkbox_autorun(GUI_Element *e, int mx, int my) {
+	if (e->it_me(mx, my)) {
+		sudp("mouse_unpress_checkbox_autorun");
+	};
 }
 
 void DESKTOP::init_gui() {
@@ -797,9 +799,8 @@ LRESULT DESKTOP::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	
 
-	/*** 2021
-	start_EXECUTE_net_server_session_pool();
-	***/
+	// 2021	start_EXECUTE_net_server_session_pool();
+
 	return TRUE;
 	//return DefWindowProc(hw, msg, wp, lp);
 };
@@ -857,7 +858,7 @@ LRESULT DESKTOP::WM_CHAR_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (app_attributes.modal_process != 0) { return DefWindowProc(hw, msg, wp, lp); };
 
-	/*** 2021
+	/*** 2021 -
 	if (app_attributes.modal_process != 0) {
 		return DefWindowProc(hw, msg, wp, lp);
 	}
@@ -877,7 +878,7 @@ LRESULT DESKTOP::WM_KEYDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	GetKeyboardState(lpKeyState);
 	ToUnicode(wp, HIWORD(lp) & 0xFF, lpKeyState, wbuffer, 8, 0);
 
-	/*** 2021
+	/*** 2021 -
 	if (app_attributes.modal_process != 0) {
 		return DefWindowProc(hw, msg, wp, lp);
 	}***/
@@ -902,7 +903,7 @@ LRESULT DESKTOP::WM_SIZE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	return DefWindowProc(hw, msg, wp, lp);
 };
 LRESULT DESKTOP::WM_MOVE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
-	/*** 2021
+	/*** 2021 -
 	gui->end_edit_all(low_level);
 	***/
 	return DefWindowProc(hw, msg, wp, lp);
@@ -1004,7 +1005,7 @@ LRESULT DESKTOP::WM_LBUTTONUP_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	gui->left_button_mouse_up(mx, my);
 
-	/*** 2021
+	/*** 2021 -
 	if (app_attributes.modal_process != 0) {
 		return DefWindowProc(hw, msg, wp, lp);
 	}
@@ -1055,7 +1056,7 @@ LRESULT DESKTOP::WM_LBUTTONDOWN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	gui->left_button_mouse_down(mx, my);
 
 
-	/*** 2021
+	/*** 2021 -
 
 	if (app_attributes.modal_process != 0) {
 		return DefWindowProc(hw, msg, wp, lp);
@@ -1206,7 +1207,7 @@ LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		}
 
 	};
-	/*** 2021
+	/*** 2021 -
 
 	if (Panel_Top_auto != nullptr && Panel_Top_auto->is_visible) {
 		if (last_check_pass_for_autorun + 5000 < GetTickCount()) {
@@ -1317,7 +1318,7 @@ LRESULT DESKTOP::WM_CHANGECBCHAIN_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 }
 
 void DESKTOP::char_keydown(int msg, int wp, int lp, wchar_t *wbuffer) {
-	/*** 2021
+	/*** 2021 -
 	if (app_attributes.modal_process != 0) {
 		return;
 	}***/
@@ -1326,7 +1327,7 @@ void DESKTOP::char_keydown(int msg, int wp, int lp, wchar_t *wbuffer) {
 }
 
 void DESKTOP::char_keyup(int msg, int wp, int lp) {
-	/*** 2021
+	/*** 2021 -
 	if (app_attributes.modal_process != 0) {
 		return;
 	}
@@ -1335,12 +1336,12 @@ void DESKTOP::char_keyup(int msg, int wp, int lp) {
 }
 
 void DESKTOP::char_(int msg, int wp, int lp) {
-	/*** 2021
+	/* 2021 -
 	if (app_attributes.modal_process != 0) {
 		return;
 	}
 	gui->char_(low_level, msg, wp, lp);
-	***/
+	*/
 }
 
 void DESKTOP::show_message_box(wchar_t *message, int background_color) {

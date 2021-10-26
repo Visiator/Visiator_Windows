@@ -80,7 +80,7 @@
 
 //unsigned long long gg;
 
-
+class GUI_Element;
 
 
 class CMDLINE
@@ -318,5 +318,12 @@ bool GetFileAttributes_(wchar_t *name, unsigned long long *fs, unsigned long lon
 bool my_deletefile(wchar_t *name);
 void my_str_del_from_left(wchar_t *str, int del_len);
 bool my_str_append(int max_len, wchar_t *dest, wchar_t *str1, wchar_t *str2);
-
+void close_pipe_handle(HANDLE *h, char *info);
+void my_CancelIoEx(HANDLE h);
+void CHECK_and_RUN_INDICATOR_AS_CONSOLE();
+void RUN_INDICATOR_AS_CONSOLE();
+void KILL_INDICATOR();
+void KILL_AGENT();
+void crash_log(const char *s, int p);
+void crash_log(const char *s);
 

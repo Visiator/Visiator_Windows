@@ -114,6 +114,9 @@ void TOTAL_CONTROL::send_udp_SERVICE() {
 			
 			add(ss, "service->interaction_with_agent_GET_SCREEN_counter", service->interaction_with_agent_GET_SCREEN_counter);
 			add(ss, "service->interaction_with_agent_GET_SCREEN_status", service->interaction_with_agent_GET_SCREEN_status);
+			add(ss, "service->SERVICE_PIPE_CONTROL_THREAD_EXECUTE", service->SERVICE_PIPE_CONTROL_THREAD_EXECUTE);
+
+			
 
 			if (service->net_server_session_pool == nullptr) {
 				add(ss, "service->net_server_session_pool == nullptr");
@@ -205,6 +208,10 @@ void TOTAL_CONTROL::send_udp_SERVICE() {
 
 
 
+
+}
+
+void TOTAL_CONTROL::send_udp_INDICATOR() {
 
 }
 

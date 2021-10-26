@@ -5,14 +5,15 @@
 #include "tools.h"
 #include "NET_SERVER_SESSION.h"
 #include "NET_SERVER_SESSION_POOL.h"
-//#include "mem.h"
+#include "GUI_Element.h"
+#include "TOTAL_CONTROL.h"
 
 extern bool GLOBAL_STOP;
 //extern ALL_THREAD_LIST thread_list;
 extern SERVICE *service;
 extern APPLICATION_ATTRIBUTES app_attributes;
 //extern NET_SERVER_SESSION_POOL *session_pool;
-//extern TOTAL_CONTROL total_control;
+extern TOTAL_CONTROL *total_control;
 
 void zero_128_s(MASTER_AGENT_PACKET_HEADER *v);
 
@@ -304,7 +305,7 @@ void SERVICE::start_MAIN_THREAD() {
 //------------------------------------------------------------------------------------------------------
 // SERVICE pipe CONTROL
 void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
-	/* 2021 09
+	
 	
 
 	DWORD ll, last_check_agent = 0;
@@ -314,13 +315,13 @@ void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
 
 	ll = 0;
 
-	send_udp("CONTROL THREAD run");
+	sudp("CONTROL THREAD run");
 
 	is_run_PIPE_CONTROL_THREAD = true;
 
 	while (GLOBAL_STOP == false) {
 		
-		total_control.SERVICE_PIPE_CONTROL_THREAD_EXECUTE++;
+		SERVICE_PIPE_CONTROL_THREAD_EXECUTE++;
 
 		if (interaction_with_INDICATOR_TIMEOUT != 0 &&
 			interaction_with_INDICATOR_TIMEOUT + 5000 < GetTickCount()) {
@@ -328,7 +329,7 @@ void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
 			set_interaction_with_INDICATOR_TIMEOUT( 0 ); 
 			
 			
-			send_udp2("CONTROL interaction_with_INDICATOR_TIMEOUT! DisconnectNamedPipe(pipe_indicator)");
+			sudp("CONTROL interaction_with_INDICATOR_TIMEOUT! DisconnectNamedPipe(pipe_indicator)");
 			
 			Disconnect_Named_Pipe(pipe_indicator, "p control 1");
 			enter_crit(26);
@@ -338,13 +339,13 @@ void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
 
 		if (last_check_agent + 5000 < GetTickCount()) {
 			
-			CHECK_and_RUN_AGENT_AS_CONSOLE();
+			// 2021 CHECK_and_RUN_AGENT_AS_CONSOLE();
 			last_check_agent = GetTickCount();
 		};
 		if (last_active_INDICATOR + 5000 < GetTickCount()) {
 			
 			CHECK_and_RUN_INDICATOR_AS_CONSOLE();
-			last_active_INDICATOR = GetTickCount();  send_udp2("last_active_INDICATOR detect (now running)");
+			last_active_INDICATOR = GetTickCount();  sudp("last_active_INDICATOR detect (now running)");
 		};
 
 		if ( ll + 5000 < GetTickCount() ) {
@@ -362,18 +363,18 @@ void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
 		if (write_info_connect_TIMEOUT > 0) {
 			if (write_info_connect_TIMEOUT + 5000 < GetTickCount()) {
 				write_info_connect_TIMEOUT = 0; 
-				send_udp2("write_info_connect_TIMEOUT = 0 (to)");
-				send_udp2("CONTROL write_info_connect_TIMEOUT ! DisconnectNamedPipe(pipe_write_service_info)");
+				sudp("write_info_connect_TIMEOUT = 0 (to)");
+				sudp("CONTROL write_info_connect_TIMEOUT ! DisconnectNamedPipe(pipe_write_service_info)");
 				Disconnect_Named_Pipe(pipe_write_service_info, "p control 1");
-				send_udp2("+++3");
+				sudp("+++3");
 			}
 		}
 		//send_udp("3");
 		if (interaction_with_agent_TIMEOUT > 0) {
 			if (interaction_with_agent_TIMEOUT + 5000 < GetTickCount()) {
 				interaction_with_agent_TIMEOUT = 0;
-				send_udp2("CONTROL interaction_with_agent_TIMEOUT ! DisconnectNamedPipe(pipe_master)");
-				Disconnect_Named_Pipe(pipe_master, "p control 2");
+				sudp("CONTROL interaction_with_agent_TIMEOUT ! DisconnectNamedPipe(pipe_master)");
+				Disconnect_Named_Pipe(pipe_MASTER, "p control 2");
 
 				enter_crit(27);
 				MASTER_is_agent_connected = false;
@@ -386,7 +387,7 @@ void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
 		}
 		if (last_agent_active + 5000 < GetTickCount() && MASTER_is_agent_connected == true ) {
 			
-			Disconnect_Named_Pipe(pipe_master, "p control ag_last_act");
+			Disconnect_Named_Pipe(pipe_MASTER, "p control ag_last_act");
 
 			enter_crit(28);
 			MASTER_is_agent_connected = false;
@@ -396,17 +397,17 @@ void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
 		//send_udp2("004");
 		try
 		{
-			total_control.send_udp_SERVICE();
+			total_control->send_udp_SERVICE();
 		}
 		catch (...) {
-			send_udp("catch(...) total_control.send_udp_SERVICE() ");
+			sudp("catch(...) total_control.send_udp_SERVICE() ");
 		}
 		//send_udp2("4");
 		Sleep(500);
 		//send_udp2("100");
 	}
 
-	send_udp("1000");
+	sudp("1000");
 
 	Sleep(1000);
 
@@ -414,21 +415,21 @@ void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
 
 		if (is_run_PIPE_INDICATOR_THREAD) {
 			is_run_PIPE_INDICATOR_THREAD = false;
-			my_Terminate_Thread(PIPE_INDICATOR_THREAD_handle);
+			// 2021 my_Terminate_Thread(PIPE_INDICATOR_THREAD_handle);
 		};
 		if (is_run_PIPE_WRITE_INFO_THREAD) {
 			is_run_PIPE_WRITE_INFO_THREAD = false;
-			my_Terminate_Thread(WRITE_INFO_THREAD_h);
+			// 2021 my_Terminate_Thread(WRITE_INFO_THREAD_h);
 		};
 		if (is_run_MAIN_THREAD) {
 			is_run_MAIN_THREAD = false;
-			my_Terminate_Thread(MAIN_THREAD_h);
+			// 2021 my_Terminate_Thread(MAIN_THREAD_h);
 		};
 
 	};
 	//send_udp2("CONTROL close all pipes ...");
 	close_pipe_handle(&pipe_write_service_info, "pipe control finish write_service_info");
-	close_pipe_handle(&pipe_master, "pipe control finish master");
+	close_pipe_handle(&pipe_MASTER, "pipe control finish master");
 	close_pipe_handle(&pipe_indicator, "pipe control finish pipe_indicator");
 
 
@@ -437,8 +438,8 @@ void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
 
 	is_run_PIPE_CONTROL_THREAD = false;
 
-	send_udp2("CONTROL THREAD finish");
-	*/
+	sudp("CONTROL THREAD finish");
+	
 }
 DWORD SERVICE_PIPE_CONTROL_THREAD_executionThread(LPDWORD pp) {
 
@@ -938,7 +939,7 @@ DWORD SERVICE_END_INFO_to_INDICATOR_EXECUTE_executionThread(LPDWORD pp) {
 void SERVICE::start_SEND_INFO_to_INDICATOR_EXECUTE() {
 	HANDLE h;
 	DWORD id;
-	// 2021 09 h = my_Create_Thread(0, 0, (LPTHREAD_START_ROUTINE)SERVICE_END_INFO_to_INDICATOR_EXECUTE_executionThread, 0, 0, &id, "SERVICE::start_SEND_INFO_to_INDICATOR_EXECUTE()");
+	// 2021 09 	h = my_Create_Thread(0, 0, (LPTHREAD_START_ROUTINE)SERVICE_END_INFO_to_INDICATOR_EXECUTE_executionThread, 0, 0, &id, "SERVICE::start_SEND_INFO_to_INDICATOR_EXECUTE()");
 }
 
 void SERVICE::get_service_info(SERVICE_INFO *service_info) {
@@ -953,21 +954,21 @@ void SERVICE::get_service_info(SERVICE_INFO *service_info) {
 	
 	int client_connected_count = 0, ready_to_client_connect = 0;
 
-	/* 2021 09 
-	if (session_pool == NULL) {
+	
+	if (net_server_session_pool == NULL) {
 		service_info->is_client_connected = 0;
 		service_info->is_ready_to_client_connect = 0;
 	} else{
 		client_connected_count = 0;
 		ready_to_client_connect = 0;
 
-		session_pool->client_connected_count(&client_connected_count, &ready_to_client_connect);
+		net_server_session_pool->client_connected_count(&client_connected_count, &ready_to_client_connect);
 
 		service_info->is_client_connected = client_connected_count;
 		service_info->is_ready_to_client_connect = ready_to_client_connect;
 		
 	}
-	*/
+	
 	 
 
 }
@@ -992,26 +993,29 @@ bool SERVICE::check_run_indicator() {
 
 void SERVICE::INDICATOR_THREAD_EXECUTE() {
 
-	/* 2021 09 
-	send_udp2("INDICATOR_THREAD_EXECUTE start");
+	
+	
+	sudp("INDICATOR_THREAD_EXECUTE start");
 
 	is_run_INDICATOR_THREAD = true;
 
+	boost::posix_time::milliseconds SleepTime(10);
+
 	while (GLOBAL_STOP == false) {
 		
-		total_control.SERVICE_INDICATOR_THREAD_EXECUTE++;
+		//total_control.SERVICE_INDICATOR_THREAD_EXECUTE++;
 
 		if ( check_run_indicator() == false) {
 
 		}
 		
-		my_Slip(5000);
+		boost::this_thread::sleep(SleepTime);
 	}
 
 	is_run_INDICATOR_THREAD = false;
 
-	send_udp2("INDICATOR_THREAD_EXECUTE stop");
-	*/
+	sudp("INDICATOR_THREAD_EXECUTE stop");
+	
 }
 
 DWORD SERVICE_INDICATOR_THREAD_executionThread(LPDWORD pp) {
@@ -1028,9 +1032,9 @@ DWORD SERVICE_INDICATOR_THREAD_executionThread(LPDWORD pp) {
 }
 
 void SERVICE::start_INDICATOR_THREAD() {
-	HANDLE h;
-	DWORD id;
-	// 2021 09 h = my_Create_Thread(0, 0, (LPTHREAD_START_ROUTINE)SERVICE_INDICATOR_THREAD_executionThread, 0, 0, &id, "SERVICE::start_INDICATOR_THREAD()");
+
+	INDICATOR_EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::INDICATOR_THREAD_EXECUTE, this));
+
 }
 
 //------------------------------------------------------------------------------------------------------
@@ -1112,7 +1116,7 @@ void SERVICE::save_in_registry_last_run_ver_and_date() {
 }
 
 void SERVICE::RUN() {
-	// send_udp("SERVICE::RUN()");
+	sudp("SERVICE::RUN()");
 
 	PROXY_LIST *proxy_list = app_attributes.proxy_list;
 
@@ -1131,7 +1135,7 @@ void SERVICE::RUN() {
 
 
 
-	/* 2021 09
+	
 	start_INDICATOR_THREAD();
 	start_PIPE_CONTROL_THREAD();
 	start_PIPE_WRITE_INFO_THREAD();
@@ -1140,8 +1144,8 @@ void SERVICE::RUN() {
 	start_MAIN_THREAD(); // service->MAIN_THREAD_EXECUTE(); ---> LOAD_ID_or_REGISTER() , LOAD_PASS() , START_NET_POOL();
 	
 	start_SEND_INFO_to_INDICATOR_EXECUTE();
-	***/
-	// send_udp("SERVICE::RUN() finish");
+	
+	sudp("SERVICE::RUN() finish");
 }
 
 /*
@@ -1414,7 +1418,7 @@ extern int lock_interaction_with_INDICATOR_status;
 
 void SERVICE::lock_interaction_with_INDICATOR() {
 	
-	/* 2021 09
+	
 	lock_interaction_with_INDICATOR_status = 1;
 	while (GLOBAL_STOP == false) {
 		lock_interaction_with_INDICATOR_status = 2;
@@ -1437,15 +1441,15 @@ void SERVICE::lock_interaction_with_INDICATOR() {
 		}
 		else {
 			lock_interaction_with_INDICATOR_status = 10;
-			send_udp2("lock_interaction_with_INDICATOR() collision !");
+			//sudp("lock_interaction_with_INDICATOR() collision !");
 			Sleep(100);
 			lock_interaction_with_INDICATOR_status = 101;
 		}
 		lock_interaction_with_INDICATOR_status = 11;
 	};
 	lock_interaction_with_INDICATOR_status = 12;
-	send_udp2("lock_interaction_with_INDICATOR() GLOBAL_STOP == true ");
-	*/
+	//sudp("lock_interaction_with_INDICATOR() GLOBAL_STOP == true ");
+	
 }
 
 void SERVICE::lock_interaction_with_AGENT() {
@@ -1471,18 +1475,18 @@ void SERVICE::lock_interaction_with_AGENT() {
 }
 
 void SERVICE::interaction_with_agent_STOP_AGENT() {
-	/* 2021 09
+	
 
-	total_control.SERVICE_interaction_with_agent_STOP_AGENT_status = 1;
+	//total_control.SERVICE_interaction_with_agent_STOP_AGENT_status = 1;
 
 	bool x;
 	DWORD r, w;
 
-	char *w_buf_1 = NULL;
-	char *r_buf_2 = NULL;
+	char *w_buf_1 = nullptr;
+	char *r_buf_2 = nullptr;
 
-	w_buf_1 = new_char(sizeof_MASTER_AGENT_PACKET_HEADER, 385);
-	r_buf_2 = new_char(sizeof_MASTER_AGENT_PACKET_HEADER, 386);
+	w_buf_1 = new char[sizeof_MASTER_AGENT_PACKET_HEADER];
+	r_buf_2 = new char[sizeof_MASTER_AGENT_PACKET_HEADER];
 
 	MASTER_AGENT_PACKET_HEADER *packet_send, *packet_recv;
 
@@ -1490,12 +1494,13 @@ void SERVICE::interaction_with_agent_STOP_AGENT() {
 	packet_recv = (MASTER_AGENT_PACKET_HEADER *)r_buf_2;
 
 	if (MASTER_is_agent_connected == false) {
-		send_udp("======> => => => => => => => interaction_with_agent_STOP_AGENT() end (1)");
-		delete_(&w_buf_1); delete_(&r_buf_2); 
+		sudp("======> => => => => => => => interaction_with_agent_STOP_AGENT() end (1)");
+		delete[] w_buf_1; 
+		delete[] r_buf_2; 
 		return;
 	}
 
-	total_control.SERVICE_interaction_with_agent_STOP_AGENT_status = 100;
+	//total_control.SERVICE_interaction_with_agent_STOP_AGENT_status = 100;
 
 	lock_interaction_with_AGENT(); // там внутри   interaction_with_agent_IN_USE = true;
     //send_udp("======> => => => => => => => interaction_with_agent_STOP_AGENT() begin");
@@ -1504,61 +1509,64 @@ void SERVICE::interaction_with_agent_STOP_AGENT() {
 
 	//******************************************************************************
 	// write 128 (1)
-	zero_char(w_buf_1, sizeof_MASTER_AGENT_PACKET_HEADER);
+	zero_unsigned_char((unsigned char *)w_buf_1, sizeof_MASTER_AGENT_PACKET_HEADER);
 	packet_send->packet_size = sizeof_MASTER_AGENT_PACKET_HEADER;
 	packet_send->packet_type = packet_type_REQUEST_STOP_AGENT;
 
-	x = write_pipe(pipe_master, w_buf_1, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_MASTER_pipe_TIMEOUT);
+	x = write_pipe(pipe_MASTER, w_buf_1, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_MASTER_pipe_TIMEOUT);
 	if (x != true) {
-		send_udp("======> => => => => => => => interaction_with_agent_2() (1-) end ");
+		sudp("======> => => => => => => => interaction_with_agent_2() (1-) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
-		delete_(&w_buf_1); delete_(&r_buf_2); 
+		delete[] w_buf_1;
+		delete[] r_buf_2;
 		return;
 	}
 
-	total_control.SERVICE_interaction_with_agent_STOP_AGENT_status = 200;
+	//total_control.SERVICE_interaction_with_agent_STOP_AGENT_status = 200;
 
 	//-----------------------------------------------------------------------------
 	// read 128 (2)
 
-	x = read_pipe(pipe_master, r_buf_2, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_MASTER_pipe_TIMEOUT, "i1");
+	x = read_pipe(pipe_MASTER, r_buf_2, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_MASTER_pipe_TIMEOUT, "i1");
 	if (x != true) {
-		send_udp("======> => => => => => => => interaction_with_agent_2() (2-) end ");
+		sudp("======> => => => => => => => interaction_with_agent_2() (2-) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
-		delete_(&w_buf_1); delete_(&r_buf_2); 
+		delete[] w_buf_1;
+		delete[] r_buf_2;
 		return;
 	}
 
-	total_control.SERVICE_interaction_with_agent_STOP_AGENT_status = 300;
+	//total_control.SERVICE_interaction_with_agent_STOP_AGENT_status = 300;
 
 	interaction_with_agent_TIMEOUT = 0;
 
 	//send_udp("interaction_with_agent_2() end");
 	interaction_with_agent_IN_USE = false;
 
-	delete_(&w_buf_1); delete_(&r_buf_2);
+	delete[] w_buf_1;
+	delete[] r_buf_2;
 
 	//send_udp("======> => => => => => => => interaction_with_agent_STOP_AGENT() end\r\n");
 
-	total_control.SERVICE_interaction_with_agent_STOP_AGENT_status = 400;
+	//total_control.SERVICE_interaction_with_agent_STOP_AGENT_status = 400;
 
 	return;
-	***/
+	
 }
 
 bool SERVICE::interaction_with_agent_SEND_EVENT(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv) {
 	
 
-	/* 2021 09
-	total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 1;
+	
+	//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 1;
 
 	if (MASTER_is_agent_connected == false) {
-		send_udp("======> => => => => => => => interaction_with_agent_2() end (1)");
+		sudp("======> => => => => => => => interaction_with_agent_2() end (1)");
 		//delete_ w_buf_1; delete_ r_buf_2; //delete_ r_buf_3;
 
-		total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 2;
+		//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 2;
 
 		return false;
 	}
@@ -1569,43 +1577,43 @@ bool SERVICE::interaction_with_agent_SEND_EVENT(MASTER_AGENT_PACKET_HEADER *pack
 
 	interaction_with_agent_TIMEOUT = GetTickCount();
 
-	total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 100;
+	//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 100;
 
 	DWORD r, w;
 	bool x;
 
-	x = write_pipe(pipe_master, packet_send, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_MASTER_pipe_TIMEOUT);
+	x = write_pipe(pipe_MASTER, packet_send, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_MASTER_pipe_TIMEOUT);
 	if (x != true) {
-		send_udp("======> => => => => => => => interaction_with_agent_2() (1--) end ");
+		sudp("======> => => => => => => => interaction_with_agent_2() (1--) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
-		total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 102;
+		//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 102;
 		return false;
 	}
 
-	total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 200;
+	//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 200;
 
 	//-----------------------------------------------------------------------------
 	// read 128 (2) получаем ответ (заголовок)
 
-	x = read_pipe(pipe_master, packet_recv, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_MASTER_pipe_TIMEOUT, "i2");
+	x = read_pipe(pipe_MASTER, packet_recv, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_MASTER_pipe_TIMEOUT, "i2");
 	if (x != true) {
-		send_udp("======> => => => => => => => interaction_with_agent_2() (2--) end ");
+		sudp("======> => => => => => => => interaction_with_agent_2() (2--) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
-		total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 202;
+		//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 202;
 		return false;
 	}
 
-	total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 300;
+	//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 300;
 
 	//send_udp("======> => => => => => => => interaction_with_agent_2() (100) end\r\n");
 
 	interaction_with_agent_TIMEOUT = 0;
 	interaction_with_agent_IN_USE = false;
 
-	total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 400;
-	***/
+	//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 400;
+	
 	return true;
 
 
@@ -1613,7 +1621,7 @@ bool SERVICE::interaction_with_agent_SEND_EVENT(MASTER_AGENT_PACKET_HEADER *pack
 
 bool SERVICE::interaction_with_indicator_SET_CLIPBOARD(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, unsigned char *buf, unsigned int buf_size) {
 
-	/* 2021 09
+	/* 2021 09  interaction_with_indicator_SET_CLIPBOARD()
 
 	send_udp2("interaction_with_indicator_SET_CLIPBOARD() buf_size=", buf_size);
 
@@ -1685,7 +1693,7 @@ bool SERVICE::interaction_with_indicator_SET_CLIPBOARD(MASTER_AGENT_PACKET_HEADE
 
 bool SERVICE::interaction_with_indicator_GET_CLIPBOARD(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, unsigned char **read_buf, unsigned int *read_buf_size) {
 
-	/* 2021 09
+	/* 2021 09  interaction_with_indicator_GET_CLIPBOARD()
 
 	send_udp2("interaction_with_indicator_GET_CLIPBOARD()");
 
@@ -2081,6 +2089,8 @@ void SERVICE::SET_last_agent_active(char *info) {
 }
 void SERVICE::LOAD_ID_or_REGISTER() {
 	
+	sudp("SERVICE::LOAD_ID_or_REGISTER()");
+
 	Load_private_id_and_public_id_from_SERVICE_registry(&PUBLIC_ID, &PRIVATE_ID);
 
 	if (PUBLIC_ID == 0) {
@@ -2120,7 +2130,7 @@ void SERVICE::START_NET_POOL() {
 
 void SERVICE::set_clipboard_in_to_session(int session_no, unsigned char *buf, unsigned int buf_size) {
 	
-	/* 2021 09
+	/* 2021 09 set_clipboard_in_to_session()
 	bool r;
 
 	MASTER_AGENT_PACKET_HEADER *packet_send, *packet_recv;
@@ -2148,7 +2158,7 @@ void SERVICE::set_clipboard_in_to_session(int session_no, unsigned char *buf, un
 
 void SERVICE::SEND_INFO_to_INDICATOR(char *packet_send, char *packet_recv) {
 
-	/* 2021 09
+	
 	if (MASTER_is_indicator_connected == false) return;
 
 	//send_udp2("SEND_INFO_to_INDICATOR()...");
@@ -2187,7 +2197,7 @@ void SERVICE::SEND_INFO_to_INDICATOR(char *packet_send, char *packet_recv) {
 
 	service_info = (SERVICE_INFO *)&p_send->reserv[0];
 
-	zero_void((void*)p_send, 128);
+	zero_unsigned_char( (unsigned char*)p_send, 128);
 	get_service_info(service_info);
 
 	//send_udp2("write info... 128 info");
@@ -2202,25 +2212,26 @@ void SERVICE::SEND_INFO_to_INDICATOR(char *packet_send, char *packet_recv) {
 	interaction_with_INDICATOR_SEND_INFO(p_send, p_recv, send_buf, send_buf_size, &read_buf, &read_buf_size);
 	
 	if (interaction_with_INDICATOR_IN_USE == true) {
-		send_udp2("WTF?? interaction_with_INDICATOR_IN_USE == true");
+		sudp("WTF?? interaction_with_INDICATOR_IN_USE == true");
 	}
 
 	if (read_buf_size > 0) {
 		//send_udp2("клиент что то нам передал");
 		//send_udp2("r2 = ", read_buf_size);
-		delete_(&read_buf);
+		delete[] read_buf;
+		read_buf = nullptr;
 	}
 
 	//delete_(&packet_send);
 	//delete_(&packet_recv);
 
-	*/
+	
 
 }
 
 bool SERVICE::interaction_with_INDICATOR_SEND_INFO(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, unsigned char *write_buf, unsigned int write_buf_size, unsigned char **read_buf, unsigned int *read_buf_size) {
 
-	/* 2021 09
+	
 
 	//send_udp2("interaction_with_INDICATOR_SEND_INFO()...");
 
@@ -2272,14 +2283,14 @@ bool SERVICE::interaction_with_INDICATOR_SEND_INFO(MASTER_AGENT_PACKET_HEADER *p
 		set_interaction_with_INDICATOR_TIMEOUT( 0 );
 		interaction_with_INDICATOR_IN_USE = false;
 		
-		send_udp2("error 111222");
+		sudp("error 111222");
 
 		return false;
 	}
 
 	if (packet_recv->packet_size > 128) {
 		
-		*read_buf = new_unsigned_char(packet_recv->packet_size - 128, 4511);
+		*read_buf = new unsigned char[packet_recv->packet_size - 128];
 
 		
 		r = 0;
@@ -2292,8 +2303,8 @@ bool SERVICE::interaction_with_INDICATOR_SEND_INFO(MASTER_AGENT_PACKET_HEADER *p
 	last_active_INDICATOR = GetTickCount();  //send_udp2("last_active_INDICATOR detect 3");
 
 	if (packet_recv->reserv[0] == 1) {
-		send_udp2("clipboard_is_changed DETECTED!");
-		if (session_pool != NULL) session_pool->INDICATOR_SAY_clipboard_is_changed();
+		sudp("clipboard_is_changed DETECTED!");
+		// 2021 if (session_pool != NULL) session_pool->INDICATOR_SAY_clipboard_is_changed();
 	}
 
 	//send_udp2("interaction_with_INDICATOR_SEND_INFO() read ok", r);
@@ -2304,7 +2315,7 @@ bool SERVICE::interaction_with_INDICATOR_SEND_INFO(MASTER_AGENT_PACKET_HEADER *p
 	interaction_with_INDICATOR_IN_USE = false;
 	//send_udp2("interaction_with_INDICATOR_SEND_INFO() ok");
 
-	*/
+	
 
 	return true;
 }
@@ -2374,7 +2385,7 @@ bool SERVICE::interaction_with_agent_SET_CLIPBOARD(MASTER_AGENT_PACKET_HEADER *p
 */
 void SERVICE::get_clipboard_from_session(int session_no, unsigned char **buf, unsigned int *buf_size) {
 
-	/* 2021 09
+	/* 2021 09  get_clipboard_from_session()
 
 	bool r;
 	
@@ -2419,9 +2430,9 @@ void SERVICE::send_unpress_all_pressed_keys() {
 }
 
 void SERVICE::send_event_in_to_session(int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam) {
-	/* 2021 09
-	if (packet_send_event == NULL) packet_send_event = new_char(500, 392);
-	if (packet_recv_event == NULL) packet_recv_event = new_char(500, 393);
+	
+	if (packet_send_event == NULL) packet_send_event = new char[550];
+	if (packet_recv_event == NULL) packet_recv_event = new char[550];
 
 	MASTER_AGENT_PACKET_HEADER *packet_send, *packet_recv;
 
@@ -2446,7 +2457,7 @@ void SERVICE::send_event_in_to_session(int session_no, unsigned int event_type, 
 	interaction_with_agent_SEND_EVENT(packet_send, packet_recv);
 
 	//send_udp("interaction_with_agent_SEND_EVENT() end");
-	*/
+	
 }
 
 //****************************************************************************
@@ -2597,6 +2608,7 @@ int  ServiceUnInstallLocal() {
 	*/
 	//char ss[500];
 
+	sudp("ServiceUnInstallLocal");
 
 	int v, rr;
 	int i = 0;
@@ -2690,7 +2702,7 @@ int SERVICE___START(wchar_t *service_name) {
 }
 int ServiceInstallLocal()
 {
-	// send_udp("ServiceInstall()1...");
+	sudp("ServiceInstall()");
 	SC_HANDLE schSCManager;
 	SC_HANDLE schService;
 
@@ -2825,7 +2837,7 @@ void SERVICE::INDICATOR_SAY_clipboard_is_changed() {
 
 void SERVICE::EXECUTE() {
 
-	// 2021 09 
+	
 	
 	// MAIN Thread
 
@@ -3086,5 +3098,120 @@ bool SERVICE::interaction_with_agent_PING() {
 	//total_control.SERVICE_interaction_with_agent_SEND_EVENT_status = 400;
 	
 	return true;
+
+}
+
+int  ServiceUnInstallLocal(GUI_Element *e)
+{
+
+	/*
+	#define SERVICE_STOPPED                        0x00000001
+	#define SERVICE_START_PENDING                  0x00000002
+	#define SERVICE_STOP_PENDING                   0x00000003
+	#define SERVICE_RUNNING                        0x00000004
+	#define SERVICE_CONTINUE_PENDING               0x00000005
+	#define SERVICE_PAUSE_PENDING                  0x00000006
+	#define SERVICE_PAUSED                         0x00000007
+	*/
+	//char ss[500];
+
+
+	int v, rr;
+	int i = 0;
+	do
+	{
+		//sprintf__s_i(ss, 450, "uninstall service - check... %d ", i);
+		//if (e != NULL) e->set_text(ss);
+
+		v = SERVICE___CHECK_STATUS(strServiceName);
+		if (v == -11) { return 0; };// служба не установлена
+		if (v != SERVICE_STOPPED && v != -11) {
+			if (v == SERVICE_RUNNING) {
+
+				//sprintf__s_i(ss, 450, "uninstall service - stop... %d ", i);
+				//if (e != NULL) e->set_label(nullptr, ss);
+
+				rr = SERVICE___STOP(strServiceName);
+				if (rr == -11) {
+					//sprintf__s(ss, 450, "uninstall service - no permission");
+					//if (e != NULL) e->set_label(nullptr, ss);
+
+					return -100;
+				}
+				my_Slip(1000);
+			}
+			else {
+				Sleep(100);
+			};
+			i++;
+			if (i > 15) {
+				//sprintf__s(ss, 450, "uninstall service - error");
+				//if (e != NULL) e->set_label(nullptr, ss);
+				return -100;
+			};
+		};
+
+
+	} while (v != SERVICE_STOPPED && GLOBAL_STOP == false);
+
+	int ii;
+	ii = 0;
+	do
+	{
+		//sprintf__s(ss, 450, "uninstall service....");
+
+		i = SERVICE___UNINSTALL(strServiceName);
+		if (i == -1000) { // нет адмнинских прав?
+			//send_udp("permission denied? ");
+			//sprintf__s(ss, 450, "uninstall service - permission denied?");
+			//if (e != NULL) e->set_label(nullptr, ss);
+			return -101;
+		};
+		if (i != 0) my_Slip(1000);
+		ii++;
+		if (ii > 3) return -100;
+
+	} while (i != 0 && GLOBAL_STOP == false);
+
+	//SERVICE___START(strServiceName);
+
+	return 0;
+}
+
+
+void SERVICE_DEINSTALL() {
+
+	int i, dd;
+	TCHAR dest_file[MAX_PATH + 9];
+
+	i = ServiceUnInstallLocal(NULL);
+
+	int k;
+	k = 0;
+	while (app_attributes.my_exe_file_name[k] != 0) k++;
+	while (k > 0 && app_attributes.my_exe_file_name[k] != '\\') k--;
+	if (k > 0 && app_attributes.my_exe_file_name[k] == '\\') k++;
+
+	if (app_attributes.is_32_or_64_bit_system == 64) {
+		dd = GetSystemWow64Directory(dest_file, MAX_PATH);
+	}
+	else {
+		dd = GetSystemDirectory(dest_file, MAX_PATH);
+	};
+
+	wcscat_s(dest_file, MAX_PATH, L"\\visiator.exe");
+
+	int t;
+
+	t = 10;
+
+	while (my_FileExists(dest_file)) {
+		DeleteFile(dest_file);
+		if (t == 0) return;
+		if (my_FileExists(dest_file)) {
+			::Sleep(500);
+			t--;
+		}
+	};
 
 }

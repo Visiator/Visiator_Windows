@@ -40,7 +40,7 @@ void GUI_low_level::change_size(HWND hw, int w_, int h_) {
 
 		buf = (unsigned int *)(new char[w_ * h_ * 4]); //neew(w_ * h_ * 4, sscr_buf, "MyGUI_low_level::set_window_size()");
 		
-		/*** 2021
+		/*** 2021 -
 		buf2 = (unsigned int *)(new char[w_ * h_ * 4]); //neew(w_ * h_ * 4, sscr_buf, "MyGUI_low_level::set_window_size()");
 		***/
 
@@ -178,7 +178,7 @@ void GUI_low_level::Paint() {
 
 	int w2 = window_w * 2;
 
-	/*** 2021
+	/*** 2021 -
 	q2 = &(buf2[(window_h - 1)* window_w]);
 	q = buf;
 	for (int y = 0; y < window_h; y++)
@@ -207,7 +207,7 @@ void GUI_low_level::Paint() {
 		, window_h
 		, 0, 0, 0
 		, window_h
-		, buf //, buf2   - 2021
+		, buf //, buf2   - 2021 -
 		, bmInfo
 		, DIB_RGB_COLORS);
 

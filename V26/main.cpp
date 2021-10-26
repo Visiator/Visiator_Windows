@@ -9,7 +9,9 @@
 #include "SERVICE.h"
 #include "KERNEL.h"
 #include "AGENT.h"
+#include "INDICATOR.h"
 #include "TOTAL_CONTROL.h"
+#include "CLIPBOARD.h"
 
 #include <boost/lambda/lambda.hpp>
 
@@ -30,6 +32,10 @@ KERNEL kernel;
 CMDLINE cmd_line;
 AGENT *agent = nullptr;
 TOTAL_CONTROL *total_control = nullptr;
+INDICATOR *indicator = NULL;
+CLIPBOARD clipboard;
+
+int SIGABRT_id = 0;
 
 void test_b12();
 
@@ -85,6 +91,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	viewer->RUN_VIEWER(partner_id, pass_encripted, pass_no_encripted);
 	***/
 
+	if (cmd_line.count == 1 && cmd_line.compare_param_by_no(0, "indicator")) {
+
+		indicator = new INDICATOR();
+
+		indicator->RUN(hInstance);
+
+		WinMain_finish();
+
+		return 0;
+	}
+
+
 	if ((cmd_line.count == 3 && cmd_line.compare_param_by_no(0, "viewer") == true)) {
 
 		unsigned char id[32], ps[32], pse[32];// , *ps_encr;
@@ -129,6 +147,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return 0;
 	}
 
+	//==========================================================================================================
+	// SERVICE
 
 	if (app_attributes.is_service) {
 		//send_udp("is_service");
@@ -143,6 +163,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	};
 
 	
+	if (cmd_line.count == 1 && cmd_line.compare_param_by_no(0, "servicedeinstall")) {
+		SERVICE_DEINSTALL();
+		return 0;
+	};
+
+	//==========================================================================================================
+
 	if (desktop == NULL) desktop = new DESKTOP();
 	desktop->RUN();
 	

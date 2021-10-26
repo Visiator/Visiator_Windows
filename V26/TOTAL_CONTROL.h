@@ -7,7 +7,7 @@
 class TOTAL_CONTROL
 {
 public:
-
+	
 
 
 	SOCKET udp_socket__service = 0;
@@ -15,7 +15,8 @@ public:
 
 	void send_udp_SERVICE();
 	void send_udp_DESKTOP();
-	
+	void send_udp_INDICATOR();
+
 	boost::thread* thread_EXECUTE = nullptr;
 
 	bool EXECUTE_is_run = false;

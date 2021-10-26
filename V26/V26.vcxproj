@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClCompile Include="AGENT.cpp" />
     <ClCompile Include="APPLICATION_ATTRIBUTES.cpp" />
+    <ClCompile Include="CLIPBOARD.cpp" />
     <ClCompile Include="CRYPTO.cpp" />
     <ClCompile Include="DESKTOP.cpp" />
     <ClCompile Include="EVENT_QUEUE.cpp" />
@@ -151,6 +152,7 @@
     <ClCompile Include="GUI_Element.cpp" />
     <ClCompile Include="GUI_low_level.cpp" />
     <ClCompile Include="HIGHLEVEL_COMMAND_QUEUE.cpp" />
+    <ClCompile Include="INDICATOR.cpp" />
     <ClCompile Include="KERNEL.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="minilzo.c">
@@ -193,6 +195,7 @@
   <ItemGroup>
     <ClInclude Include="AGENT.h" />
     <ClInclude Include="APPLICATION_ATTRIBUTES.h" />
+    <ClInclude Include="CLIPBOARD.h" />
     <ClInclude Include="DESKTOP.h" />
     <ClInclude Include="EVENT_QUEUE.h" />
     <ClInclude Include="FILE__LIST.h" />
@@ -201,6 +204,7 @@
     <ClInclude Include="GUI_Element.h" />
     <ClInclude Include="GUI_low_level.h" />
     <ClInclude Include="HIGHLEVEL_COMMAND_QUEUE.h" />
+    <ClInclude Include="INDICATOR.h" />
     <ClInclude Include="KERNEL.h" />
     <ClInclude Include="MODAL_DIALOG.h" />
     <ClInclude Include="NET_CLIENT_SESSION.h" />

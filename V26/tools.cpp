@@ -9,7 +9,12 @@
 #include "CRYPTO.h"
 #include "KERNEL.h"
 
+
 #define ACE_NAME_SIZE 1500
+
+extern int SIGABRT_id;
+
+extern wchar_t *strServiceName;
 
 extern KERNEL kernel;
 extern FONT *font[10];
@@ -18,7 +23,7 @@ unsigned char *encode_color_matrix_onebyte = nullptr;
 unsigned char *encode_color_matrix_5_in_8  = nullptr;
 unsigned char *encode_color_matrix_6_in_8  = nullptr;
 
-
+int lock_interaction_with_INDICATOR_status = 0;
 
 void fatal_error(const char *s) {
 	FILE *f;
@@ -3205,7 +3210,7 @@ bool check_mutex(wchar_t *mutex_name) {
 
 void Load_private_id_and_public_id_from_SERVICE_registry(unsigned long long *public_id, unsigned long long *private_id) {
 
-	//sudp("Load_private_id_and_public_id_from_SERVICE_registry()...");
+	sudp("Load_private_id_and_public_id_from_SERVICE_registry()");
 
 	*public_id = 0;
 	*private_id = 0;
@@ -4938,3 +4943,153 @@ bool my_str_append(int max_len, wchar_t *dest, wchar_t *str1, wchar_t *str2) {
 	return true;
 }
 
+void close_pipe_handle(HANDLE *h, char *info) {
+	//send_udp2("#");
+	char ss[100];
+	if (info != NULL && info[0] != 0) {
+		sprintf__s_c(ss, 90, "close_pipe_handle %s ", info);
+		sudp(ss);
+	}
+	else {
+		//send_udp2("close_pipe_handle NULL");
+	}
+
+	if (*h == 0) return;
+	if (*h == INVALID_HANDLE_VALUE) return;
+	enter_crit(48);
+	if (*h != 0) {
+		//send_udp2("CancelIoEx...");
+		my_CancelIoEx(*h);
+
+		//send_udp2("CloseHandle...");
+		CloseHandle(*h);
+		//send_udp2("CloseHandle ok");
+		*h = 0;
+	}
+	leave_crit(48);
+}
+
+void CHECK_and_RUN_INDICATOR_AS_CONSOLE() {
+
+	//send_udp2("CHECK_and_RUN_INDICATOR_AS_CONSOLE()+ ");
+
+	//if (service->last_active_INDICATOR + 5000 > GetTickCount()) {		return;	}
+
+	//sprintf_ s(ss, 490, "CHECK_and_RUN_AGENT_AS_CONSOLE()  pid=%d last_agent_active=%d ", app_attributes.agent_process_id, service->last_agent_active );
+	//send_udp(ss);
+
+	sudp("KILL_INDICATOR()");
+
+	KILL_INDICATOR();
+
+	//**************************************************
+	/*
+	service->set_interaction_with_INDICATOR_TIMEOUT( 0 );
+	service->interaction_with_INDICATOR_IN_USE = false;
+
+	Disconnect_Named_Pipe(service->pipe_indicator, "p control Z3253Z");
+	send_udp2("++1");
+	enter_crit();
+	service->set_MASTER_is_indicator_connected(false);
+	leave_crit();
+	send_udp2("++10");
+	*/
+	//**************************************************
+
+	sudp("RUN_INDICATOR_AS_CONSOLE()");
+
+	RUN_INDICATOR_AS_CONSOLE();
+
+
+
+	/*if (app_attributes.indicator_process_id != 0) {
+		HANDLE h = NULL;
+		h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, app_attributes.indicator_process_id);
+		if (h == NULL) { // процесса уже нет
+			app_attributes.indicator_process_id = 0;
+			send_udp("app_attributes.indicator_process_id = 0");
+		};
+		CloseHandle(h);
+
+	};
+
+	if (app_attributes.indicator_process_id == 0) {
+		RUN_INDICATOR_AS_CONSOLE(); // там внутри присваивается  app_attributes.indicator_process_id = xxxx;
+		my_Slip(2000);
+	}*/
+
+};
+void RUN_INDICATOR_AS_CONSOLE() {
+
+	//if (service != NULL) {
+	//	service->reconnect_master_pipe();
+	//}
+
+
+
+	//send_udp2("RUN_INDICATOR_AS_CONSOLE");
+	DWORD pid;
+	pid = kernel.scan_winlogon_pid_for_active_session();
+	pid = kernel.scan_explorer_pid_for_active_session();
+	if (pid != 0) {
+		//send_udp("winlogon_pid = ", pid);
+		app_attributes.indicator_process_id = kernel.my_spawnl(pid, app_attributes.my_exe_file_name, L"indicator");
+		//sprintf_ s(ss, 90, "SET winlogon_pid=%d indicator_process_id=%d ", pid, app_attributes.indicator_process_id);
+		//send_udp2(ss);
+	}
+	else {
+		//send_udp2("RUN_INDICATOR_AS_CONSOLE pid == 0 error");
+	}
+
+}
+
+void KILL_INDICATOR() {
+	if (app_attributes.indicator_process_id != 0) {
+
+		kernel.kill_process_by_pid(app_attributes.indicator_process_id);
+
+		app_attributes.indicator_process_id = 0;
+
+
+
+	}
+}
+
+void KILL_AGENT() {
+	if (app_attributes.agent_process_id != 0) {
+		kernel.kill_process_by_pid(app_attributes.agent_process_id);
+		app_attributes.agent_process_id = 0;
+	}
+}
+
+void my_CancelIoEx(HANDLE h) {
+	if (CancelIoEx_ == NULL) {
+		if (hmod_kernel32 == NULL) hmod_kernel32 = LoadLibrary(L"kernel32.dll");
+		if (hmod_kernel32 != NULL) CancelIoEx_ = (CancelIoEx_T)GetProcAddress(hmod_kernel32, "CancelIoEx");
+	}
+	if (CancelIoEx_ != NULL) {
+		CancelIoEx_(h, 0);
+	}
+}
+
+void crash_log(const char *s, int p) {
+
+	char ss[500];
+	sprintf_s(ss, 490, "%s %d SIGABRT_id = %d ", (char *)s, p, SIGABRT_id);
+	crash_log(ss);
+
+}
+
+void crash_log(const char *s) {
+
+	FILE *f;
+	fopen_s(&f, "c:\\1\\crash.log", "ab");
+	if (f != NULL) {
+		fprintf(f, "%s\r\n", s);
+		fclose(f);
+	};
+
+	sudp("crash log ");
+	sudp((char *)s);
+
+}

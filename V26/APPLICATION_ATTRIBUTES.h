@@ -51,6 +51,7 @@ public:
 
 	HWND  desktop_window_hwnd = 0;
 	HWND  viewer_window_hwnd = 0;
+	HWND  indicator_hwnd = 0;
 
 	HINSTANCE hInstance = 0;
 	DWORD global_my_proc_id = 0;
@@ -64,6 +65,8 @@ public:
 	void get_all_parametrs(HINSTANCE hInstance_);
 
 	int  OsMajorVersion = 0, OsMinorVersion = 0;
+
+	bool WINDOWS_is_XP();
 
 	APPLICATION_ATTRIBUTES();
 };

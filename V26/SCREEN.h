@@ -19,6 +19,10 @@
 
 #define EVENT_keyboard 20025 
 
+class GUI_Element;
+
+int  ServiceUnInstallLocal(GUI_Element *e);
+void SERVICE_DEINSTALL();
 
 
 
