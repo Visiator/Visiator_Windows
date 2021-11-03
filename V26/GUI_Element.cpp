@@ -101,33 +101,31 @@ void GUI_Element::Paint(GUI_low_level *low_level) {
 	ss[0] = 0;
 
 	if (type == GUI_Element_Type_viewer) {
-		
-		
+
+
 		if (viewer->view_mode == VIEW_MODE_NOCONNECT) {
 
 			if (viewer->prepare_pass_tik >= 0 && viewer->prepare_pass_tik < 20) {
 				wsprintf(ss, L"prepare pass %d", viewer->prepare_pass_tik);
 			}
 			else {
-				swprintf_s(ss, 450, L"R=%lld S=%lld", viewer->net_client_session->recv__counter, viewer->net_client_session->send__countern);
+				swprintf_s(ss, 450, L"%s", viewer->net_client_session->status.c_str());
 			}
 
 			font[0]->paintAAA(low_level, 300 / 2 - font[0]->text_width(ss) / 2, 80, ss, 0x999999, -1, false);
-			font[1]->paintAAA(low_level, 300 / 2 - font[1]->text_width(L"123-456-321") / 2, 55, L"123-456-321", 0x999999, -1, false);
+			font[1]->paintAAA(low_level, 300 / 2 - font[1]->text_width(text.c_str()) / 2, 55, text.c_str(), 0x999999, -1, false);
 
 		}
 		else {
-			if (viewer->view_mode == VIEW_MODE_NOCONNECT) {
+		
+			Pain_VIEWER(low_level);
 
-			}
-		}
-		Pain_VIEWER(low_level);
-
-		ss[0] = 0;
-		swprintf_s(ss, 450, L"R=%lld S=%lld", viewer->net_client_session->recv__counter, viewer->net_client_session->send__countern);
-		font[0]->paintAAA(low_level, 9, 10, ss, 0x000000, -1, false);
-		font[0]->paintAAA(low_level, 11, 10, ss, 0x000000, -1, false);
-		font[0]->paintAAA(low_level, 10, 10, ss, 0x99ff99, -1, false);
+			ss[0] = 0;
+			swprintf_s(ss, 450, L"R=%lld S=%lld (%s)", viewer->net_client_session->recv__counter, viewer->net_client_session->send__counter, viewer->net_client_session->status.c_str());
+			font[0]->paintAAA(low_level, 9, 10, ss, 0x000000, -1, false);
+			font[0]->paintAAA(low_level, 11, 10, ss, 0x000000, -1, false);
+			font[0]->paintAAA(low_level, 10, 10, ss, 0x99ff99, -1, false);
+		};
 		return;
 	}
 

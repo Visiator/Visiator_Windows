@@ -78,9 +78,57 @@
 #define _line_h 18
 #define _Caption_h 28
 
+#define packet_type_PING_MASTER_to_AGENT 100
+#define packet_type_PONG_MASTER_to_AGENT 10000
+
+#define packet_type_REQUEST_SCREEN_one_byte 101
+#define packet_type_RESPONCE_SCREEN_one_byte 102
+#define packet_type_REQUEST_STOP_AGENT 103
+#define packet_type_RESPONCE_STOP_AGENT 104
+
+#define packet_type_REQUEST_EVENT 105
+#define packet_type_RESPONCE_EVENT 106
+
+#define packet_type_REQUEST_CLIPBOARD 107
+#define packet_type_RESPONCE_CLIPBOARD 108
+#define packet_type_SET_CLIPBOARD 109
+
+#define packet_type_SERVICE_INFO 110
+
+
+//#define packet_type_PING_SERVER_to_AGENT 100
+#define packet_type_REQUEST_SCREEN 101
+
+#define sizeof_MASTER_AGENT_PACKET_HEADER 128
+#define sizeof_ENCODED_SCREEN_8bit_header 84
+
+
 //unsigned long long gg;
 
 class GUI_Element;
+
+class USERLOGIN
+{
+public:
+	wchar_t *name;
+	wchar_t *domain;
+
+	bool compare(wchar_t *n, wchar_t*d);
+	int  copy_into_buffer(wchar_t *buf, int buf_max_size);
+	void set(wchar_t *name_, wchar_t *domain_);
+	USERLOGIN();
+};
+
+class USERLOGIN_LIST
+{
+public:
+	USERLOGIN userlogin[50];
+
+	void add(wchar_t *name, wchar_t *domain);
+	void copy_into_buffer(wchar_t *buf, int buf_max_size);
+	int max_count;
+	USERLOGIN_LIST();
+};
 
 
 class CMDLINE
@@ -326,4 +374,8 @@ void KILL_INDICATOR();
 void KILL_AGENT();
 void crash_log(const char *s, int p);
 void crash_log(const char *s);
+bool read_service_info(void *s_info, HANDLE *pipe);
+void RUN_VIEWER_EPASS(wchar_t *exe_file_name, wchar_t *ID, wchar_t *PASS, unsigned char *PASS_ENCR_16byte);
 
+bool is_bad_symbol_folder_name(wchar_t v);
+bool is_bad_symbol_file_name(wchar_t v);

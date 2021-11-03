@@ -3,8 +3,11 @@
 #include "tools.h"
 #include "CRYPTO.h"
 #include "HIGHLEVEL_COMMAND_QUEUE.h"
-#include "PIPES_SERVER_POOL.h"
+#include "SERVICE.h"
+#include "FILE__LIST.h"
 
+struct MASTER_AGENT_PACKET_HEADER;
+struct MASTER_AGENT_PACKET_HEADER_event;
 
 
 
@@ -252,6 +255,8 @@ public:
 	void SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_12bit_header *scr_head_buf);
 	void SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_second(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf);
 
+	
+
 	int  READ(byte *buffer, int buffer_size);
 	void add_to_low_level_encoded_buffer(unsigned char *buf, unsigned int size);
 	void add_to_low_level_buffer(unsigned char *buf, int size);
@@ -270,6 +275,71 @@ public:
 	int responce_screen_in_queue = 0;
 
 	unsigned long long recv_counter = 0, send_counter = 0;
+
+	//**********************************************************
+
+	unsigned char *filefolder_part_buf = nullptr;
+	HANDLE       last_filefolder = 0;
+	unsigned int last_filefolder_start_from = 0;
+	unsigned long long filefolder_size = 0;
+	void request_filefolder_stat(unsigned char *buf);
+	void request_filefolder_part(unsigned char *in_buf);
+
+	void request_folder_content(unsigned char *buf);
+
+	void TRANSFER_from_SRV_to_CLI_CANCELED();
+
+	//**
+	//************************************************************************************************
+
+	//**********************************************************
+	FILE__LIST  FL_1;
+	wchar_t need_send_file_list_FOLDER_1[5100];
+	bool need_send_file_list_1 = false;
+
+	FILE__LIST  FL_2;
+	wchar_t need_send_file_list_FOLDER_2[5100];
+	bool need_send_file_list_2 = false;
+	//**********************************************************
+
+	void SEND_file_list_FROM_SERVER_to_CLIENT_1(wchar_t *need_request_files_list_DIR);
+	void SEND_file_list_FROM_SERVER_to_CLIENT_2(wchar_t *need_request_files_list_DIR);
+
+	//************************************************************************************************
+	//**
+	wchar_t *target_file_full_name = nullptr;
+	//wchar_t *tmp_file_full_name = nullptr;
+	HANDLE hFILE = 0;
+	DWORD  hFILE_time = 0; // GetTickCount() когда сшздали временный файл, нужно для TimeOut
+	unsigned long long  hFILE_writed_size = 0;
+	unsigned long long  target_file_size = 0;
+	unsigned long long  target_file_date = 0;
+	bool TRANSFER_FILE_ROUND_1(unsigned char *buf);
+	bool TRANSFER_FILE_ROUND_2(unsigned char *buf);
+	void TRANSFER_FILE_ROUND_cancel_transfer();
+	void FinishFile();
+	bool NEED_CREATE_FOLDER(unsigned char *buf);
+	//************************************************************************************************
+	//**
+	int NET_SERVER_SESSION_delete_status = 0;
+	int files_list_for_delete_size = 0;
+	wchar_t *files_list_for_delete = nullptr;
+	bool need_delete_files_list = false;
+	bool need_delete_files_list_CANCEL = false;
+	unsigned int files_list_for_delete_file_ID = 0;
+
+	void DELETE_FILE_LIST_cancel();
+	void DELETE_FILE_LIST(wchar_t *w, int sz, unsigned int file_ID);
+
+	bool delete_file_or_folder(wchar_t *name, int sz);
+	void delete_file_or_folder_send_intermediate(int val); // передадим промежуточную информацию. "мы не отвалились. процесс идет."
+	void delete_file_or_folder_send_FINISH();
+	unsigned int deleted_dirsfiles_count = 0;
+	bool my_deletedir(wchar_t *path, wchar_t *name);
+	bool my_deletefile(wchar_t *path, wchar_t *name);
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 	NET_SERVER_SESSION();
 	~NET_SERVER_SESSION();

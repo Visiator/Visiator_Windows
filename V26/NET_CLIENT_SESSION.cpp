@@ -93,7 +93,7 @@ void NET_CLIENT_SESSION::mouse_right_button_up(GUI_low_level *low_level, int mx,
 }
 void NET_CLIENT_SESSION::get_statistic(char *ss, int ss_max_size_) {
 
-	sprintf__s_ull_ull(ss, ss_max_size_, "rcv:%lld snd:%lld ", recv__counter, send__countern);
+	sprintf__s_ull_ull(ss, ss_max_size_, "rcv:%lld snd:%lld ", recv__counter, send__counter);
 
 }
 void NET_CLIENT_SESSION::mouse_move(GUI_low_level *low_level, int mx, int my) {
@@ -125,7 +125,7 @@ void NET_CLIENT_SESSION::EXECUTE() {
 
 	EXECUTE_is_run = true;
 
-	set_status(L"waiting for the partner_id");
+	set__status(L"waiting for the partner_id");
 
 	while (GLOBAL_STOP == false && local_stop == false) {
 
@@ -142,13 +142,13 @@ void NET_CLIENT_SESSION::EXECUTE() {
 
 			if (my_priv_id == 0) {
 
-				set_status(L"Get local id... ");
+				set__status(L"Get local id... ");
 
 				Load_private_id_and_public_id_from_USER_registry(&my_pub_id, &my_priv_id);
 
 				if (my_pub_id == 0) {
 
-					set_status(L"Register... ");
+					set__status(L"Register... ");
 
 					Register_new_partner_on_proxy();
 				}
@@ -157,20 +157,20 @@ void NET_CLIENT_SESSION::EXECUTE() {
 			if (my_priv_id != 0) {
 
 
-				set_status(L"Preparing to connect... ");
+				set__status(L"Preparing to connect...");
 				sudp("get_IP_for_server_location()...");
 				proxy_ip = get_IP_for_server_location(partner_id, my_pub_id, my_priv_id);
 
 				if (proxy_ip < 100) {
 					sudp("NCS IP not determine...");
-					set_status(L"IP not determine... ");
+					set__status(L"Partner not found");
 
 					my_Slip(3000);
 				}
 				else {
 					sudp("NCS IP determine Ok");
 
-					set_status(L"Connect... ");
+					set__status(L"Connect... ");
 
 					res = Connect_to_server( partner_id, my_pub_id, my_priv_id, partner_pass_encripted, proxy_ip);
 
@@ -182,7 +182,7 @@ void NET_CLIENT_SESSION::EXECUTE() {
 			}
 			else {
 
-				set_status(L"Connect error");
+				set__status(L"Connect error");
 
 				my_Slip(3000);
 			}
@@ -192,13 +192,13 @@ void NET_CLIENT_SESSION::EXECUTE() {
 
 		boost::this_thread::sleep(SleepTime);
 	}
-	set_status(L"stoped");
+	set__status(L"stoped");
 	EXECUTE_is_run = false;
 
 }
 
 
-void NET_CLIENT_SESSION::set_status(wchar_t *v) {
+void NET_CLIENT_SESSION::set__status(wchar_t *v) {
 	status = v;
 
 	if (parent_low_level != nullptr) parent_low_level->invalidate();
@@ -307,7 +307,7 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 		snd = 0;
 		do
 		{
-			snd = my_send(sos, (unsigned char *)bb, 128, 0, "", &send__countern);//ok
+			snd = my_send(sos, (unsigned char *)bb, 128, 0, "", &send__counter);//ok
 		} while (snd != 128);
 
 
@@ -334,6 +334,10 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 
 				SERVER_VER = s1005->srv_ver;
 
+				if (viewer != nullptr) {
+					viewer->set_SERVER_VER(SERVER_VER);
+				}
+
 				key_for_commit_connection = s1005->key;
 
 				//********************************************
@@ -348,7 +352,7 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 				aes_proxy.encrypt_16_byte(bb);
 				//********************************************
 
-				snd = my_send(sos, (unsigned char *)bb, 16, 0, "", &send__countern);//ok
+				snd = my_send(sos, (unsigned char *)bb, 16, 0, "", &send__counter);//ok
 
 				if (snd != 16) {
 
@@ -373,11 +377,11 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 					// прокси подтверждает, что мы установили соединение с партнером
 					sudp("Connected");
 
-					set_status(L"Connected");
+					set__status(L"Connected");
 
 					connection_to_partner_established = true;
 					if (SERVER_VER > 4000) {
-						need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver11;
+						need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver22;
 					}
 					else {
 						need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver11;
@@ -390,6 +394,8 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 					//send_udp("ClientConnect");
 
 					res = Client_Main_Loop(sos);
+
+					//set__status(L"Disconnected");
 
 					//send_udp("ClientDisconnect");
 
@@ -447,7 +453,7 @@ void NET_CLIENT_SESSION::set_partner_pass_and_id(uint64_t partner_id_, uint8_t *
 	sudp(ss);
 
 	partner_id = partner_id_;
-	set_status(L"partner_id received");
+	set__status(L"partner_id received");
 	partner_pass_and_id_is_set = true;
 }
 
@@ -465,7 +471,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 	bb = new unsigned char[500000]; //neew(50000, bb);
 
 	recv__counter = 0;
-	send__countern = 0;
+	send__counter = 0;
 
 	int res, res2, snd, z, zz;
 	MY_CRC crc;
@@ -530,7 +536,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 			int ss = 0;
 			while (ss < zz && GLOBAL_STOP == false) {
-				snd = my_send(sos, (cmd + ss), zz - ss, 0, "", &send__countern);
+				snd = my_send(sos, (cmd + ss), zz - ss, 0, "", &send__counter);
 				if (snd > 0) {
 					ss += snd;
 					//send__counter += snd; 
@@ -564,7 +570,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 			int ss = 0;
 			while (ss < zz && GLOBAL_STOP == false) {
-				snd = my_send(sos, (cmd + ss), zz - ss, 0, "", &send__countern);
+				snd = my_send(sos, (cmd + ss), zz - ss, 0, "", &send__counter);
 				if (snd > 0) {
 					ss += snd;
 					//send__counter += snd; 
@@ -619,7 +625,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 			int ss = 0;
 			while (ss < zz && GLOBAL_STOP == false) {
-				snd = my_send(sos, (cmd + ss), zz - ss, 0, "", &send__countern);
+				snd = my_send(sos, (cmd + ss), zz - ss, 0, "", &send__counter);
 				if (snd > 0) {
 					ss += snd;
 					//send__counter += snd; 
@@ -671,7 +677,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 			sudp("CLIENT send recuest screen...");
 
-			snd = my_send(sos, (unsigned char *)bb, 32, 0, "", &send__countern);
+			snd = my_send(sos, (unsigned char *)bb, 32, 0, "", &send__counter);
 			if (snd > 0) {
 				//send__counter += snd;
 				send__counter__time = GetTickCount();
@@ -722,7 +728,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 				int ss = 0;
 				while (ss < zz && GLOBAL_STOP == false) {
-					snd = my_send(sos, (cmd + ss), zz - ss, 0, "", &send__countern);
+					snd = my_send(sos, (cmd + ss), zz - ss, 0, "", &send__counter);
 					if (snd > 0) {
 						ss += snd;
 						//send__counter += snd; 
@@ -772,7 +778,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 			aes_partner.encrypt_stream(cmd, 32);
 
-			snd = my_send(sos, (unsigned char *)bb, 32, 0, "", &send__countern);
+			snd = my_send(sos, (unsigned char *)bb, 32, 0, "", &send__counter);
 			if (snd > 0) {
 				//send__counter += snd;
 				send__counter__time = GetTickCount();
@@ -787,7 +793,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 			int ss = 0;
 			while (ss < transfer_file_buffer_len && GLOBAL_STOP == false) {
-				snd = my_send(sos, (transfer_file_buffer + ss), transfer_file_buffer_len - ss, 0, "", &send__countern);
+				snd = my_send(sos, (transfer_file_buffer + ss), transfer_file_buffer_len - ss, 0, "", &send__counter);
 				if (snd > 0) {
 					ss += snd;
 					//send__counter += snd; 
@@ -805,7 +811,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 			unsigned int ss = 0;
 			while (ss < buf_tdn_len && GLOBAL_STOP == false) {
-				snd = my_send(sos, (buf_tdn + ss), buf_tdn_len - ss, 0, "", &send__countern);
+				snd = my_send(sos, (buf_tdn + ss), buf_tdn_len - ss, 0, "", &send__counter);
 				if (snd > 0) {
 					ss += snd;
 					//send__counter += snd; 
@@ -882,7 +888,7 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 
 				aes_partner.encrypt_stream((byte *)buffer, ss);
 
-				snd = my_big_send(sos, buffer, ss, &send__countern);
+				snd = my_big_send(sos, buffer, ss, &send__counter);
 
 				//send_udp("send_ events ", ss, vv, old_e_type );
 
@@ -904,9 +910,9 @@ int NET_CLIENT_SESSION::Client_Main_Loop(SOCKET sos) {
 	delete[] buffer;
 
 	if (recv__counter == 0) {
-
-		set_status(L"Password incorrect");
-
+		
+		set__status(L"Password incorrect");
+		
 		if (parent_low_level != nullptr) parent_low_level->invalidate();
 		return -1;
 	}
@@ -1077,7 +1083,11 @@ bool NET_CLIENT_SESSION::detect_full_command_in_to_low_level_buffer() {
 void NET_CLIENT_SESSION::analiz_command(unsigned char *buf) {
 
 
-
+	if (viewer != nullptr) {
+		if (viewer->view_mode == VIEW_MODE_NOCONNECT) {
+			viewer->change_view_mode(VIEW_MODE_STRETCH);
+		}
+	}
 	//2019+ ENCODED_SCREEN_8bit_header *header;
 
 

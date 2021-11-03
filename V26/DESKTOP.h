@@ -22,6 +22,9 @@ class DESKTOP
 {
 public:
 	unsigned long long PUBLIC_ID = 0, PRIVATE_ID = 0;
+	DWORD last_check_service_info = 0, last_update_service_info = 0;
+	SERVICE_INFO service_info;
+	int get_service_VISIATOR_status();
 
 	NET_SERVER_SESSION_POOL *net_server_session_pool = nullptr;
 	GUI *gui = nullptr;

@@ -2,10 +2,12 @@
 
 #include "AGENT.h"
 #include "APPLICATION_ATTRIBUTES.h"
-#include "PIPES_SERVER_POOL.h"
+#include "SERVICE.h"
+#include "TOTAL_CONTROL.h"
 
 extern APPLICATION_ATTRIBUTES app_attributes;
 extern bool GLOBAL_STOP;
+extern TOTAL_CONTROL *total_control;
 
 void zero_128_s(MASTER_AGENT_PACKET_HEADER *v);
 
@@ -23,11 +25,21 @@ void AGENT::RUN() {
 
 	app_attributes.is_agent = true;
 
+	is_run_MAIN_THREAD = true;
+
 	init_encode_color_matrix_all();
 
-	thread_EXECUTE_control = app_attributes.tgroup.create_thread( boost::bind(&AGENT::EXECUTE_control, this) );
+	/*
+	start_tread_PIPE_CONTROL(); void AGENT::PIPE_CONTROL_EXECUTE() 
+	start_tread_PIPE_READ_SERVICE_INFO(); PIPE_READ_SERVICE_INFO_EXECUTE()
+	start_tread_PIPE_SLAVE();  PIPE_SLAVE_EXECUTE_2()
+	*/
 
-	thread_EXECUTE_read_write = app_attributes.tgroup.create_thread( boost::bind(&AGENT::EXECUTE_read_write, this) );
+	thread_EXECUTE_control = app_attributes.tgroup.create_thread( boost::bind(&AGENT::EXECUTE_control, this) ); //  start_tread_PIPE_CONTROL(); void AGENT::PIPE_CONTROL_EXECUTE()
+	
+	thread_EXECUTE_read_service_info = app_attributes.tgroup.create_thread(boost::bind(&AGENT::EXECUTE_read_service_info, this)); // start_tread_PIPE_READ_SERVICE_INFO(); PIPE_READ_SERVICE_INFO_EXECUTE()
+
+	thread_EXECUTE_read_write = app_attributes.tgroup.create_thread( boost::bind(&AGENT::EXECUTE_read_write, this) ); // start_tread_PIPE_SLAVE();  PIPE_SLAVE_EXECUTE_2()
 	
 	boost::posix_time::milliseconds SleepTime(10);
 
@@ -38,15 +50,94 @@ void AGENT::RUN() {
 		boost::this_thread::sleep(SleepTime);
 	}
 
+	is_run_MAIN_THREAD = false;
 }
 
-void AGENT::EXECUTE_control() {
-	EXECUTE_control_is_run = true;
+void AGENT::EXECUTE_read_service_info() {
+	EXECUTE_read_service_info_is_run = true;
+
+	SERVICE_INFO service_info;
+	bool r;
+
+	DWORD last_read_service_info = 0;
+
+	last_detect_MASTER = GetTickCount();
+
+
 
 	boost::posix_time::milliseconds SleepTime(100);
 
 	while (GLOBAL_STOP == false) {
 
+		if (last_read_service_info + 500 < GetTickCount()) {
+
+
+			//if (my_FileExists("c:\\1\\a.txt") == false) {
+
+			pipe_handle_read_info_TIMEOUT = GetTickCount();
+
+			zero_unsigned_char((unsigned char *)&service_info, 128);
+
+			service_info.who_is_asked = IT_IS_agent;
+
+			r = read_service_info(&service_info, &pipe_handle_read_info_);
+
+			pipe_handle_read_info_TIMEOUT = 0;
+
+			if (r == true) {
+
+				//send_udp2("read_service_info() last_detect_MASTER");
+				last_detect_MASTER = GetTickCount();
+				total_control->AGENT_PIPE_READ_SERVICE_INFO_EXECUTE_master_detect_ok++;
+
+				last_read_service_info = GetTickCount();
+			}
+			else {
+				//send_udp2("read_service_info() fails");
+				total_control->AGENT_PIPE_READ_SERVICE_INFO_EXECUTE_master_detect_fail++;
+				boost::this_thread::sleep(SleepTime);
+			}
+
+			//};
+		};
+
+		if (last_detect_MASTER + 5000 < GetTickCount()) {
+			// 
+			sudp("MASTER is stoped? (b) GLOBAL_STOP = true");
+			set_GLOBAL_STOP_true();
+		}
+
+
+		boost::this_thread::sleep(SleepTime);
+	};
+
+	EXECUTE_read_service_info_is_run = false;
+}
+
+void AGENT::EXECUTE_control() {  // PIPE_CONTROL_EXECUTE()
+	EXECUTE_control_is_run = true;
+
+	DWORD dd;
+	dd = GetTickCount();
+
+
+	boost::posix_time::milliseconds SleepTime(100);
+
+	while (GLOBAL_STOP == false) {
+
+		if (dd + 500 < GetTickCount()) {
+			dd = GetTickCount();
+			total_control->send_udp_AGENT();
+
+		}
+
+		if (pipe_handle_read_info_TIMEOUT > 0) {
+			if (pipe_handle_read_info_TIMEOUT + 5000 < GetTickCount()) {
+				// мы не смогли получить ответ от MASTER-а . это фиаско
+				sudp("MASTER is stoped? (a) GLOBAL_STOP = true");
+				set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
+			}
+		}
 
 
 		boost::this_thread::sleep(SleepTime);
@@ -79,14 +170,11 @@ void AGENT::EXECUTE_read_write() {
 
 		err = GetLastError();
 
-		//send_udp("info open pipe_error ");
+		sudp("info open pipe_error $visiator_master$");
 
-		if (err == ERROR_ACCESS_DENIED) { //send_udp("ERROR_ACCESS_DENIED"); 
-		};
-		if (err == ERROR_PIPE_BUSY) { // send_udp("ERROR_PIPE_BUSY"); 
-		};
-		if (err == ERROR_FILE_NOT_FOUND) { // send_udp("ERROR_FILE_NOT_FOUND"); 
-		};
+		if (err == ERROR_ACCESS_DENIED) { sudp("ERROR_ACCESS_DENIED"); };
+		if (err == ERROR_PIPE_BUSY) {  sudp("ERROR_PIPE_BUSY"); };
+		if (err == ERROR_FILE_NOT_FOUND) { sudp("ERROR_FILE_NOT_FOUND"); };
 		pipe_AGENT = 0;
 
 		//send_udp("AGENT::PIPE_SLAVE_EXECUTE() open pipe error ! GLOBAL_STOP = true");
@@ -98,7 +186,7 @@ void AGENT::EXECUTE_read_write() {
 		return;
 	}
 	else {
-		//send_udp("AGENT::PIPE_SLAVE_EXECUTE_2() open pipe OK");
+		sudp("AGENT::PIPE_SLAVE_EXECUTE_2() open pipe OK $visiator_master$");
 	}
 
 

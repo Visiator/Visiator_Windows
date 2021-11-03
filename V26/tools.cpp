@@ -39,6 +39,96 @@ void fatal_error(char *s) {
 	fatal_error((const char *)s);
 }
 
+void USERLOGIN::set(wchar_t *name_, wchar_t *domain_) {
+	enter_crit(49);
+
+	if (name != NULL) delete[] name; 
+	name = new wchar_t[my_strlen(name_) + 1]; 
+	my_strcpy(name, name_);
+
+	if (domain != NULL) delete[] domain; 
+	domain = new wchar_t[my_strlen(domain_) + 1]; 
+	my_strcpy(domain, domain_);
+
+	leave_crit(49);
+}
+bool USERLOGIN::compare(wchar_t *n, wchar_t *d) {
+	if (n == NULL && name == NULL && d == NULL && domain == NULL) {
+		return true;
+	}
+
+	if (n == NULL && name != NULL) return false;
+	if (d == NULL && domain != NULL) return false;
+
+	if (n != NULL && name == NULL) return false;
+	if (d != NULL && domain == NULL) return false;
+
+	int i;
+
+	i = 0;
+	while (i < 20 && n[i] != 0 && name[i] != 0 && n[i] == name[i]) i++;
+	if (!(n[i] == 0 && name[i] == 0)) return false;
+
+	i = 0;
+	while (i < 20 && d[i] != 0 && domain[i] != 0 && d[i] == domain[i]) i++;
+	if (!(d[i] == 0 && domain[i] == 0)) return false;
+
+	return true;
+
+}
+USERLOGIN::USERLOGIN() {
+	name = NULL;
+	domain = NULL;
+}
+void USERLOGIN_LIST::add(wchar_t *name, wchar_t *domain) {
+	int i;
+	i = 0;
+	while (i < max_count && userlogin[i].name != NULL) {
+
+		if (userlogin[i].compare(name, domain) == true) {
+			return;
+		}
+
+		i++;
+	}
+	if (i < max_count) {
+		userlogin[i].set(name, domain);
+	}
+}
+int  USERLOGIN::copy_into_buffer(wchar_t *buf, int buf_max_size) {
+	int i, j;
+	i = 0;
+
+	j = 0;
+	if (domain != NULL) {
+		while (j < 20 && domain[j] != 0 && i < buf_max_size) {
+			buf[i++] = domain[j++];
+		}
+	}
+	if (i < buf_max_size) buf[i++] = '\\';
+	j = 0;
+	if (name != NULL) {
+		while (j < 20 && name[j] != 0 && i < buf_max_size) {
+			buf[i++] = name[j++];
+		}
+	}
+	if (i < buf_max_size) buf[i++] = 0;
+
+	return i;
+};
+void USERLOGIN_LIST::copy_into_buffer(wchar_t *buf, int buf_max_size) {
+	int i, j, k;
+	for (i = 0; i < buf_max_size; i++) buf[i] = 0;
+
+	i = 0;
+	j = 0;
+	k = userlogin[j].copy_into_buffer(buf + i, buf_max_size - i);
+
+}
+USERLOGIN_LIST::USERLOGIN_LIST() {
+	max_count = 50;
+}
+
 
 static CRITICAL_SECTION CS;
 int init_CS = 0;
@@ -4505,8 +4595,9 @@ void CMDLINE::decode(char *p) {
 }
 
 bool CMDLINE::first_param_is_ID() {
+	//sudp("first_param_is_ID...");
 	int i;
-	if (count < 1) return false;
+	if (count < 1) { return false; };
 	char *c;
 	c = param[0];
 	if (my_strlen((unsigned char *)c) == 9) {
@@ -5092,4 +5183,211 @@ void crash_log(const char *s) {
 	sudp("crash log ");
 	sudp((char *)s);
 
+}
+
+bool read_service_info(void *s_info, HANDLE *pipe) {
+
+	//sudp("read_service_info()...");
+
+	if (*pipe != 0) {
+		sudp("ERROR read_service_info() *pipe != 0");
+		return false;
+	}
+
+	//zero((void *)s_info, 128);
+
+	DWORD w, r, err;
+	BOOL x;
+
+	*pipe = CreateFile(L"\\\\.\\pipe\\$visiator_wsi$", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+	if (*pipe == INVALID_HANDLE_VALUE) {
+
+		err = GetLastError();
+
+		//sudp("info open pipe_error $visiator_wsi$");
+
+		//if (err == ERROR_ACCESS_DENIED) { send_udp("ERROR_ACCESS_DENIED"); };
+		//if (err == ERROR_PIPE_BUSY) { send_udp("ERROR_PIPE_BUSY"); };
+		//if (err == ERROR_FILE_NOT_FOUND) { send_udp("ERROR_FILE_NOT_FOUND"); };
+		*pipe = 0;
+		return false;
+	}
+
+	//sudp("CreateFile $visiator_wsi$ OK");
+
+	/*SERVICE_INFO *qq;
+
+	qq = (SERVICE_INFO *)s_info;
+
+	if (qq->who_is_asked == IT_IS_agent) {
+		send_udp2("read_service_info() write... 128 IT_IS_agent");
+	}
+	else {
+		send_udp2("read_service_info() write... 128 !(IT_IS_agent)");
+	}*/
+
+	//sudp("write... 128");
+	x = WriteFile(*pipe, s_info, 128, &w, NULL);
+	if (x == TRUE) {
+		//sudp("write true");
+	}
+	else {
+		//sudp("write false");
+	}
+	if (x == FALSE || w != 128) {
+		try {
+			close_pipe_handle(pipe, "error read service info 1");
+		}
+		catch (...) {};
+		return false;
+	};
+	r = 0;
+	//sudp("read... 128");
+	x = ReadFile(*pipe, s_info, 128, &r, NULL);
+	if (x == TRUE) {
+		//sudp("read true ");
+		if (r == 128) {
+			//sudp("read true 128");
+		}
+	}
+	else {
+		//sudp("read false ");
+	}
+	if (r != 128) {
+		try {
+			close_pipe_handle(pipe, "error read service info 2");
+		}
+		catch (...) {};
+		return false;
+	};
+
+	//sudp("close pipe... $visiator_wsi$");
+	close_pipe_handle(pipe, "");
+
+	return true;
+
+}
+
+wchar_t char_to_wc(unsigned char p) {
+	if (p == 0) return L'0';
+	if (p == 1) return L'1';
+	if (p == 2) return L'2';
+	if (p == 3) return L'3';
+	if (p == 4) return L'4';
+	if (p == 5) return L'5';
+	if (p == 6) return L'6';
+	if (p == 7) return L'7';
+	if (p == 8) return L'8';
+	if (p == 9) return L'9';
+	if (p == 10) return L'A';
+	if (p == 11) return L'B';
+	if (p == 12) return L'C';
+	if (p == 13) return L'D';
+	if (p == 14) return L'E';
+	if (p == 15) return L'F';
+
+	return L'?';
+}
+
+
+void RUN_VIEWER_EPASS(wchar_t *exe_file_name, wchar_t *ID, wchar_t *PASS, unsigned char *PASS_ENCR_16byte) {
+	if (ID == NULL) return;
+
+	//char id[255], pass[255], pp[2555];
+	//for (int i = 0; i < 255; i++) { id[i] = 0; pass[i] = 0; };
+
+	//WideCharToMultiByte(CP_ACP, 0, ID, -1, id, 50, NULL, NULL); // TODO 2019+ проверить как в других €зыках конверитуетс€ из wchar_t
+	//WideCharToMultiByte(CP_ACP, 0, PASS, -1, pass, 50, NULL, NULL); // TODO 2019+ проверить как в других €зыках конверитуетс€ из wchar_t
+
+	wchar_t cmd[5000];
+	for (int i = 0; i < 5000; i++) cmd[i] = 0;
+	my_strcpy(cmd, L"\"");
+	my_strcat(cmd, exe_file_name);
+	my_strcat(cmd, L"\" ");
+	my_strcat(cmd, ID);
+	my_strcat(cmd, L" ");
+	if (PASS == NULL || PASS[0] == 0) {
+		//my_strcat(cmd, L"E");
+	}
+	else {
+		my_strcat(cmd, PASS);
+	};
+
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+	ZeroMemory(&si, sizeof(STARTUPINFO));
+
+	int i, j; // , k
+
+	wchar_t env[5500], *q, *qq;
+	for (i = 0; i < 5500; i++) env[i] = 0;
+
+	i = 0;
+	q = GetEnvironmentStrings();
+	qq = q;
+	while (*q != 0 && i < 5000) {
+		env[i++] = *q++;
+		if (*q == 0) {
+			env[i++] = 0;
+			q++;
+			qq = q;
+		}
+	}
+
+	if (PASS_ENCR_16byte != NULL && PASS_ENCR_16byte[0] != 0) {
+
+		int a1, a2;
+
+		env[i++] = 'P';
+		env[i++] = 'R';
+		env[i++] = '=';
+		//my_strcat(env + i, L"PR=");
+		//i += 3;
+		for (j = 0; j < 16; j++) {
+			a1 = char_to_wc((PASS_ENCR_16byte[j] & 0xF0) >> 4);
+			a2 = char_to_wc(PASS_ENCR_16byte[j] & 0xF);
+
+			env[i++] = (wchar_t)a1;
+			env[i++] = (wchar_t)a2;
+		};
+	};
+
+
+
+	//si.hStdError = (HANDLE)0x1122aaff;
+
+
+	CreateProcess(NULL, cmd, NULL, NULL, FALSE, CREATE_UNICODE_ENVIRONMENT, env, NULL, &si, &pi);
+
+}
+
+
+bool is_bad_symbol_folder_name(wchar_t v) {
+	if (v == '/') return true;
+	//if (v == '\\') return true;
+	if (v == ':') return true;
+	if (v == '*') return true;
+	if (v == '?') return true;
+	if (v == '\"') return true;
+	if (v == '<') return true;
+	if (v == '>') return true;
+	if (v == '|') return true;
+	if (v > 0 && v < 32) return true;
+
+	return false;
+}
+bool is_bad_symbol_file_name(wchar_t v) {
+	if (v == '/') return true;
+	if (v == '\\') return true;
+	if (v == ':') return true;
+	if (v == '*') return true;
+	if (v == '?') return true;
+	if (v == '\"') return true;
+	if (v == '<') return true;
+	if (v == '>') return true;
+	if (v == '|') return true;
+	if (v > 0 && v < 32) return true;
+
+	return false;
 }

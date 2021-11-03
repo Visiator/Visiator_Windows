@@ -194,34 +194,7 @@ void FILE__LIST::add(wchar_t *name, bool is_folder_, unsigned long long size_, u
 		i++;
 	}
 }
-bool is_bad_symbol_folder_name(wchar_t v) {
-	if (v == '/') return true;
-	//if (v == '\\') return true;
-	if (v == ':') return true;
-	if (v == '*') return true;
-	if (v == '?') return true;
-	if (v == '\"') return true;
-	if (v == '<') return true;
-	if (v == '>') return true;
-	if (v == '|') return true;
-	if (v > 0 && v < 32) return true;
 
-	return false;
-}
-bool is_bad_symbol_file_name(wchar_t v) {
-	if (v == '/') return true;
-	if (v == '\\') return true;
-	if (v == ':') return true;
-	if (v == '*') return true;
-	if (v == '?') return true;
-	if (v == '\"') return true;
-	if (v == '<') return true;
-	if (v == '>') return true;
-	if (v == '|') return true;
-	if (v > 0 && v < 32) return true;
-
-	return false;
-}
 
 bool FILE__LIST::check_allowed_path(wchar_t *pt) {
 

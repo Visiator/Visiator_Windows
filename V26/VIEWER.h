@@ -178,6 +178,11 @@ public:
 
 	void RUN_VIEWER(uint8_t *partner_id, uint8_t *pass_encrypted, uint8_t *pass_no_encripted);
 
+	void change_screen_format(int new_format);
+	
+	int  SERVER_VER = 0;
+	void set_SERVER_VER(int new_SERVER_VER);
+
 	TRACKMOUSEEVENT tme;
 	void set_track(HWND hw);
 

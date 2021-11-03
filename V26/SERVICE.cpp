@@ -7,6 +7,7 @@
 #include "NET_SERVER_SESSION_POOL.h"
 #include "GUI_Element.h"
 #include "TOTAL_CONTROL.h"
+#include "KERNEL.h"
 
 extern bool GLOBAL_STOP;
 //extern ALL_THREAD_LIST thread_list;
@@ -27,6 +28,8 @@ HANDLE hServiceThread;
 
 DWORD ServiceExecutionThread(LPDWORD pp);
 bool UpdateServiceStatus(DWORD dwCurrentState, DWORD dwWin32ExitCode, DWORD dwServiceSpecificExitCode, DWORD dwCheckPoint, DWORD dwWaitHint);
+
+extern KERNEL kernel;
 
 void KillService(void)
 {
@@ -339,13 +342,15 @@ void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
 
 		if (last_check_agent + 5000 < GetTickCount()) {
 			
-			// 2021 CHECK_and_RUN_AGENT_AS_CONSOLE();
+			CHECK_and_RUN_AGENT_AS_CONSOLE(nullptr);
+			
 			last_check_agent = GetTickCount();
+			SET_last_agent_active("RUN_AGENT_AS_CONSOLE");
 		};
 		if (last_active_INDICATOR + 5000 < GetTickCount()) {
 			
 			CHECK_and_RUN_INDICATOR_AS_CONSOLE();
-			last_active_INDICATOR = GetTickCount();  sudp("last_active_INDICATOR detect (now running)");
+			last_active_INDICATOR = GetTickCount();  
 		};
 
 		if ( ll + 5000 < GetTickCount() ) {
@@ -441,22 +446,14 @@ void SERVICE::PIPE_CONTROL_THREAD_EXECUTE() {
 	sudp("CONTROL THREAD finish");
 	
 }
-DWORD SERVICE_PIPE_CONTROL_THREAD_executionThread(LPDWORD pp) {
 
-	try
-	{
-		service->PIPE_CONTROL_THREAD_EXECUTE();
-	}
-	catch (...) {
-		//crash_log("service->PIPE_CONTROL_THREAD_EXECUTE()");
-	};
-	//thread_list.th_finish();
-	return 0;
-}
 void SERVICE::start_PIPE_CONTROL_THREAD() {
 	HANDLE h;
 	DWORD id;
 	// 2021 09 h = my_Create_Thread(0, 0, (LPTHREAD_START_ROUTINE)SERVICE_PIPE_CONTROL_THREAD_executionThread, 0, 0, &id, "SERVICE::start_PIPE_CONTROL_THREAD()");
+
+	CONTROL_thread = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::PIPE_CONTROL_THREAD_EXECUTE, this));
+
 }
 // end
 
@@ -488,10 +485,10 @@ void SERVICE::PIPE_MASTER_THREAD_EXECUTE() {
 	*/
 	//*******************************************************************************************
 
-	//send_udp("PIPE_MASTER_THREAD_EXECUTE run thread");
+	sudp("PIPE_MASTER_THREAD_EXECUTE run thread");
 
 	
-	/*** 2021 09
+	/*** 2021 ??
 	is_run_PIPE_MASTER_THREAD = true;
 
 	SECURITY_DESCRIPTOR sd;
@@ -590,22 +587,14 @@ void SERVICE::PIPE_MASTER_THREAD_EXECUTE() {
 	***/
 }
 
-DWORD SERVICE_PIPE_MASTER_THREAD_executionThread(LPDWORD pp) {
 
-	try {
-		service->PIPE_MASTER_THREAD_EXECUTE();
-	}
-	catch (...) {
-		//crash_log("service->PIPE_MASTER_THREAD_EXECUTE()");
-	};
-	service->MASTER_THREAD_id = 0;
-	//thread_list.th_finish();
-	return 0;
-}
 void SERVICE::start_PIPE_MASTER_THREAD() {
-	HANDLE h;
 	
+	// HANDLE h;
 	// 2021 09 h = my_Create_Thread(0, 0, (LPTHREAD_START_ROUTINE)SERVICE_PIPE_MASTER_THREAD_executionThread, 0, 0, &MASTER_THREAD_id, "SERVICE::start_PIPE_MASTER_THREAD()");
+
+	PIPE_MASTER_EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::PIPE_MASTER_THREAD_EXECUTE, this));
+
 }
 // end
 
@@ -620,7 +609,7 @@ void SERVICE::reconnect_master_pipe() {
 // PIPE WRITE INFO
 void SERVICE::PIPE_WRITE_INFO_THREAD_EXECUTE() {
 	
-	/* 2021 09 
+	
 	is_run_PIPE_WRITE_INFO_THREAD = true;
 
 
@@ -649,12 +638,12 @@ void SERVICE::PIPE_WRITE_INFO_THREAD_EXECUTE() {
 		set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
 	};
 
-
-
+	boost::posix_time::milliseconds SleepTime_10ms(10);
+	
 
 	while (GLOBAL_STOP == false) {
 
-		total_control.SERVICE_PIPE_WRITE_INFO_THREAD_EXECUTE++;
+		total_control->SERVICE_PIPE_WRITE_INFO_THREAD_EXECUTE++;
 
 		//send_udp2("Connect wait...");
 
@@ -691,7 +680,8 @@ void SERVICE::PIPE_WRITE_INFO_THREAD_EXECUTE() {
 				else {
 					if (service_info.who_is_asked == IT_IS_indicator) {
 						
-						last_active_INDICATOR = GetTickCount(); send_udp2("last_active_INDICATOR detect 1");
+						last_active_INDICATOR = GetTickCount(); 
+						sudp("last_active_INDICATOR detect 1");
 
 						//if (service_info.INDICATOR_detect_clipboard_is_changed != 0) {
 						//	INDICATOR_SAY_clipboard_is_changed();
@@ -705,12 +695,12 @@ void SERVICE::PIPE_WRITE_INFO_THREAD_EXECUTE() {
 							//send_udp2("SERVICE::PIPE_WRITE_INFO_THREAD_EXECUTE() --- detect desktop activity !");
 						}
 						else {
-							send_udp2("SERVICE::PIPE_WRITE_INFO_THREAD_EXECUTE() --- ???");
+							sudp("SERVICE::PIPE_WRITE_INFO_THREAD_EXECUTE() --- ???");
 						}
 					}
 				}
 				
-				zero_void((void*)&service_info, 128);
+				zero_unsigned_char((unsigned char *)&service_info, 128);
 				get_service_info(&service_info);
 
 				//send_udp2("write info... 128 info");
@@ -741,7 +731,7 @@ void SERVICE::PIPE_WRITE_INFO_THREAD_EXECUTE() {
 				}
 			}
 			else {
-				send_udp2("r1 FALSEE");
+				sudp("r1 FALSEE");
 			}
 			//if (write_info_connect_TIMEOUT > 0) {
 				//write_info_connect_TIMEOUT = 0; //send_udp("write_info_connect_TIMEOUT = 0 (as)");
@@ -752,36 +742,26 @@ void SERVICE::PIPE_WRITE_INFO_THREAD_EXECUTE() {
 			//};
 		}
 		else {
-			send_udp2("SERVICE write info Connect error");
+			sudp("SERVICE write info Connect error");
 			
 		}
 
 
-		Sleep(1);
+		boost::this_thread::sleep(SleepTime_10ms);
 	}
 
 	is_run_PIPE_WRITE_INFO_THREAD = false;
 
-	send_udp2("SERVICE write info thread finish");
-	***/
+	sudp("SERVICE write info thread finish");
+	
 }
-DWORD SERVICE_PIPE_WRITE_INFO_THREAD_executionThread(LPDWORD pp) {
 
-	try
-	{
-		service->PIPE_WRITE_INFO_THREAD_EXECUTE();
-	}
-	catch (...) {
-		//crash_log("service->PIPE_WRITE_INFO_THREAD_EXECUTE()");
-	};
-	service->WRITE_INFO_THREAD_id = 0;
-	//thread_list.th_finish();
-	return 0;
-}
 void SERVICE::start_PIPE_WRITE_INFO_THREAD() {
 	
-	
-	// 2021 09 WRITE_INFO_THREAD_h = my_Create_Thread(0, 0, (LPTHREAD_START_ROUTINE)SERVICE_PIPE_WRITE_INFO_THREAD_executionThread, 0, 0, &WRITE_INFO_THREAD_id, "SERVICE::start_PIPE_WRITE_INFO_THREAD()");
+	boost::thread* PIPE_WRITE_INFO_THREAD_EXECUTE_thread;
+	PIPE_WRITE_INFO_THREAD_EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::PIPE_WRITE_INFO_THREAD_EXECUTE, this));
+
+	//WRITE_INFO_THREAD_h = my_Create_Thread(0, 0, (LPTHREAD_START_ROUTINE)SERVICE_PIPE_WRITE_INFO_THREAD_executionThread, 0, 0, &WRITE_INFO_THREAD_id, "SERVICE::start_PIPE_WRITE_INFO_THREAD()");
 }
 // end
 
@@ -807,9 +787,9 @@ void SERVICE::PIPE_INDICATOR_EXECUTE() {
 	*/
 	//********************************************************************************************************
 
-	/* 2021 09
+	
 
-	total_control.SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 1;
+	total_control->SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 1;
 
 	is_run_PIPE_INDICATOR_THREAD = true;
 
@@ -828,42 +808,46 @@ void SERVICE::PIPE_INDICATOR_EXECUTE() {
 
 	if (pipe_indicator == INVALID_HANDLE_VALUE) {
 		pipe_indicator = 0;
-		send_udp("pipe_indicator == INVALID_HANDLE_VALUE");
-		total_control.SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 2000;
+		sudp("pipe_indicator == INVALID_HANDLE_VALUE");
+		total_control->SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 2000;
 		set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
 	}
 	else {
-		total_control.SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 2; 
+		total_control->SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 2; 
 	}
 		
 		
-	
+	boost::posix_time::milliseconds SleepTime(10);
 
 	BOOL x;
 
 	while (GLOBAL_STOP == false) {
 
-		total_control.SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 3;
-		send_udp2("wait INDICATOR connect...");
+		last_active_INDICATOR = GetTickCount();  //send_udp2("last_active_INDICATOR detect 3");
+
+		total_control->SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 3;
+		sudp("wait INDICATOR connect... $visiator_indicator$");
 		x = ConnectNamedPipe(pipe_indicator, NULL);
-		send_udp2("INDICATOR connect DETECT!");
-		total_control.SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 4;
+		sudp("INDICATOR connect DETECT!");
+		total_control->SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 4;
+		
+		last_active_INDICATOR = GetTickCount();  sudp("last_active_INDICATOR set");
 
 		if (x == TRUE) {
 
 			set_MASTER_is_indicator_connected( true );
 
-			total_control.SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 5;
+			total_control->SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 5;
 
 			while (GLOBAL_STOP == false && MASTER_is_indicator_connected == true) {
-				Sleep(1);
+				boost::this_thread::sleep(SleepTime);
 			};
-			send_udp2("+++++++++++++++++++ 5->6");
-			total_control.SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 6;
+			sudp("+++++++++++++++++++ 5->6");
+			total_control->SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 6;
 
 			if (MASTER_is_indicator_connected == true) {
 
-				total_control.SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 7;
+				total_control->SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 7;
 
 				enter_crit(30);
 				set_MASTER_is_indicator_connected( false );
@@ -873,37 +857,26 @@ void SERVICE::PIPE_INDICATOR_EXECUTE() {
 
 				Disconnect_Named_Pipe(pipe_indicator, "p master 1");
 
-				total_control.SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 8;
+				total_control->SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status = 8;
 
 			}
 
 		};
 
-		Sleep(1);
+		boost::this_thread::sleep(SleepTime);
 	}
 
 	
 	is_run_PIPE_INDICATOR_THREAD = false;
 	
-	***/
+	
 }
-DWORD SERVICE_PIPE_INDICATOR_EXECUTE_executionThread(LPDWORD pp) {
 
-	try
-	{
-		service->PIPE_INDICATOR_EXECUTE();
-	}
-	catch (...) {
-		//crash_log("service->PIPE_INDICATOR_EXECUTE()");
-	};
-	service->PIPE_INDICATOR_THREAD_id = 0;
-	//thread_list.th_finish();
-	return 0;
-}
 void SERVICE::start_PIPE_INDICATOR_EXECUTE() {
 	
-	
-	// 2021 09 PIPE_INDICATOR_THREAD_handle = my_Create_Thread(0, 0, (LPTHREAD_START_ROUTINE)SERVICE_PIPE_INDICATOR_EXECUTE_executionThread, 0, 0, &PIPE_INDICATOR_THREAD_id, "SERVICE::start_PIPE_INDICATOR_EXECUTE()");
+
+	//PIPE_INDICATOR_THREAD_handle = my_Create_Thread(0, 0, (LPTHREAD_START_ROUTINE)SERVICE_PIPE_INDICATOR_EXECUTE_executionThread, 0, 0, &PIPE_INDICATOR_THREAD_id, "SERVICE::start_PIPE_INDICATOR_EXECUTE()");
+	INDICATOR_EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::PIPE_INDICATOR_EXECUTE, this));
 }
 
 void SERVICE::SEND_INFO_to_INDICATOR_EXECUTE() {
@@ -912,34 +885,29 @@ void SERVICE::SEND_INFO_to_INDICATOR_EXECUTE() {
 	char packet_send[550];
 	char packet_recv[550];
 
+	boost::posix_time::milliseconds SleepTime(500);
+
+
 	while (GLOBAL_STOP == false) {
 
 		if (MASTER_is_indicator_connected == true) {
 			SEND_INFO_to_INDICATOR(packet_send, packet_recv);
 		};
 
-		my_Slip(500);
+		boost::this_thread::sleep(SleepTime);
 	}
 
 	is_run_SEND_INFO_to_INDOCATOR_THREAD = false;
 }
 
-DWORD SERVICE_END_INFO_to_INDICATOR_EXECUTE_executionThread(LPDWORD pp) {
 
-	try {
-		service->SEND_INFO_to_INDICATOR_EXECUTE();
-	}
-	catch (...) {
-		//crash_log("service->SEND_INFO_to_INDICATOR_EXECUTE()");
-	};
-
-	//thread_list.th_finish();
-	return 0;
-}
 void SERVICE::start_SEND_INFO_to_INDICATOR_EXECUTE() {
 	HANDLE h;
 	DWORD id;
 	// 2021 09 	h = my_Create_Thread(0, 0, (LPTHREAD_START_ROUTINE)SERVICE_END_INFO_to_INDICATOR_EXECUTE_executionThread, 0, 0, &id, "SERVICE::start_SEND_INFO_to_INDICATOR_EXECUTE()");
+
+	SEND_INFO_to_INDICATOR_EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&SERVICE::SEND_INFO_to_INDICATOR_EXECUTE, this));
+
 }
 
 void SERVICE::get_service_info(SERVICE_INFO *service_info) {
@@ -1018,18 +986,6 @@ void SERVICE::INDICATOR_THREAD_EXECUTE() {
 	
 }
 
-DWORD SERVICE_INDICATOR_THREAD_executionThread(LPDWORD pp) {
-
-	try
-	{
-		service->INDICATOR_THREAD_EXECUTE();
-	}
-	catch (...) {
-		//crash_log("service->INDICATOR_THREAD_EXECUTE()");
-	}
-	//thread_list.th_finish();
-	return 0;
-}
 
 void SERVICE::start_INDICATOR_THREAD() {
 
@@ -1923,7 +1879,7 @@ bool SERVICE::interaction_with_agent_GET_CLIPBOARD(MASTER_AGENT_PACKET_HEADER *p
 */
 bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, ENCODED_SCREEN_8bit_header *scr_head_buf, SCREEN_LIGHT_one_byte *screen_light) {
 
-	sudp("SERVICE::interaction_with_agent_GET_SCREEN");
+	//sudp("SERVICE::interaction_with_agent_GET_SCREEN");
 
 	if (screen_light == NULL) return false;
 
@@ -2080,11 +2036,11 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 void SERVICE::SET_last_agent_active(char *info) {
 	last_agent_active = GetTickCount();
 	
-	// 2021 09 total_control.SERVICE_last_agent_active = last_agent_active;
+	total_control->SERVICE_last_agent_active = last_agent_active;
 
-	//char ss[100];
-	//sprintf_ s(ss, 90, "SET last_agent_active = GetTickCount(); %s ", info);
-	//send_udp2(ss);
+	/*char ss[100];
+	sprintf_s(ss, 90, "SET last_agent_active = GetTickCount(); %s ", info);
+	sudp(ss);*/
 	
 }
 void SERVICE::LOAD_ID_or_REGISTER() {
@@ -2161,7 +2117,7 @@ void SERVICE::SEND_INFO_to_INDICATOR(char *packet_send, char *packet_recv) {
 	
 	if (MASTER_is_indicator_connected == false) return;
 
-	//send_udp2("SEND_INFO_to_INDICATOR()...");
+	//sudp("SEND_INFO_to_INDICATOR()...");
 
 	
 
@@ -2795,31 +2751,7 @@ int ServiceInstallLocal()
 
 	return 0;
 }
-int get_service_VISIATOR_status() { // получим статус службы 0-не установлена, 1-установлена но не запущена, 2-запущена
-	int v;
-	v = SERVICE___CHECK_STATUS(strServiceName);
-	if (v < 0) { // нет прав?
-		return 0;
-	}
-	if (v == SERVICE_RUNNING) { return 2; }
-	if (v == SERVICE_STOPPED) { return 1; }
-	if (v == SERVICE_START_PENDING) { return 1; }
-	if (v == SERVICE_STOP_PENDING) { return 1; }
-	if (v == SERVICE_CONTINUE_PENDING) { return 1; }
-	if (v == SERVICE_PAUSE_PENDING) { return 1; }
-	if (v == SERVICE_PAUSED) { return 1; }
 
-	return 0;
-	/*
-	SERVICE_STOPPED	Служба является не работающей.
-	SERVICE_START_PENDING	Служба является запущенной.
-	SERVICE_STOP_PENDING	Служба является остановленной.
-	SERVICE_RUNNING	Служба является работающей.
-	SERVICE_CONTINUE_PENDING	Служба продолжает ожидать.
-	SERVICE_PAUSE_PENDING	Приостановленная служба является ожидающей.
-	SERVICE_PAUSED	Служба является приостановленной.
-	*/
-};
 void restart_service() {
 	
 	SERVICE___STOP(strServiceName);
@@ -2907,7 +2839,7 @@ void SERVICE::EXECUTE_main_MASTER_AGENT_reconnect() {
 	sa.bInheritHandle = TRUE;
 
 	if (MASTER_is_pipe_open == false) {
-		//send_udp("create master pipe...");
+		sudp("create pipe_MASTER $visiator_master$");
 
 		pipe_MASTER = CreateNamedPipe(L"\\\\.\\pipe\\$visiator_master$", PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, PIPE_TYPE_BYTE | PIPE_WAIT, 1, 1000000, 1000000, 500, &sa);// NMPWAIT_USE_DEFAULT_WAIT, NULL);
 
@@ -2917,28 +2849,31 @@ void SERVICE::EXECUTE_main_MASTER_AGENT_reconnect() {
 
 			set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
 		};
-		sudp("MASTER_is_pipe_open = true    <---------------------------------------------- ");
+		sudp("MASTER_is_pipe_open = true    <----- ");
 		pipe_MASTER_is_open = true;
+	}
+	else {
+		sudp("MASTER_is_pipe_open == true");
 	}
 
 	BOOL x;
 
 
-	boost::posix_time::milliseconds SleepTime(10);
+	boost::posix_time::milliseconds SleepTime_10ms(100);
 
 	while (GLOBAL_STOP == false) {
 
 
-		sudp("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     MASTER pipe connect...");
+		sudp("~~~     MASTER pipe connect...");
 
 		x = ConnectNamedPipe(pipe_MASTER, NULL);
 
-		//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 2;
+		total_control->SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 2;
 
 		if (x == TRUE) {
 			sudp("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~     MASTER_is_agent_connected = true");
 
-			//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 3;
+			total_control->SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 3;
 
 			SET_last_agent_active("connect MASTER");
 
@@ -2946,18 +2881,18 @@ void SERVICE::EXECUTE_main_MASTER_AGENT_reconnect() {
 
 			while (GLOBAL_STOP == false && MASTER_is_agent_connected == true) {
 
-				//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_2++;
+				total_control->SERVICE_PIPE_MASTER_THREAD_EXECUTE_2++;
 
-				//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 4;
+				total_control->SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 4;
 
-				boost::this_thread::sleep(SleepTime);
+				boost::this_thread::sleep(SleepTime_10ms);
 			};
 
-			//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 5;
+			total_control->SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 5;
 
 			if (MASTER_is_agent_connected == true) {
 
-				//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 6;
+				total_control->SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 6;
 
 				enter_crit(29);
 				MASTER_is_agent_connected = false;
@@ -2967,17 +2902,20 @@ void SERVICE::EXECUTE_main_MASTER_AGENT_reconnect() {
 
 				Disconnect_Named_Pipe(pipe_MASTER, "p master 1");
 
-				//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 7;
+				total_control->SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 7;
 
 			}
 
-		};
+		}
+		else {
+			sudp("x == FALSE");
+		}
 
-		//total_control.SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 8;
+		total_control->SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 8;
 
-		sudp("master 4    <----------------------------------------------");
-		boost::this_thread::sleep(SleepTime);
-		sudp("master 100    <----------------------------------------------");
+		sudp("master 4    <----");
+		boost::this_thread::sleep(SleepTime_10ms);
+		sudp("master 100    <----");
 
 		
 	}
@@ -3213,5 +3151,65 @@ void SERVICE_DEINSTALL() {
 			t--;
 		}
 	};
+
+}
+
+void zero_128_s(MASTER_AGENT_PACKET_HEADER *v) {
+	v->packet_size = 0;
+	v->packet_type = 0;
+	for (int i = 0; i < 128; i++) {
+		v->reserv[i] = 0;
+	}
+}
+
+void SERVICE::CHECK_and_RUN_AGENT_AS_CONSOLE(wchar_t *user_for_attach_session) {
+	//char ss[500];
+
+	if (last_agent_active + 5000 > GetTickCount()) { 		return; 	}
+
+	//sprintf_ s(ss, 490, "CHECK_and_RUN_AGENT_AS_CONSOLE()  pid=%d last_agent_active=%d ", app_attributes.agent_process_id, service->last_agent_active );
+	//send_udp(ss);
+
+	sudp("KILL_AGENT()");
+
+	KILL_AGENT();
+
+	sudp("RUN_AGENT_AS_CONSOLE()");
+
+	RUN_AGENT_AS_CONSOLE(user_for_attach_session);
+
+
+};
+
+void SERVICE::RUN_AGENT_AS_CONSOLE(wchar_t *user_for_attach_session) {
+
+	sudp("RUN_AGENT_AS_CONSOLE()... :");
+	//sudp(user_for_attach_session);
+
+	reconnect_master_pipe();
+
+	DWORD pid;
+
+	pid = 0;
+
+	if (user_for_attach_session != nullptr && user_for_attach_session[0] != 0) {
+		pid = kernel.scan_explorer_pid_by_user_name( user_for_attach_session);
+	}
+
+	if (pid == 0) {
+		pid = kernel.scan_winlogon_pid_for_active_session();
+	}
+
+
+
+	if (pid != 0) {
+		//send_udp("winlogon_pid = ", pid);
+		app_attributes.agent_process_id = kernel.my_spawnl(pid, app_attributes.my_exe_file_name, L"agent");
+		//sprintf_ s(ss,90,"SET winlogon_pid=%d agent_process_id=%d ", pid, app_attributes.agent_process_id);
+		//send_udp2(ss);
+	}
+	else {
+		//send_udp2("RUN_AGENT_AS_CONSOLE pid == 0 error");
+	}
 
 }

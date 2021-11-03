@@ -25,6 +25,9 @@ extern VIEWER  *viewer;
 #define MY_MENU_SEND_F1 123352
 #define MY_MENU_SYNC_CLIPBOARD 123353
 #define MY_MENU_TRANSFER_FILE 123354
+#define MY_MENU_SCREEN_FORMAT_8BIT 123355
+#define MY_MENU_SCREEN_FORMAT_12BIT 123356
+
 
 LRESULT CALLBACK MainWinProcViewer(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
 void _callback__arrived_screen(unsigned char *buf, int buf_size, unsigned int _FORMAT_VER);
@@ -56,12 +59,15 @@ void VIEWER::init_gui_VIEWER() {
 	//if (gui == nullptr) gui = new GUI();
 
 	//VIS = gui->add_element(nullptr, GUI_ELEMENT_panel, 52, 17, 141, 26);
+	wchar_t wid[100];
+	for (int i = 0; i < 100; i++) wid[i] = 0;
+	generate_ID_to_text(wid, partner_id);
 
 	gui_viewer = gui->add_element(GUI_Element_Type_viewer, 0, 0, 0, 0, 0);
 	//gui_viewer->set_font(0);
 	gui_viewer->screen_light_from_server_fullsize = screen_light_from_server_fullsize;
 	gui_viewer->screen_light_from_server_resized = screen_light_from_server_resized;
-
+	gui_viewer->set_text(wid);
 
 	gui_viewer_small_top_panel = gui->add_element(GUI_Element_Type_viewer_small_top_panel, 200, 20, 60, 25, 0xffff00);
 	gui_viewer_small_top_panel->is_visible = false;
@@ -100,11 +106,16 @@ void VIEWER::RUN_VIEWER(uint8_t *str_partner_id_, uint8_t *pass_encrypted_length
 
 
 	if (str_partner_id_ == NULL || str_partner_id_[0] == 0) {
+		sudp("RUN_VIEWER() finish 1");
 		return;
 	}
 	if ((pass_encrypted_length32_ == NULL || pass_encrypted_length32_[0] == 0) && (pass_no_encrypted_length32_ == NULL || pass_no_encrypted_length32_[0] == 0) ) {
+		sudp("RUN_VIEWER() finish 2");
 		return;
 	}
+	
+	sudp("RUN_VIEWER() 3");
+
 	init_decode_color2();
 
 
@@ -184,6 +195,9 @@ void VIEWER::RUN_VIEWER(uint8_t *str_partner_id_, uint8_t *pass_encrypted_length
 
 	h_system_menu = GetSystemMenu(app_attributes.viewer_window_hwnd, FALSE);
 
+	AppendMenu(h_system_menu, MF_SEPARATOR, 0, L"");
+	AppendMenu(h_system_menu, MF_STRING | MF_CHECKED, MY_MENU_SCREEN_FORMAT_8BIT, L"Screen format - 8bit");
+	AppendMenu(h_system_menu, MF_STRING, MY_MENU_SCREEN_FORMAT_12BIT, L"Screen format - 12bit");
 	AppendMenu(h_system_menu, MF_SEPARATOR, 0, L"");
 	AppendMenu(h_system_menu, MF_STRING, MY_MENU_GET_CLIPBOARD, L"Get clipboard");
 	AppendMenu(h_system_menu, MF_STRING, MY_MENU_SET_CLIPBOARD, L"Send clipboard");
@@ -408,7 +422,7 @@ LRESULT VIEWER::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 	if (small_top_panel == nullptr) { small_top_panel = new VIEWER_small_top_panel(this); }
 
-	EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&VIEWER::EXECUTE, this));
+	
 
 	if (net_client_session == nullptr) {
 		net_client_session = new NET_CLIENT_SESSION();
@@ -425,6 +439,8 @@ LRESULT VIEWER::WM_CREATE_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		//net_client_session->start_EXECUTE(low_level, partner_id, prepare_pass);
 	}
 
+	EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&VIEWER::EXECUTE, this));
+
 	return TRUE;
 	//return DefWindowProc(hw, msg, wp, lp);
 };
@@ -438,7 +454,7 @@ void VIEWER::change_view_mode(int p) {
 	step3_size_h = 0; step3_size_w = 0;
 	delta_x = 0; delta_y = 0;
 
-
+	
 
 	if (p == VIEW_MODE_STRETCH) {
 		//view_mode = VIEW_MODE_STRETCH;
@@ -473,7 +489,9 @@ void VIEWER::change_view_mode(int p) {
 			return;
 		}
 	}
-
+	if (p == VIEW_MODE_NOCONNECT) {
+		return;
+	}
 	change_view_mode(VIEW_MODE_STRETCH);
 
 }
@@ -920,6 +938,12 @@ LRESULT VIEWER::WM_SYSCOMMAND_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		viewer->transfer_dialog_use();
 	}
 
+	if ((int)wp == MY_MENU_SCREEN_FORMAT_12BIT) {
+		viewer->change_screen_format(MY_MENU_SCREEN_FORMAT_8BIT);
+	}
+	if ((int)wp == MY_MENU_SCREEN_FORMAT_8BIT) {
+		viewer->change_screen_format(MY_MENU_SCREEN_FORMAT_12BIT);
+	}
 
 	/*if ((int)wp == MY_MENU_NORMAL) {
 		viewer->change_view_mode(0);
@@ -1015,7 +1039,7 @@ LRESULT VIEWER::WM_PAINT_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 	ww[0] = 'S';
 	ww[1] = 0;
 	if (net_client_session != nullptr) {
-		sprintf_s(ww, 450, " r=%lld s=%lld ", net_client_session->recv__counter, net_client_session->send__countern);
+		sprintf_s(ww, 450, " r=%lld s=%lld ", net_client_session->recv__counter, net_client_session->send__counter);
 	}
 	
 	gui->low_level->paint_text(0, 50 - 1, 50 - 1, 500, 30, ww, 0, 0, -1);
@@ -1329,7 +1353,7 @@ void VIEWER::EXECUTE() {
 void VIEWER::callback__connect() {
 	connect_ok = true;
 	//set_view_mode(VIEW_MODE_STRETCH);
-	change_view_mode(VIEW_MODE_STRETCH);
+	//change_view_mode(VIEW_MODE_STRETCH);
 }
 void VIEWER::callback__disconnect() {
 	connect_ok = false;
@@ -1901,5 +1925,31 @@ void VIEWER::start_ASYNC_LOAD_EXECUTE() {
 
 	ASYNC_LOAD_EXECUTE_thread = app_attributes.tgroup.create_thread(boost::bind(&VIEWER::ASYNC_LOAD_EXECUTE, this));
 
+
+}
+
+void VIEWER::change_screen_format(int new_format) {
+	if (new_format == MY_MENU_SCREEN_FORMAT_12BIT) {
+		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_8BIT, MF_STRING | MF_CHECKED, MY_MENU_SCREEN_FORMAT_8BIT, L"Screen format - 8bit");
+		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_12BIT, MF_STRING, MY_MENU_SCREEN_FORMAT_12BIT, L"Screen format - 12bit");
+	}
+	else {
+		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_8BIT, MF_STRING, MY_MENU_SCREEN_FORMAT_8BIT, L"Screen format - 8bit");
+		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_12BIT, MF_STRING | MF_CHECKED, MY_MENU_SCREEN_FORMAT_12BIT, L"Screen format - 12bit");
+
+	};
+	
+
+}
+
+void VIEWER::set_SERVER_VER(int new_SERVER_VER) {
+	SERVER_VER = new_SERVER_VER;
+
+	if (SERVER_VER > 4000) {
+
+	}
+	else {
+		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_12BIT, MF_STRING | MF_DISABLED, MY_MENU_SCREEN_FORMAT_12BIT, L"Screen format - 12bit");
+	}
 
 }

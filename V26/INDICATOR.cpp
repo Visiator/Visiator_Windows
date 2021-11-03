@@ -55,8 +55,17 @@ void NOTIFY_ICON::set(HWND hw, int icon_idx, unsigned long long service_id) {
 		last_set_icon_idx = icon_idx;
 		last_set_service_id = service_id;
 
+		char iids[50], infos[50];
+		zero_unsigned_char((unsigned char *)iids, 50);
+
+		generate_ID_to_text(iids, service_id);
+		sprintf_s(infos, "NOTIFY_ICON::set() VISIATOR %s", iids);
+		sudp(infos);
+
+
 		wchar_t iid[50], info[50];
 		zero_wchar_t(iid, 50);
+
 		if (service_id != 0) {
 			generate_ID_to_text(iid, service_id);
 			my_strcpy(info, L"VISIATOR ");
@@ -66,6 +75,8 @@ void NOTIFY_ICON::set(HWND hw, int icon_idx, unsigned long long service_id) {
 		else {
 			my_strcpy(info, L"VISIATOR");
 		}
+
+		sudp(infos);
 
 		//void generate_ID_to_text(wchar_t *txt_, unsigned long long local_id_);
 
@@ -365,8 +376,8 @@ void INDICATOR::WM_TIMER_(HWND hw) {
 		}
 		
 	}
-
 	*/
+	
 
 	
 
@@ -467,14 +478,14 @@ void INDICATOR::PIPE_SLAVE_EXECUTE() {
 	packet_send = (MASTER_AGENT_PACKET_HEADER *)w_buf_1;
 
 	is_run_indicator_PIPE_SLAVE = true;
-
+	//sudp("INDICATOR - connect... $visiator_indicator$");
 	indicator_pipe_handle_SLAVE = CreateFile(L"\\\\.\\pipe\\$visiator_indicator$", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
 	if (indicator_pipe_handle_SLAVE == INVALID_HANDLE_VALUE) {
 
 		err = GetLastError();
 
-		sudp("info open pipe_error ");
+		sudp("info open pipe_error $visiator_indicator$");
 
 		if (err == ERROR_ACCESS_DENIED) { sudp("ERROR_ACCESS_DENIED"); };
 		if (err == ERROR_PIPE_BUSY) { sudp("ERROR_PIPE_BUSY"); };
@@ -491,6 +502,7 @@ void INDICATOR::PIPE_SLAVE_EXECUTE() {
 		return;
 	}
 
+	//sudp("INDICATOR - connect OK $visiator_indicator$");
 
 	bool x;
 	DWORD r, w;
@@ -501,6 +513,8 @@ void INDICATOR::PIPE_SLAVE_EXECUTE() {
 		zero_unsigned_char((unsigned char *)r_buf_1, sizeof_MASTER_AGENT_PACKET_HEADER);
 
 		PIPE_SLAVE_Timeout = GetTickCount();
+
+		//sudp("INDICATOR - read() 128 ... $visiator_indicator$");
 
 		r = 0;
 		x = read_pipe( indicator_pipe_handle_SLAVE, r_buf_1, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_SLAVE_pipe_indicator_TIMEOUT, "i02");
@@ -719,6 +733,8 @@ void INDICATOR::INDICATOR_PIPE_CONTROL_THREAD_EXECUTE() {
 
 	is_run_CONTROL = true;
 
+	boost::posix_time::milliseconds SleepTime(500);
+
 	while (GLOBAL_STOP == false) {
 
 		if (PIPE_SLAVE_Timeout != 0 &&
@@ -731,7 +747,7 @@ void INDICATOR::INDICATOR_PIPE_CONTROL_THREAD_EXECUTE() {
 
 		}
 
-		my_Slip(500);
+		boost::this_thread::sleep(SleepTime);
 	}
 
 	is_run_CONTROL = false;

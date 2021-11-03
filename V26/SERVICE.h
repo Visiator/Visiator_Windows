@@ -9,7 +9,7 @@
 #include <stdio.h>
 #undef _WINSOCKAPI_
 
-#include "PIPES_SERVER_POOL.h"
+//#include "PIPES_SERVER_POOL.h"
 
 #define packet_type_PING_MASTER_to_AGENT 100
 #define packet_type_REQUEST_SCREEN_one_byte 101
@@ -29,13 +29,36 @@
 #define sizeof_MASTER_AGENT_PACKET_HEADER 128
 #define sizeof_ENCODED_SCREEN_8bit_header 84
 
+struct MASTER_AGENT_PACKET_HEADER
+{
+	unsigned int packet_size;
+	unsigned int packet_type;
+	char reserv[128];
+
+};
+
+struct MASTER_AGENT_PACKET_HEADER_event
+{
+	int session_no;
+	unsigned int event_type;
+	int global_type;
+	//+12
+	unsigned long long msg, wparam, lparam;
+	//+24
+
+	//=36
+};
+
+
+void zero_128_s(MASTER_AGENT_PACKET_HEADER *v);
+
 class GUI_element;
 class NET_SERVER_SESSION;
 class NET_SERVER_SESSION_POOL;
 class SCREEN_LIGHT_one_byte;
 struct ENCODED_SCREEN_8bit_header;
 
-int get_service_VISIATOR_status();
+
 int SERVICE___CHECK_STATUS(wchar_t *service_name);
 
 int  ServiceUnInstallLocal();
@@ -73,7 +96,7 @@ public:
 
 	NET_SERVER_SESSION_POOL *net_server_session_pool = nullptr;
 
-	PIPES_SERVER_POOL *pipes_server_pool = nullptr;
+	//PIPES_SERVER_POOL *pipes_server_pool = nullptr;
 
 	bool is_sync_clipboards = false; // нужно автоматически снхронизировать clipboard между сервером и клиентом (или не нужно)
 
@@ -135,32 +158,19 @@ public:
 	void  set_interaction_with_INDICATOR_TIMEOUT(int val);
 	
 
-	void PIPE_MASTER_THREAD_EXECUTE();                               // Создаем PIPE для связи с AGENT.Ждем когда подключится AGENT.Выставляем флаг - MASTER_is_agent_connected
-	DWORD MASTER_THREAD_id = 0;
-	void start_PIPE_MASTER_THREAD();
-	void reconnect_master_pipe();
-	//-------------------------------------------------------
-	// indicator pipe
-	void PIPE_INDICATOR_EXECUTE();                                  // Создаем PIPE для связи с INDICATOR.Ждем подключения клиента.Когда клиент подключился, выставляем флаг - MASTER_is_indicator_connected
-	DWORD PIPE_INDICATOR_THREAD_id = 0;
-	void start_PIPE_INDICATOR_EXECUTE();
+	
+	
 
 
-	void SEND_INFO_to_INDICATOR_EXECUTE();                           // 2 раза в секунду передаем в INDICATOR текущий статус SERVICE
-	void start_SEND_INFO_to_INDICATOR_EXECUTE();
 
 
 	//-------------------------------------------------------
 	// write info pipe
-	void PIPE_WRITE_INFO_THREAD_EXECUTE();
+	
 	HANDLE PIPE_INDICATOR_THREAD_handle = 0;
-	DWORD WRITE_INFO_THREAD_id = 0;
+	DWORD  WRITE_INFO_THREAD_id = 0;
 	HANDLE WRITE_INFO_THREAD_h = 0;
-	void start_PIPE_WRITE_INFO_THREAD();
-	//-------------------------------------------------------
-	// control
-	void PIPE_CONTROL_THREAD_EXECUTE();
-	void start_PIPE_CONTROL_THREAD();
+	
 	//-------------------------------------------------------
 	
 	//*******************************************************
@@ -239,12 +249,44 @@ public:
 	bool interaction_with_agent_PING();
 	int SERVICE_interaction_with_agent_PING_try = 0;
 	int SERVICE_interaction_with_agent_PING_ok  = 0;
-	
+
+	//-------------------------------------------------------
+	// control
+	boost::thread* CONTROL_thread = nullptr;
+	void PIPE_CONTROL_THREAD_EXECUTE();
+	void start_PIPE_CONTROL_THREAD();
+
+
+	// indicator pipe
+	boost::thread* PIPE_INDICATOR_EXECUTE_thread = nullptr;
+	void PIPE_INDICATOR_EXECUTE();                                  // Создаем PIPE для связи с INDICATOR.Ждем подключения клиента.Когда клиент подключился, выставляем флаг - MASTER_is_indicator_connected
+	void start_PIPE_INDICATOR_EXECUTE();
+
+
+	boost::thread* SEND_INFO_to_INDICATOR_EXECUTE_thread = nullptr;
+	void SEND_INFO_to_INDICATOR_EXECUTE();                           // 2 раза в секунду передаем в INDICATOR текущий статус SERVICE
+	void start_SEND_INFO_to_INDICATOR_EXECUTE();
+
+
+	boost::thread* PIPE_MASTER_EXECUTE_thread;
+	void PIPE_MASTER_THREAD_EXECUTE();                               // Создаем PIPE для связи с AGENT.Ждем когда подключится AGENT.Выставляем флаг - MASTER_is_agent_connected
+	DWORD MASTER_THREAD_id = 0;
+	void start_PIPE_MASTER_THREAD();
+	void reconnect_master_pipe();
+	//-------------------------------------------------------
+
+	boost::thread* PIPE_WRITE_INFO_THREAD_EXECUTE_thread;
+	void PIPE_WRITE_INFO_THREAD_EXECUTE();
+	void start_PIPE_WRITE_INFO_THREAD();
+	//-------------------------------------------------------
 
 	char *packet_send_event = NULL, *packet_recv_event = NULL;
 	void send_event_in_to_session(int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam);
 
 	void send_unpress_all_pressed_keys();
+
+	void RUN_AGENT_AS_CONSOLE(wchar_t *user_for_attach_session);
+	void CHECK_and_RUN_AGENT_AS_CONSOLE(wchar_t *user_for_attach_session);
 
 	SERVICE();
 };

@@ -7,7 +7,7 @@
 
 extern APPLICATION_ATTRIBUTES app_attributes;
 
-//bool GetLogonFromToken(HANDLE hToken, wchar_t *user, wchar_t *domain, USERLOGIN_LIST *userlogin_list);
+bool GetLogonFromToken(HANDLE hToken, wchar_t *user, wchar_t *domain, USERLOGIN_LIST *userlogin_list);
 
 
 
@@ -77,7 +77,7 @@ DWORD KERNEL::scan_explorer_pid_for_active_session(void) {
 	return 0;
 }
 
-/*
+
 DWORD KERNEL::scan_explorer_pid_by_user_name(wchar_t *user_name) {
 
 	if (user_name == nullptr) return 0;
@@ -139,7 +139,7 @@ DWORD KERNEL::scan_explorer_pid_by_user_name(wchar_t *user_name) {
 	return 0;
 
 };
-*/
+
 
 DWORD KERNEL::scan_winlogon_pid_for_active_session(void) {
 
@@ -837,7 +837,7 @@ DWORD KERNEL::get_conhost_exe_by_time_create(DWORD parent_pid) {//, DWORD *keyb,
 
 }
 
-/*
+
 bool GetLogonFromToken(HANDLE hToken, wchar_t *user, wchar_t *domain, USERLOGIN_LIST *userlogin_list) {
 
 	for (int i = 0; i < 1000; i++) { user[i] = 0; domain[i] = 0; }
@@ -895,7 +895,7 @@ bool GetLogonFromToken(HANDLE hToken, wchar_t *user, wchar_t *domain, USERLOGIN_
 	}
 	return true;
 }
-*/
+
 
 /*
 void KERNEL::scan_user_list(USERLOGIN_LIST *userlogin_list) {

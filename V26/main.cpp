@@ -42,7 +42,7 @@ void test_b12();
 void WinMain_finish();
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-
+	unsigned char id[32], ps[32], pse[32];// , *ps_encr;
 	//using namespace boost::lambda;
 
 	init_crit_section();
@@ -59,7 +59,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	
 	load_fonts();
 
-	test_b12();
+	//test_b12();
 
 	total_control = new TOTAL_CONTROL();
 	total_control->start_EXECUTE();
@@ -103,10 +103,42 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	}
 
 
+	
+
+	if ((cmd_line.count == 1 && cmd_line.first_param_is_ID() == true)) {
+		sudp("run");
+		
+		zero_unsigned_char(id, 32);
+		zero_unsigned_char(ps, 32);
+		zero_unsigned_char(pse, 32);
+		
+		my_strcpy(id, (unsigned char *)cmd_line.get_param_by_no(0));
+
+		viewer = new VIEWER();
+		viewer->RUN_VIEWER(id, app_attributes.startup_parametr_PASS_ENCR, ps);
+
+		return 0;
+	};
+	if ((cmd_line.count == 2 && cmd_line.first_param_is_ID() == true)) {
+		sudp("run");
+
+		zero_unsigned_char(id, 32);
+		zero_unsigned_char(ps, 32);
+		zero_unsigned_char(pse, 32);
+
+		my_strcpy(id, (unsigned char *)cmd_line.get_param_by_no(0));
+		my_strcpy(ps, (unsigned char *)cmd_line.get_param_by_no(1));
+
+		viewer = new VIEWER();
+		viewer->RUN_VIEWER(id, pse, ps);
+
+		return 0;
+	};
 	if ((cmd_line.count == 3 && cmd_line.compare_param_by_no(0, "viewer") == true)) {
 
-		unsigned char id[32], ps[32], pse[32];// , *ps_encr;
 		
+		zero_unsigned_char(id, 32);
+		zero_unsigned_char(ps, 32);
 		zero_unsigned_char(pse, 32);
 
 		my_strcpy(id, (unsigned char *)cmd_line.get_param_by_no(1));
@@ -147,7 +179,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		return 0;
 	}
 
-	//==========================================================================================================
+	// ==========================================================================================================
 	// SERVICE
 
 	if (app_attributes.is_service) {
@@ -163,7 +195,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	};
 
 	
-	if (cmd_line.count == 1 && cmd_line.compare_param_by_no(0, "servicedeinstall")) {
+	if ( cmd_line.count == 1 && ( cmd_line.compare_param_by_no(0, "servicedeinstall") || cmd_line.compare_param_by_no(0, "uninstall") )
+		) 
+	{
 		SERVICE_DEINSTALL();
 		return 0;
 	};
@@ -320,12 +354,12 @@ void SCREEN_LIGHT_12bit::load_from_BMP_buffer(BYTE *buf, SCREEN_LIGHT_12bit *b12
 
 void test_b12() {
 
-	SCREEN_LIGHT_12bit *b12;
+	//SCREEN_LIGHT_12bit *b12;
 
-	b12 = new SCREEN_LIGHT_12bit();
+	//b12 = new SCREEN_LIGHT_12bit();
 
 	////////////////////////////////////////////////////////////////////////////
-
+	/*
 	BYTE *b;
 	b = new BYTE[35000000];
 	FILE *f;
@@ -336,14 +370,14 @@ void test_b12() {
 	j = fread(b, 1, 35000000, f);
 
 	fclose(f);
-
+	*/
 	//b12->load_from_BMP_buffer(b, b12);
 
 
 
 //	b12->encode();
 
-	delete[] b;
+	//delete[] b;
 
 	////////////////////////////////////////////////////////////////////////////
 

@@ -43,10 +43,10 @@ public:
 	unsigned int SERVER_VER = 0;
 
 	std::wstring status;
-	void set_status(wchar_t *v);
+	void set__status(wchar_t *v);
 	GUI_low_level *parent_low_level = nullptr;
 	MY_AES aes_partner;
-	uint64_t recv__counter = 0, send__countern = 0;
+	uint64_t recv__counter = 0, send__counter = 0;
 
 	bool need_start_sendCLIPBOARD_to_server = false;
 	bool need_start_requestCLIPBOARD_from_server = false;

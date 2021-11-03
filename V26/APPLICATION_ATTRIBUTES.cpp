@@ -67,6 +67,11 @@ void APPLICATION_ATTRIBUTES::get_all_parametrs(HINSTANCE hInstance_) {
 		set_startup_paramert_pr(pr);
 	};
 	
+	GetEnvironmentVariable(L"RO", pr, 5500);
+	if (pr[0] != 0) {
+		//send_udp2( "PR=", pr);
+		set_startup_paramert_ro(pr);
+	};
 
 }
 
@@ -191,12 +196,20 @@ void APPLICATION_ATTRIBUTES::getRealWindowsVersion()
 }
 
 void APPLICATION_ATTRIBUTES::set_startup_paramert_pr(wchar_t *p) {
-	//send_udp2("set_startup_paramert_pr");
+	sudp("set_startup_paramert_pr");
 	//send_udp2(p);
 	hexstr_to_char16_w(p, startup_parametr_PASS_ENCR);
 }
 void APPLICATION_ATTRIBUTES::set_service_public_id(unsigned long long val) {
+
 	service_public_id = val;
+
+	char x[500], xx[500];
+	generate_ID_to_text( x, service_public_id);
+	sprintf_s(xx, 450, "APPLICATION_ATTRIBUTES::set_service_public_id( %s )", x);
+	sudp(xx);
+
+	
 	if (gui_service_public_id != nullptr) {
 		wchar_t ss[500];
 		generate_ID_to_text(ss, service_public_id);
@@ -205,4 +218,12 @@ void APPLICATION_ATTRIBUTES::set_service_public_id(unsigned long long val) {
 }
 void APPLICATION_ATTRIBUTES::set_service_private_id(unsigned long long val) {
 	service_private_id = val;
+}
+
+void APPLICATION_ATTRIBUTES::set_startup_paramert_ro(wchar_t *p) {
+	sudp("set_startup_paramert_ro");
+	//sudp(p);
+	if (p != nullptr && p[0] != 0 && p[0] != '0') {
+		startup_parametr_ReadOnly = true;
+	};
 }

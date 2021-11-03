@@ -69,9 +69,6 @@
     <ClCompile Include="SERVICE.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PIPES_SERVER_POOL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AGENT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -183,9 +180,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SERVICE.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PIPES_SERVER_POOL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AGENT.h">

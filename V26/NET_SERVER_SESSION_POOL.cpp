@@ -26,7 +26,9 @@ void NET_SERVER_SESSION_POOL::RUN(unsigned long long PUBLIC_ID_, unsigned long l
 
 void NET_SERVER_SESSION_POOL::EXECUTE() {
 	
-	NET_SERVER_SESSION *n;
+	NET_SERVER_SESSION *n, *nn;
+	std::list <NET_SERVER_SESSION>::iterator it, end;
+	int i, j, k;
 
 	EXECUTE_is_run = true;
 
@@ -36,6 +38,25 @@ void NET_SERVER_SESSION_POOL::EXECUTE() {
 	n->RUN(PUBLIC_ID, PRIVATE_ID, PASS_ENCODED);
 
 	while (GLOBAL_STOP == false) {
+
+		i = 0;
+		j = 0;
+		k = 0;
+		for (it = elements.begin(), end = elements.end(); it != end; ++it)
+		{
+			if (it->need_start_screenflow_count == 0) {
+				j++;
+			}
+			if (it->main_loop_is_strated == false) {
+				k++;
+			}
+			i++;
+		};
+		if (i < 5 && j == 0) {
+			sudp("create new session");
+			nn = add_element();
+			nn->RUN(PUBLIC_ID, PRIVATE_ID, PASS_ENCODED);
+		}
 
 		boost::this_thread::sleep(SleepTime);
 	}

@@ -4,6 +4,12 @@
 //
 #define IDI_ICON1                       101
 #define IDI_ICON2                       102
+
+#define IDI_ICON_disable                103
+#define IDI_ICON_ready                  104
+#define IDI_ICON_active                 105
+#define IDI_ICON_stop                   106
+
 #define IDB__BMP__main_panel            10001
 #define IDB__BMP__krest_black           10002
 #define IDB__BMP__krest_blue            10003

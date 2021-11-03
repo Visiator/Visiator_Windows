@@ -316,6 +316,7 @@ void NET_SERVER_SESSION::Connect_to_proxy_as_server(unsigned long long public_id
 						try {
 							sudp("NSS start Main_Loop (1)");
 							NetSession_Main_Loop(sos);
+							need_start_screenflow_count = 0;
 							sudp("NSS end   Main_Loop (1)");
 						}
 						catch (...) {
@@ -435,6 +436,8 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 
 	main_loop_is_strated = true;
 
+	need_start_screenflow_count = 0;
+
 	//DWORD LastSendScreen_into_Client = 0;
 	DWORD last_send_heartbeat, tc;
 	last_send_heartbeat = GetTickCount() + 3000;
@@ -451,7 +454,7 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 		if (res > 0) { // arrived
 
 			//recv_counter += res;
-			sudp("READ");
+			//sudp("READ");
 			READ(bb, res);
 
 		}
@@ -463,22 +466,22 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 			local_stop = true;
 		}
 
-		/*** 2021 09 
+		
 		if (need_send_file_list_1 == true) {
-			send_udp2("[[0000]] DETECT  need_send_file_list_1 == true");
+			//send_udp2("[[0000]] DETECT  need_send_file_list_1 == true");
 			SEND_file_list_FROM_SERVER_to_CLIENT_1(need_send_file_list_FOLDER_1);
-			send_udp2("[[6666]] need_send_file_list_1 = false");
+			//send_udp2("[[6666]] need_send_file_list_1 = false");
 			need_send_file_list_1 = false;
 		}
 		if (need_send_file_list_2 == true) {
-			send_udp2(L"[[0000]] DETECT  need_send_file_list_2 == true ", need_send_file_list_FOLDER_2);
+			//send_udp2(L"[[0000]] DETECT  need_send_file_list_2 == true ", need_send_file_list_FOLDER_2);
 
 			SEND_file_list_FROM_SERVER_to_CLIENT_2(need_send_file_list_FOLDER_2);
 
-			send_udp2("[[6666]] need_send_file_list_2 = false");
+			//send_udp2("[[6666]] need_send_file_list_2 = false");
 			need_send_file_list_2 = false;
 		}
-		if (need_request_CLIPBOARD == true) {
+		/*** 2021 if (need_request_CLIPBOARD == true) {
 			need_request_CLIPBOARD = false;
 
 			try {
@@ -488,9 +491,9 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 			catch (...) {
 				crash_log("NET_SERVER_SESSION::NetSession_Main_Loop() SEND_CLIPBOARD_FROM_SERVER_to_CLIENT()");
 			}
-			send_udp2("SERVICE::get_clipboard_from_session [[7]]");
-		};
-		***/
+			//send_udp2("SERVICE::get_clipboard_from_session [[7]]");
+		};***/
+		
 
 		if (need_start_screenflow == true) {
 
@@ -558,7 +561,7 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 				tt == PACKET_TYPE_responce_screen_ver33
 
 				) {
-				sudp("sss begin");
+				//sudp("sss begin");
 
 			};
 
@@ -595,7 +598,7 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 				tt == PACKET_TYPE_responce_screen_ver33
 
 				) {
-				sudp("sss end");
+				//sudp("sss end");
 
 				if (responce_screen_in_queue > 0) {
 					enter_crit(20);
@@ -829,7 +832,7 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 
 	//ALOG("type = %X (%d) ", *type, *type );
 
-	/*** 2021 09
+	
 	if (*type == PACKET_TYPE_TRANSFER_from_SRV_to_CLI_CANCELED) {
 		//send_udp2(L"*type == PACKET_TYPE_TRANSFER_CANCELED");
 		TRANSFER_from_SRV_to_CLI_CANCELED();
@@ -838,21 +841,21 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 	}
 
 	if (*type == PACKET_TYPE_request_filefolder_part) {
-		send_udp2(L"*type == PACKET_TYPE_request_filefolder_part");
+		//send_udp2(L"*type == PACKET_TYPE_request_filefolder_part");
 		request_filefolder_part(buf);
 
 		return;
 	}
 
 	if (*type == PACKET_TYPE_request_filefolder_stat) {
-		send_udp2(L"*type == PACKET_TYPE_request_filefolder_stat");
+		//send_udp2(L"*type == PACKET_TYPE_request_filefolder_stat");
 		request_filefolder_stat(buf);
 
 		return;
 	}
 
 	if (*type == PACKET_TYPE_need_delete_files_list_CANCEL) {
-		send_udp2(L"*type == PACKET_TYPE_need_delete_files_list_CANCEL");
+		//send_udp2(L"*type == PACKET_TYPE_need_delete_files_list_CANCEL");
 		DELETE_FILE_LIST_cancel();
 
 		return;
@@ -861,8 +864,8 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 	if (*type == PACKET_TYPE_need_delete_files_list) {
 		wchar_t *w;
 		w = (wchar_t *)&buf[32];
-		send_udp2(L"PACKET_TYPE_need_delete_files_list ", w);
-		send_udp2("*sz - 32 = ", *sz - 32);
+		//send_udp2(L"PACKET_TYPE_need_delete_files_list ", w);
+		//send_udp2("*sz - 32 = ", *sz - 32);
 		unsigned int file_ID, *ii;
 
 		ii = (unsigned int *)&buf[16];
@@ -874,7 +877,7 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 	}
 
 	if (*type == PACKET_TYPE_transfer_file_ROUND_1_cancel_transfer) {
-		send_udp2("PACKET_TYPE_transfer_file_ROUND_1_cancel_transfer");
+		//send_udp2("PACKET_TYPE_transfer_file_ROUND_1_cancel_transfer");
 
 		TRANSFER_FILE_ROUND_cancel_transfer();
 
@@ -882,8 +885,8 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 	};
 
 	if (*type == PACKET_TYPE_transfer_file_ROUND_1) {
-		send_udp2("DETECT PACKET_TYPE_transfer_file_ROUND_1");
-		send_udp2((wchar_t *)&buf[40]);
+		//send_udp2("DETECT PACKET_TYPE_transfer_file_ROUND_1");
+		//send_udp2((wchar_t *)&buf[40]);
 
 		TRANSFER_FILE_ROUND_1(buf);
 
@@ -891,11 +894,11 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 	};
 
 	if (*type == PACKET_TYPE_transfer_file_ROUND_2) {
-		send_udp2("DETECT PACKET_TYPE_transfer_file_ROUND_2");
+		//send_udp2("DETECT PACKET_TYPE_transfer_file_ROUND_2");
 
 		if (TRANSFER_FILE_ROUND_2(buf) == false) {
-			send_udp2("TRANSFER_FILE_ROUND_2(buf) == false");
-			send_udp2("ss_need_disconnect = true (2)");
+			//send_udp2("TRANSFER_FILE_ROUND_2(buf) == false");
+			//send_udp2("ss_need_disconnect = true (2)");
 			ss_need_disconnect = true;
 		}
 
@@ -904,8 +907,8 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 
 	if (*type == PACKET_TYPE_need_create_folder) {
 
-		send_udp2("DETECT PACKET_TYPE_need_create_folder");
-		send_udp2((wchar_t *)&buf[16]);
+		//send_udp2("DETECT PACKET_TYPE_need_create_folder");
+		//send_udp2((wchar_t *)&buf[16]);
 
 		NEED_CREATE_FOLDER(buf);
 
@@ -919,7 +922,7 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 
 		ww = (wchar_t *)&(buf[16]);
 
-		send_udp2(ww);
+		//send_udp2(ww);
 
 		need_send_file_list_FOLDER_1[0] = 0;
 		int i;
@@ -931,7 +934,7 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 		}
 		need_send_file_list_FOLDER_1[i] = 0;
 
-		send_udp2("~~~~~~~~~~~~~~~~~~~~~ > > need_send_file_list_1 = true");
+		//send_udp2("~~~~~~~~~~~~~~~~~~~~~ > > need_send_file_list_1 = true");
 
 		need_send_file_list_1 = true;
 
@@ -945,7 +948,7 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 
 		ww = (wchar_t *)&(buf[24]);
 
-		send_udp2(L"*type == PACKET_TYPE_request_file_list_2", ww);
+		//send_udp2(L"*type == PACKET_TYPE_request_file_list_2", ww);
 
 		need_send_file_list_FOLDER_2[0] = 0;
 		int i;
@@ -957,13 +960,13 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 		}
 		need_send_file_list_FOLDER_2[i] = 0;
 
-		send_udp2("~~~~~~~~~~~~~~~~~~~~~ > > need_send_file_list_2 = true");
+		//send_udp2("~~~~~~~~~~~~~~~~~~~~~ > > need_send_file_list_2 = true");
 
 		need_send_file_list_2 = true;
 
 		return;
 	};
-	***/
+	
 
 	if ( *type == PACKET_TYPE_request_start_screenflow_ver11 ||
 		 *type == PACKET_TYPE_request_start_screenflow_ver22 ||
@@ -1450,5 +1453,930 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_second(MASTER_AG
 	else {
 		need_start_screenflow = false;
 	}
+
+}
+
+void NET_SERVER_SESSION::TRANSFER_from_SRV_to_CLI_CANCELED() {
+	CloseHandle(last_filefolder);
+	last_filefolder = 0;
+	last_filefolder_start_from = 0;
+	sudp("CloseHandle(last_filefolder)");
+}
+
+void NET_SERVER_SESSION::request_filefolder_stat(unsigned char *in_buf) {
+
+
+
+	unsigned char *out_buf;
+
+	unsigned int *sz, *crc, *type, *file_ID_, file_ID, *is_folder__;
+
+	sz = (unsigned int *)&(in_buf[0]);
+	crc = (unsigned int *)&(in_buf[4]);
+	type = (unsigned int *)&(in_buf[8]);
+	file_ID_ = (unsigned int *)&(in_buf[16]);
+
+	file_ID = *file_ID_;
+
+	if (last_filefolder != 0) {
+		fatal_error( "request_filefolder_stat() last_filefolder != 0");
+		sudp("ss_need_disconnect = true (6)");
+		ss_need_disconnect = true;
+		return;
+	}
+	if (last_filefolder_start_from != 0) {
+		fatal_error( "request_filefolder_stat() last_filefolder_start_from != 0");
+		sudp("ss_need_disconnect = true (7)");
+		ss_need_disconnect = true;
+		return;
+	}
+
+
+	wchar_t name[5100];
+	zero_wchar_t(name, 5100);
+	int i, j, k;
+
+	my_strcpy(name, L"C:\\VISIATOR_FILES\\");
+
+	j = (*sz - 20) / 2;
+
+	wchar_t *w;
+	w = (wchar_t *)&(in_buf[20]);
+	i = 0;
+	k = 18;
+	while (k < 5000 && i < j && w[i] != 0) {
+		name[k++] = w[i++];
+
+	}
+	name[k] = 0;
+
+
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	//~~ TODO определяем реквизиты файла
+	unsigned long long f_size_, f_date_, *ll;
+	unsigned int is_folder_; // 1-folder; 2-file; 3-not found; 4-access deny
+
+	f_size_ = 0;
+	f_date_ = 0;
+
+	//sudp("QQQQ ", name);
+
+	if (my_DirectoryExists(name)) {
+		is_folder_ = 1;
+		//sudp(L"is_folder_ = 1", name);
+	}
+	else {
+		if (my_FileExists(name)) {
+
+			is_folder_ = 2;
+			//send_udp2(L"is_folder_ = 2", name);
+			GetFileAttributes_(name, &f_size_, &f_date_);
+			filefolder_size = f_size_;
+			last_filefolder = CreateFile(name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+			last_filefolder_start_from = 0;
+			//send_udp2(L"last_filefolder = CreateFile()", name);
+			if (last_filefolder == INVALID_HANDLE_VALUE) {
+				is_folder_ = 4;
+				last_filefolder = 0;
+
+				//send_udp2(L"is_folder_ = 4 ~~~~~~~~~~~~~~~~~~~ last_filefolder=0", name);
+			}
+			else {
+				//send_udp2(L"last_filefolder = CreateFile( READ )", name);
+			}
+		}
+		else {
+			is_folder_ = 3;
+			//send_udp2(L"is_folder_ = 3", name);
+		}
+	}
+
+	//send_udp2(L"name=", name, is_folder_);
+
+
+
+
+
+	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	out_buf = new unsigned char[64];
+
+	zero_unsigned_char(out_buf, 64);
+
+	sz = (unsigned int *)&(out_buf[0]);
+	crc = (unsigned int *)&(out_buf[4]);
+	type = (unsigned int *)&(out_buf[8]);
+	file_ID_ = (unsigned int *)&(out_buf[16]);
+	is_folder__ = (unsigned int *)&(out_buf[20]);
+	ll = (unsigned long long *)&(out_buf[24]);
+
+	*sz = 64;
+	*type = PACKET_TYPE_responce_filefolder_stat;
+	*file_ID_ = file_ID;
+
+	*is_folder__ = is_folder_;
+	*ll = f_size_;
+	ll++;
+	*ll = f_date_;
+
+	aes_partner.encrypt_stream(out_buf, 64);
+
+	if (out_queue_command.add_element_low_level(PACKET_TYPE_responce_filefolder_stat, 0, out_buf, 64) == false) {
+
+	}
+	else {
+
+	}
+
+}
+
+void NET_SERVER_SESSION::DELETE_FILE_LIST_cancel() {
+	need_delete_files_list_CANCEL = true;
+}
+
+void NET_SERVER_SESSION::DELETE_FILE_LIST(wchar_t *w, int sz, unsigned int file_ID) {
+
+	if (need_delete_files_list != false) { // мы еще не закончили удалять файлы по старому списку, а нам уже прислали новый
+		return;
+	};
+
+	if (files_list_for_delete != nullptr) {
+		delete[] files_list_for_delete;
+		files_list_for_delete = nullptr;
+	};
+	files_list_for_delete_size = sz + 16;
+	files_list_for_delete = new wchar_t[files_list_for_delete_size];
+
+
+	files_list_for_delete[0] = 0;
+	files_list_for_delete[1] = 0;
+	int i;
+
+	//send_udp2(L"DELETE_FILE_LIST() w = ", w);
+
+	for (i = 0; i < sz; i++) {
+		files_list_for_delete[i] = w[i];
+	};
+	//send_udp2("DELETE_FILE_LIST() i = ", i);
+	//send_udp2(L"_files_list_for_delete = ", files_list_for_delete);
+	files_list_for_delete[i++] = 0;
+	files_list_for_delete[i] = 0;
+
+	files_list_for_delete_file_ID = file_ID;
+
+	need_delete_files_list = true;
+
+
+}
+
+void NET_SERVER_SESSION::TRANSFER_FILE_ROUND_cancel_transfer() {
+	if (hFILE != 0) {
+		//send_udp2(L"TRANSFER_FILE_ROUND_cancel_transfer()", target_file_full_name);
+		CloseHandle(hFILE);
+		hFILE = 0;
+		int i = 0;
+		while (i < 5 && my_FileExists(target_file_full_name)) {
+			if (i > 0) ::Sleep(500);
+			DeleteFile(target_file_full_name);
+			i++;
+		};
+	};
+
+	target_file_full_name[0] = 0;
+
+}
+
+bool NET_SERVER_SESSION::TRANSFER_FILE_ROUND_1(unsigned char *buf_) {
+
+	wchar_t *w;
+	unsigned long long *iii, FileSize, FileDate;
+	unsigned int *ii, file_ID, ss, *allow_overwrite_;
+	int i, j;
+
+	ii = (unsigned int *)&buf_[0];
+	ss = *ii;
+
+	ii = (unsigned int *)&buf_[16];
+	file_ID = *ii;
+
+	iii = (unsigned long long *)&buf_[20];
+	FileSize = *iii;
+	iii = (unsigned long long *)&buf_[28];
+	FileDate = *iii;
+
+	allow_overwrite_ = (unsigned int *)&buf_[36];
+
+	if (ss < 48) {
+		fatal_error("NET_SERVER_SESSION::TRANSFER_FILE_ROUND_1 ss < 48");
+		//send_udp2("ss_need_disconnect = true (8)");
+		ss_need_disconnect = true;
+
+		return false;
+	}
+
+	w = (wchar_t *)&buf_[40];
+
+
+	if (target_file_full_name == nullptr) target_file_full_name = new wchar_t[5100];
+
+	my_strcpy(target_file_full_name, L"C:\\VISIATOR_FILES");
+
+	if (my_DirectoryExists(target_file_full_name) == false) {
+		CreateDirectory(target_file_full_name, nullptr);
+	}
+
+	wchar_t dir[5100];
+	zero_wchar_t(dir, 5100);
+
+	i = 0;
+	j = 0;
+	while (i < 5000) {
+		if (i * 2 > ss - 40) {
+			fatal_error("NET_SERVER_SESSION::TRANSFER_FILE_ROUND_1 i * 2 > ss - 36 !");// , i, ss);
+			//send_udp2("ss_need_disconnect = true (9)");
+			ss_need_disconnect = true;
+			return false;
+		}
+
+		//target_file_full_name[i + 18] = w[i];
+		if (w[i] == '\\' || w[i] == 0) {
+			if ((dir[0] == '.' && dir[1] == 0) ||
+				(dir[0] == '.' && dir[1] == '.')) {
+				fatal_error("NET_SERVER_SESSION::TRANSFER_FILE_ROUND_1 . || ..");
+				//send_udp2("ss_need_disconnect = true (10)");
+				ss_need_disconnect = true;
+				return false;
+			}
+
+
+
+			my_strcat_s( target_file_full_name, 5000, L"\\");
+			my_strcat_s(target_file_full_name, 5000, dir);
+
+			//send_udp2(dir);
+
+			dir[0] = 0;
+			j = 0;
+			if (w[i] == 0) break;
+		}
+		else {
+			if (is_bad_symbol_folder_name(w[i]) == true) { // TEST
+				fatal_error("NET_SERVER_SESSION::TRANSFER_FILE_ROUND_1 is_bad_symbol_folder_name ");// , (int)w[i]);
+				//send_udp2("ss_need_disconnect = true (11)");
+				ss_need_disconnect = true;
+				return false;
+			}
+			dir[j++] = w[i];
+			dir[j] = 0;
+		};
+		i++;
+	}
+
+
+	//send_udp2(target_file_full_name);
+
+
+	bool r = true;
+
+	if (hFILE != 0) { // нас просят начать получение нового файла, а мы еще со старым не закончили. 
+		fatal_error("hFILE != 0");
+		//send_udp2("ss_need_disconnect = true (12)");
+		ss_need_disconnect = true;
+		return false;
+	}
+
+	unsigned long long _fs, _dt;
+	int _result_ = 0;
+	_fs = -1;
+	_dt = -1;
+
+	if (_result_ == 0) {
+		if (*allow_overwrite_ == 0 && my_FileExists(target_file_full_name)) {
+			_result_ = ROUND_1_RESULT_ERR_target_file_already_exists; // файл, который нас просят создат, уже существует. нужно запросить пользователя SKIP/OVERWRITE/CANCEL
+			_fs = -1;
+			_dt = -1;
+			GetFileAttributes_(target_file_full_name, &_fs, &_dt);
+
+		};
+	}
+
+	if (_result_ == 0) { // создаем файл
+
+		if (*allow_overwrite_ == 1) { // Разрешено заменять файл при его наличии
+			if (my_FileExists(target_file_full_name)) {
+				DeleteFile(target_file_full_name);
+			}
+		}
+		//send_udp2(L"CreateFile ", target_file_full_name);
+		hFILE = CreateFile(target_file_full_name, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+		if (hFILE == INVALID_HANDLE_VALUE) {
+			_result_ = ROUND_1_RESULT_ERR_fatal;
+			hFILE_time = 0;
+		}
+		else {
+			hFILE_time = GetTickCount();
+
+			hFILE_writed_size = 0;
+			target_file_size = FileSize;
+			target_file_date = FileDate;
+
+			if (target_file_size == 0) {
+				FinishFile();
+				_result_ = ROUND_1_RESULT_OK_target_file_finish_ZEROSIZE;
+				//send_udp2(L"ROUND_1_RESULT_OK_target_file_finish_ZEROSIZE");
+			}
+			else {
+				_result_ = ROUND_1_RESULT_OK_target_file_created;
+				//send_udp2(L"ROUND_1_RESULT_OK_target_file_created");
+			}
+
+		};
+	};
+	//need_disconnect = true;
+
+	// r = TODO ()
+	// тут вся работа по созданию временного файла
+
+	//my_FileExists()
+
+	unsigned int *sz, *crc, *sol, *type, *GID, *result;
+	unsigned long long *vvv;
+
+	int buf_size = 48;
+	unsigned char *sndd;
+
+	sndd = new unsigned char[48];
+	zero_unsigned_char(sndd, 48);
+
+	sz = (unsigned int *)&(sndd[0]);
+	crc = (unsigned int *)&(sndd[4]);
+	type = (unsigned int *)&(sndd[8]);
+	sol = (unsigned int *)&(sndd[12]);
+	GID = (unsigned int *)&(sndd[16]);
+	result = (unsigned int *)&(sndd[20]);
+	vvv = (unsigned long long *)&(sndd[24]);
+
+	*sz = 48;
+	*crc = 0;
+	*type = PACKET_TYPE_transfer_file_ROUND_1_commit;
+	*sol = get_sol();
+	*GID = file_ID;
+	*result = _result_;
+	*vvv = _fs;
+	vvv++;
+	*vvv = _dt;
+
+	aes_partner.encrypt_stream(sndd, 48);
+
+	// 100003
+	if (out_queue_command.add_element_low_level(PACKET_TYPE_transfer_file_ROUND_1_commit, 0, sndd, 48) == false) {
+		//send_udp2("+1-------");
+	}
+	else {
+		//send_udp2("-1++++++++");
+	}
+
+	return true;
+}
+
+bool NET_SERVER_SESSION::TRANSFER_FILE_ROUND_2(unsigned char *buf_) {
+
+	unsigned int *sz, *crc, *sol, *type, *GID, *kusok_size, file_ID, _result_;
+
+	sz = (unsigned int *)&(buf_[0]);
+	crc = (unsigned int *)&(buf_[4]);
+	type = (unsigned int *)&(buf_[8]);
+	sol = (unsigned int *)&(buf_[12]);
+	GID = (unsigned int *)&(buf_[16]);
+	kusok_size = (unsigned int *)&(buf_[20]);
+
+	file_ID = *GID;
+
+	char sss[500];
+	sprintf__s_ui_ui(sss, 450, "===>>> %d ROUND_2 %d ", *sz, *kusok_size);
+
+	//send_udp2(sss);
+
+	if (*sz < 48) {
+		fatal_error("NET_SERVER_SESSION::TRANSFER_FILE_ROUND_2 *sz < 48");
+		return false;
+	};
+	if (*kusok_size > *sz - 32) {
+		fatal_error("NET_SERVER_SESSION::TRANSFER_FILE_ROUND_2 *kusok_size > *sz - 32");
+		return false;
+	}
+	if (*kusok_size < *sz - 32 - 16) {
+		fatal_error("NET_SERVER_SESSION::TRANSFER_FILE_ROUND_2 *kusok_size < *sz - 32 - 16");
+		return false;
+	};
+
+	if (hFILE == 0) {
+		fatal_error("NET_SERVER_SESSION::TRANSFER_FILE_ROUND_2 hFILE == 0");
+		return false;
+	}
+
+	if (hFILE_writed_size + *kusok_size > target_file_size) {
+		fatal_error("NET_SERVER_SESSION::TRANSFER_FILE_ROUND_2 tmp_hFILE == 0");
+		return false;
+	}
+
+	BOOL b;
+	DWORD ww;
+	ww = 0;
+	b = WriteFile(hFILE, buf_ + 32, *kusok_size, &ww, 0);
+
+	if (b == FALSE) {
+		//send_udp2("b == FALSE");
+		return false;
+	};
+	if (ww != *kusok_size) {
+		//send_udp2("ww != *kusok_size ", ww, *kusok_size);
+		return false;
+	};
+
+	hFILE_writed_size += ww;
+
+	if (hFILE_writed_size == target_file_size) {
+		FinishFile();
+		_result_ = 2;
+		//send_udp2("ROUND2 FinishFile()");
+	}
+	else {
+		_result_ = 1;
+		//send_udp2("ROUND2...");
+	}
+
+	//**************************************************************************************
+	//**
+
+	unsigned int *result;
+
+	int buf_size = 32;
+	unsigned char *sndd;
+
+	sndd = new unsigned char[32];
+	zero_unsigned_char(sndd, 32);
+
+	sz = (unsigned int *)&(sndd[0]);
+	crc = (unsigned int *)&(sndd[4]);
+	type = (unsigned int *)&(sndd[8]);
+	sol = (unsigned int *)&(sndd[12]);
+	GID = (unsigned int *)&(sndd[16]);
+	result = (unsigned int *)&(sndd[20]);
+
+	*sz = 32;
+	*crc = 0;
+	*type = PACKET_TYPE_transfer_file_ROUND_2_commit;
+	*sol = get_sol();
+	*GID = file_ID;
+	*result = _result_;
+
+	aes_partner.encrypt_stream(sndd, 32);
+
+	// 100003
+	if (out_queue_command.add_element_low_level(PACKET_TYPE_transfer_file_ROUND_2_commit, 0, sndd, 32) == false) {
+		//send_udp2("+2-------");
+	}
+	else {
+		//send_udp2("-2++++++++", _result_);
+	}
+
+
+	return true;
+};
+
+void NET_SERVER_SESSION::request_filefolder_part(unsigned char *in_buf) {
+	unsigned char *out_buf;
+
+	unsigned int *sz, *crc, *type, *file_ID_, file_ID, *start_from_, start_from;
+
+	sz = (unsigned int *)&(in_buf[0]);
+	crc = (unsigned int *)&(in_buf[4]);
+	type = (unsigned int *)&(in_buf[8]);
+	file_ID_ = (unsigned int *)&(in_buf[16]);
+	start_from_ = (unsigned int *)&(in_buf[20]);
+
+	file_ID = *file_ID_;
+	start_from = *start_from_;
+
+	if (start_from != last_filefolder_start_from) {
+		fatal_error("request_filefolder_part()- start_from != last_filefolder_start_from -");// , (int)start_from, (int)last_filefolder_start_from);
+		//send_udp2("ss_need_disconnect = true (3)");
+		ss_need_disconnect = true;
+		return;
+	}
+
+	if (last_filefolder == 0) {
+		fatal_error("request_filefolder_part() last_filefolder == 0");
+		//send_udp2("ss_need_disconnect = true (4)");
+		ss_need_disconnect = true;
+		return;
+	}
+
+	if (filefolder_part_buf == nullptr) {
+		filefolder_part_buf = new unsigned char[filefolder_part_buf_max_size];
+		zero_unsigned_char(filefolder_part_buf, filefolder_part_buf_max_size);
+	}
+
+	unsigned int j, zz, *sol, *GID, *part_size, *result;
+
+	BOOL r;
+	DWORD readed;
+
+	readed = 0;
+
+	r = ReadFile(last_filefolder, filefolder_part_buf, filefolder_part_buf_max_size, &readed, NULL);
+	if (r == FALSE) { // ошибка при чтении файла
+		CloseHandle(last_filefolder);
+		last_filefolder = 0;
+		last_filefolder_start_from = 0;
+		//send_udp2("~~~~~~~~~~~~~~~~ last_filefolder=0");
+		last_filefolder_start_from = 0;
+
+		j = 32;
+		zz = j / 16;
+		zz *= 16;
+		if (zz < j) zz += 16;
+
+		out_buf = new unsigned char[zz + 32];
+
+		sz = (unsigned int *)&(out_buf[0]);
+		crc = (unsigned int *)&(out_buf[4]);
+		type = (unsigned int *)&(out_buf[8]);
+		sol = (unsigned int *)&(out_buf[12]);
+		GID = (unsigned int *)&(out_buf[16]);
+		part_size = (unsigned int *)&(out_buf[20]);
+		result = (unsigned int *)&(out_buf[24]);
+
+		*sz = zz;
+		*crc = 0;
+		*type = PACKET_TYPE_responce_filefolder_part;
+		*sol = get_sol();
+		*GID = file_ID;
+		*part_size = 0;
+		*result = 2; // ошибка
+
+		aes_partner.encrypt_stream(out_buf, zz);
+
+		if (out_queue_command.add_element_low_level(PACKET_TYPE_responce_filefolder_part, 0, out_buf, zz) == false) {
+
+		}
+		else {
+
+		}
+	}
+	else {
+		if (readed > filefolder_part_buf_max_size) {
+			fatal_error("request_filefolder_part() readed > filefolder_part_buf_max_size");
+			//send_udp2("ss_need_disconnect = true (5)");
+			ss_need_disconnect = true;
+			return;
+		};
+
+
+
+
+		last_filefolder_start_from += readed;
+
+		//send_udp2("~~~~~~~~~~~~~~~~~~~ ", (int)last_filefolder_start_from, (int)readed);
+
+		if (last_filefolder_start_from == filefolder_size) {
+			//send_udp2("CloseHandle(last_filefolder)");
+
+			CloseHandle(last_filefolder);
+			last_filefolder = 0;
+			last_filefolder_start_from = 0;
+			//send_udp2("~~~~~~~~~~~~~~~~~~ last_filefolder=0");
+
+
+		}
+
+		j = readed + 32;
+		zz = j / 16;
+		zz *= 16;
+		if (zz < j) zz += 16;
+
+
+		out_buf = new unsigned char[zz + 32];
+
+		sz = (unsigned int *)&(out_buf[0]);
+		crc = (unsigned int *)&(out_buf[4]);
+		type = (unsigned int *)&(out_buf[8]);
+		sol = (unsigned int *)&(out_buf[12]);
+		GID = (unsigned int *)&(out_buf[16]);
+		part_size = (unsigned int *)&(out_buf[20]);
+		result = (unsigned int *)&(out_buf[24]);
+
+		*sz = zz;
+		*crc = 0;
+		*type = PACKET_TYPE_responce_filefolder_part;
+		*sol = get_sol();
+		*GID = file_ID;
+		*part_size = readed;
+		*result = 1;
+
+		unsigned char *q;
+
+		q = &out_buf[28];
+		unsigned int i = 0;
+		while (i < readed) {
+			*q++ = filefolder_part_buf[i++];
+		}
+
+		aes_partner.encrypt_stream(out_buf, zz);
+
+		if (out_queue_command.add_element_low_level(PACKET_TYPE_responce_filefolder_part, 0, out_buf, zz) == false) {
+
+		}
+		else {
+
+		}
+	}
+};
+void NET_SERVER_SESSION::FinishFile() {
+	FILETIME *f, t;
+	f = (FILETIME *)&target_file_date;
+	t = *f;
+	SetFileTime(hFILE, &t, &t, &t);
+
+	CloseHandle(hFILE);
+
+	hFILE = 0;
+	target_file_full_name[0] = 0;
+
+	sudp("FinishFile+");
+}
+
+bool nnnn(wchar_t *buf, int sz) {
+
+	unsigned int i, j, k;
+	wchar_t path[5100];
+	wchar_t name[5100];
+	wchar_t ww[5100];
+	//wchar_t *w;
+
+	path[0] = 0;
+	name[0] = 0;
+
+	if (buf[0] == 0) return true;
+
+	my_strcpy(path, L"C:\\VISIATOR_FILES");
+
+
+	if (my_CreateDirectory(path) == false) return false;
+
+	i = my_strlen(path);
+
+	path[i++] = '\\'; path[i] = 0;
+
+
+	ww[0] = 0;
+	j = 0;
+	k = 0;
+	while (i < 5000 && buf[j] != 0) {
+		if (buf[j] == '\\') {
+			if (ww[0] == 0) return false;
+			if (ww[0] == '.' && ww[1] == 0) return false;
+			if (ww[0] == '.' && ww[1] == '.') return false;
+
+			if (my_CreateDirectory(path) == false) return false;
+			ww[0] = 0;
+			k = 0;
+		}
+		else {
+			ww[k++] = buf[j]; ww[k] = 0;
+		}
+		path[i++] = buf[j]; path[i] = 0;
+
+		j++;
+	}
+
+	if (ww[0] != 0) {
+		if (ww[0] == '.' && ww[1] == 0) return false;
+		if (ww[0] == '.' && ww[1] == '.') return false;
+
+		if (my_CreateDirectory(path) == false) return false;
+	}
+
+
+	//***************************************************************************
+	//** проверить путь path и при необходимости создать недостающие папки
+
+
+	//***************************************************************************
+	// проверить и при необходимости создать папку name
+
+
+
+	//send_udp2(path);
+	//send_udp2(name);
+
+	return true;
+}
+
+
+bool NET_SERVER_SESSION::NEED_CREATE_FOLDER(unsigned char *name) {
+
+	unsigned int *ii, i, file_ID, ss;
+	wchar_t *w;
+
+	ii = (unsigned int *)&name[0];
+	ss = *ii;
+	ii = (unsigned int *)&name[16];
+	file_ID = *ii;
+
+	bool r;
+
+	if (ss < 32) {
+		fatal_error("NET_SERVER_SESSION::NEED_CREATE_FOLDER ss < 32");
+		GLOBAL_STOP = true;
+		return false;
+	}
+
+	w = (wchar_t *)&name[20];
+	i = 20;
+	while (*w != 0) {
+		i += 2;
+		if (i > ss) {
+			fatal_error("NET_SERVER_SESSION::NEED_CREATE_FOLDER i > ss");
+			GLOBAL_STOP = true;
+			return false;
+		}
+		if (*w < 32) {
+			fatal_error("NET_SERVER_SESSION::NEED_CREATE_FOLDER *w < 32");
+			GLOBAL_STOP = true;
+			return false;
+		}
+		w++;
+	}
+
+	r = nnnn((wchar_t*)&name[20], ss); // ТУТ вся работа по созданию папки
+
+	unsigned int *sz, *crc, *sol, *type, *GID, *result;
+
+	int buf_size = 32;
+	unsigned char *buf;
+
+	buf = new unsigned char[32];
+	zero_unsigned_char(buf, 32);
+
+	sz = (unsigned int *)&(buf[0]);
+	crc = (unsigned int *)&(buf[4]);
+	type = (unsigned int *)&(buf[8]);
+	sol = (unsigned int *)&(buf[12]);
+	GID = (unsigned int *)&(buf[16]);
+	result = (unsigned int *)&(buf[20]);
+
+	*sz = 32;
+	*crc = 0;
+	*type = PACKET_TYPE_need_create_folder_commit;
+	*sol = get_sol();
+	*GID = file_ID;
+	if (r) *result = 1; else *result = 2;
+
+	aes_partner.encrypt_stream(buf, 32);
+
+	// 100003
+	if (out_queue_command.add_element_low_level(PACKET_TYPE_need_create_folder_commit, 0, buf, 32) == false) {
+		//send_udp2("+--------");
+	}
+	else {
+		//send_udp2("-+++++++++");
+	}
+
+	return true;
+}
+
+void NET_SERVER_SESSION::SEND_file_list_FROM_SERVER_to_CLIENT_1(wchar_t *need_request_files_list_DIR) {
+
+
+
+	//send_udp2("SEND_file_list_FROM_SERVER_to_CLIENT");
+	//send_udp2(need_request_files_list_DIR);
+
+
+	FL_1.clean();
+	FL_1.LOAD(need_request_files_list_DIR);
+
+	unsigned int *sz, *crc, *sol, *type, zz, buf_size;
+
+	unsigned char *buf;
+
+	buf_size = FL_1.size1 + 16;
+
+	zz = buf_size / 16;
+	zz *= 16;
+	if (zz < buf_size) zz += 16;
+	buf_size = zz;
+
+
+	//send_udp2("buf_size===", buf_size);
+
+	buf = new unsigned char[buf_size + 64];
+
+	FL_1.get(buf + 16, buf_size - 16);
+
+
+
+
+
+	sz = (unsigned int *)&(buf[0]);
+	crc = (unsigned int *)&(buf[4]);
+	type = (unsigned int *)&(buf[8]);
+	sol = (unsigned int *)&(buf[12]);
+
+	//send_udp2("buf_size = ", buf_size);
+
+	*sz = buf_size;
+	*crc = 0;
+	*type = PACKET_TYPE_responce_file_list_1;
+	*sol = get_sol();
+
+
+
+
+
+	aes_partner.encrypt_stream(buf, buf_size);
+
+
+
+	if (out_queue_command.add_element_low_level(PACKET_TYPE_responce_file_list_1, 0, buf, buf_size) == false) {  // TODO encr ???
+
+	}
+	else {
+
+	}
+	//send_udp2("[[555]]");
+
+
+
+}
+
+void NET_SERVER_SESSION::SEND_file_list_FROM_SERVER_to_CLIENT_2(wchar_t *need_request_files_list_DIR) {
+
+	wchar_t dd[5100];
+
+	zero_wchar_t(dd, 5100);
+
+	my_strcpy_s(dd, 5000, L"C:\\VISIATOR_FILES\\");
+	my_strcat_s(dd, 5000, need_request_files_list_DIR);
+
+	//send_udp2(L"SEND_file_list_FROM_SERVER_to_CLIENT_2", dd);
+
+
+	FL_2.clean();
+	FL_2.LOAD(dd);
+
+	unsigned int *sz, *crc, *sol, *type, zz, buf_size;
+
+	unsigned char *buf;
+
+	buf_size = FL_2.size1 + 16;
+
+	zz = buf_size / 16;
+	zz *= 16;
+	if (zz < buf_size) zz += 16;
+	buf_size = zz;
+
+
+	//send_udp2("buf_size===", buf_size);
+
+	buf = new unsigned char[buf_size + 64];
+
+	FL_2.get(buf + 16, buf_size - 16);
+
+
+
+
+
+	sz = (unsigned int *)&(buf[0]);
+	crc = (unsigned int *)&(buf[4]);
+	type = (unsigned int *)&(buf[8]);
+	sol = (unsigned int *)&(buf[12]);
+
+	//send_udp2("buf_size = ", buf_size);
+
+	*sz = buf_size;
+	*crc = 0;
+	*type = PACKET_TYPE_responce_file_list_2;
+	*sol = get_sol();
+
+
+
+
+
+	aes_partner.encrypt_stream(buf, buf_size);
+
+
+
+	if (out_queue_command.add_element_low_level(PACKET_TYPE_responce_file_list_2, 0, buf, buf_size) == false) {  // TODO encr ???
+
+	}
+	else {
+
+	}
+	//send_udp2("[[555]]");
+
+
 
 }

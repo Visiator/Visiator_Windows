@@ -41,6 +41,9 @@ public:
 	unsigned char startup_parametr_PASS_ENCR[32];
 	void _SetProcessDPIAware();
 
+	
+	
+
 	unsigned long long desktop_public_id = 0, desktop_private_id = 0, service_public_id = 0, service_private_id = 0;
 	GUI_Element *gui_desktop_public_id = nullptr, *gui_service_public_id = nullptr, *gui_service_connection_status = nullptr, *gui_service_VISIATOR_status = nullptr;
 
@@ -63,6 +66,8 @@ public:
 	void set_startup_paramert_pr(wchar_t *p);
 
 	void get_all_parametrs(HINSTANCE hInstance_);
+	bool startup_parametr_ReadOnly = false;
+	void set_startup_paramert_ro(wchar_t *p);
 
 	int  OsMajorVersion = 0, OsMinorVersion = 0;
 

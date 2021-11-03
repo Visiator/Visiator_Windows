@@ -115,8 +115,10 @@ void TOTAL_CONTROL::send_udp_SERVICE() {
 			add(ss, "service->interaction_with_agent_GET_SCREEN_counter", service->interaction_with_agent_GET_SCREEN_counter);
 			add(ss, "service->interaction_with_agent_GET_SCREEN_status", service->interaction_with_agent_GET_SCREEN_status);
 			add(ss, "service->SERVICE_PIPE_CONTROL_THREAD_EXECUTE", service->SERVICE_PIPE_CONTROL_THREAD_EXECUTE);
-
-			
+			add(ss, "SERVICE_PIPE_MASTER_THREAD_EXECUTE_status", SERVICE_PIPE_MASTER_THREAD_EXECUTE_status);
+			add(ss, "SERVICE_PIPE_MASTER_THREAD_EXECUTE_2", SERVICE_PIPE_MASTER_THREAD_EXECUTE_2);
+			add(ss, "SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status", SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status);
+			add(ss, "SERVICE_last_agent_active", SERVICE_last_agent_active);
 
 			if (service->net_server_session_pool == nullptr) {
 				add(ss, "service->net_server_session_pool == nullptr");
@@ -134,7 +136,7 @@ void TOTAL_CONTROL::send_udp_SERVICE() {
 					else {
 						add(ss, "net_server_session[0]->main_loop_is_strated", s->main_loop_is_strated);
 						add(ss, "net_server_session[0]->ip_to_server_connect", s->ip_to_server_connect);
-
+						add(ss, "net_server_session[0]->need_start_screenflow_count", s->need_start_screenflow_count );
 
 					}
 
@@ -212,6 +214,42 @@ void TOTAL_CONTROL::send_udp_SERVICE() {
 }
 
 void TOTAL_CONTROL::send_udp_INDICATOR() {
+
+	char ss[3000];
+	//char s[300];
+
+	zero_unsigned_char((unsigned char *)ss, 3000);
+
+	add(ss, "global_my_proc_id", app_attributes.global_my_proc_id);
+	add(ss, "agent_process_id", app_attributes.agent_process_id);
+	add(ss, "indicator_process_id", app_attributes.indicator_process_id);
+
+	/*
+	add(ss, "INDICATOR_read_service_info_nonblocking_err1", INDICATOR_read_service_info_nonblocking_err1);
+	add(ss, "INDICATOR_read_service_info_nonblocking_err2", INDICATOR_read_service_info_nonblocking_err2);
+	add(ss, "INDICATOR_read_service_info_nonblocking_err3", INDICATOR_read_service_info_nonblocking_err3);
+	add(ss, "INDICATOR_read_service_info_nonblocking_err4", INDICATOR_read_service_info_nonblocking_err4);
+	add(ss, "INDICATOR_read_service_info_nonblocking_err5", INDICATOR_read_service_info_nonblocking_err5);
+	add(ss, "INDICATOR_read_service_info_nonblocking_err6", INDICATOR_read_service_info_nonblocking_err6);
+	add(ss, "INDICATOR_read_service_info_nonblocking_err7", INDICATOR_read_service_info_nonblocking_err7);
+	add(ss, "INDICATOR_WM_TIMER__srv_detect_ok", INDICATOR_WM_TIMER__srv_detect_ok);
+	*/
+
+	if (udp_socket__indicator == 0) {
+		udp_socket__indicator = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+		udp_socket_adr__indicator.sin_family = AF_INET;
+		udp_socket_adr__indicator.sin_port = htons(7782);
+		udp_socket_adr__indicator.sin_addr.S_un.S_addr = inet_addr("192.168.7.7");
+
+	};
+
+	int i;
+	i = 0;
+
+	while (ss[i] != 0 && i < 3000 - 10) i++;
+
+	sendto(udp_socket__indicator, ss, i, 0, (struct sockaddr *)&udp_socket_adr__indicator, sizeof(udp_socket_adr__indicator));
 
 }
 
@@ -302,5 +340,9 @@ void TOTAL_CONTROL::EXECUTE() {
 void TOTAL_CONTROL::start_EXECUTE() {
 
 	thread_EXECUTE = app_attributes.tgroup.create_thread(boost::bind(&TOTAL_CONTROL::EXECUTE, this));
+
+}
+
+void TOTAL_CONTROL::send_udp_AGENT() {
 
 }

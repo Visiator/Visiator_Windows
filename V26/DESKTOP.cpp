@@ -18,10 +18,13 @@
 extern APPLICATION_ATTRIBUTES app_attributes;
 extern bool GLOBAL_STOP;
 extern DESKTOP *desktop;
+extern wchar_t *strServiceName;
 
 #define COLOR_service_not_set 0xffffff
-#define COLOR_service_set_not_run 0xaaaaaa
-#define COLOR_service_set_and_run 0x0399DD
+#define COLOR_service_set_not_run 0xdddddd
+#define COLOR_service_set_and_run_and_not_ready 0xff9999
+#define COLOR_service_set_and_run_and_ready 0x00
+#define COLOR_service_set_and_run_and_client_connected 0x03A9F1
 
 
 bool func_edit_begin_autorun_pass() {
@@ -326,12 +329,12 @@ void DESKTOP::init_gui() {
 	edit_outgoing_pass->pass_eye.eye_open = new TEXTURA(10026);
 
 	edit_autorun_id = gui->add_element(GUI_Element_Type_edit, 76, 116, 140, 21, 0xffffff);
-	edit_autorun_id->set_text(L"508-193-884");
+	edit_autorun_id->set_text(L"-----------");
 	//edit_autorun_id->is_active = true;
 	edit_autorun_id->parent = panel_autorun;
 
 	edit_autorun_pass = gui->add_element(GUI_Element_Type_edit, 76, 173, 150, 21, 0xffffff);
-	edit_autorun_pass->set_text(L"1234r567");
+	//edit_autorun_pass->set_text(L"1234r567");
 	edit_autorun_pass->is_active = true;
 	edit_autorun_pass->parent = panel_autorun;
 	edit_autorun_pass->is_password = true;
@@ -507,6 +510,11 @@ void DESKTOP::outgoing_pass_encrypted_FINISH() {
 	edit_outgoing_pass->is_visible = true;
 	if (gui != nullptr) gui->invalidate();
 
+	// void RUN_VIEWER_EPASS(wchar_t *exe_file_name, wchar_t *ID, wchar_t *PASS, unsigned char *PASS_ENCR_16byte);
+
+
+
+	RUN_VIEWER_EPASS( app_attributes.my_exe_file_name, (wchar_t *)edit_outgoing_id->text.c_str(), nullptr, outgoing_pass_encrypted );
 }
 
 
@@ -1187,12 +1195,34 @@ LRESULT DESKTOP::WM_SYSCOMMAND_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
+	/*
+	#define COLOR_service_not_set 0xffffff
+	#define COLOR_service_set_not_run 0xdddddd
+	#define COLOR_service_set_and_run_and_not_ready 0xff9999
+	#define COLOR_service_set_and_run_and_ready 0x00
+	#define COLOR_service_set_and_run_and_client_connected 0x03A9F1
+	*/
+
 	int desktop_client_connected_count = 0, dektop_ready_to_client_connect = 0;
 
 	if (edit_incoming_id != nullptr) {
 
 		if (net_server_session_pool != nullptr) {
 			net_server_session_pool->client_connected_count(&desktop_client_connected_count, &dektop_ready_to_client_connect);
+
+			if (dektop_ready_to_client_connect == 0) {
+				edit_incoming_id->text_color = COLOR_service_set_and_run_and_not_ready;
+			}
+			else {
+				if (desktop_client_connected_count == 0) {
+					edit_incoming_id->text_color = COLOR_service_set_and_run_and_ready;
+				}
+				else {
+					edit_incoming_id->text_color = COLOR_service_set_and_run_and_client_connected;
+				}
+			}
+
+			/*
 			if (desktop_client_connected_count > 0) {
 				edit_incoming_id->text_color = 0x03A9F1;
 			}
@@ -1204,11 +1234,14 @@ LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 					edit_incoming_id->text_color = 0xcccccc;
 				}
 			}
+			*/
 		}
 
 	};
-	/*** 2021 -
+	
 
+	
+	/* 2021
 	if (Panel_Top_auto != nullptr && Panel_Top_auto->is_visible) {
 		if (last_check_pass_for_autorun + 5000 < GetTickCount()) {
 			last_check_pass_for_autorun = GetTickCount();
@@ -1217,16 +1250,17 @@ LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 		}
 	};
+	*/
 
-	if (last_check_service_info + 5000 < GetTickCount()) {
+	if (last_check_service_info + 500 < GetTickCount()) {
 
 		last_check_service_info = GetTickCount();
 
-		SERVICE_INFO service_info;
+		
 		bool r;
 		wchar_t iidd[100];
 
-		zero_char((char *)&service_info, 128);
+		zero_unsigned_char((unsigned char *)&service_info, 128);
 		service_info.who_is_asked = IT_IS_desktop;
 
 		//r = read_service_info_nonblocking((unsigned char *)&service_info);
@@ -1239,7 +1273,7 @@ LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		};
 		if (r == false) {
 			if (last_update_service_info + 6500 < GetTickCount()) {
-				last_update_service_info = GetTickCount();
+				//last_update_service_info = GetTickCount();
 				service_info.service_id = 0;
 				service_info.is_client_connected = 0;
 				service_info.agent_need_stop = 0;
@@ -1251,29 +1285,35 @@ LRESULT DESKTOP::WM_TIMER_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 		if (r == true) {
 			zero_wchar_t(iidd, 100);
 			if (service_info.service_id != 0) generate_ID_to_text(iidd, service_info.service_id);
-
-			if (my_strcmp(iidd, Editfield_AUTO_ID->text) != 0) {
-				Editfield_AUTO_ID->set_text(iidd);
+			
+			if (edit_autorun_id->text.compare(iidd) != 0) {
+				if (iidd[0] == 0) {
+					edit_autorun_id->set_text(L"--- --- ---");
+				}
+				else {
+					edit_autorun_id->set_text(iidd);
+				};
 			}
+			/*
 			if (service_info.is_ready_to_client_connect == 0) {
-				if (Editfield_AUTO_ID->text_color != 0x999999) {
-					Editfield_AUTO_ID->text_color = 0x999999;
+				if (edit_autorun_id->text_color != 0x999999) {
+					edit_autorun_id->text_color = 0x999999;
 				}
 			}
 			else {
 				if (service_info.is_client_connected == 0) {
-					Editfield_AUTO_ID->text_color = 0x695f2f;
+					edit_autorun_id->text_color = 0x695f2f;
 				}
 				else {
-					Editfield_AUTO_ID->text_color = 0x699f2f;
+					edit_autorun_id->text_color = 0x699f2f;
 				}
 			}
-
+			*/
 		}
 	};
-	***/
+	
 
-	if (last_check_pass_for_autorun + 5000 < GetTickCount()) {
+	if (last_check_pass_for_autorun + 1000 < GetTickCount()) {
 		last_check_pass_for_autorun = GetTickCount();
 
 		check_service_is_set_run_pass();
@@ -1366,7 +1406,15 @@ void DESKTOP::check_service_is_set_run_pass() {
 
 	int v;
 
-	v = get_service_VISIATOR_status(); // получим статус службы 0-не установлена, 1-установлена но не запущена, 2-запущена
+	v = get_service_VISIATOR_status();
+
+	/* получим статус службы
+	0-не установлена
+	1-установлена но не запущена
+	2-запущена но не готова принимать клиентские подключения
+	3-запущена и готова принимать клиентские подключения
+	4-запущена и клиент подключен
+	*/
 
 	if (v == 0) {
 		edit_autorun_id->text_color = COLOR_service_not_set;
@@ -1383,7 +1431,21 @@ void DESKTOP::check_service_is_set_run_pass() {
 		checkbox_autorun->is_mouse_pressed = true;
 	}
 	if (v == 2) {
-		edit_autorun_id->text_color = COLOR_service_set_and_run;
+		edit_autorun_id->text_color = COLOR_service_set_and_run_and_not_ready;
+		//desktop->autorun_label_1->label_color = COLOR_service_set_and_run;
+		//desktop->autorun_label_2->label_color = COLOR_service_set_and_run;
+		//if (desktop->check_box_key->x == 0 && app_attributes.modal_process == 0) desktop->check_box_key->x = 10;
+		checkbox_autorun->is_mouse_pressed = true;
+	}
+	if (v == 3) {
+		edit_autorun_id->text_color = COLOR_service_set_and_run_and_ready;
+		//desktop->autorun_label_1->label_color = COLOR_service_set_and_run;
+		//desktop->autorun_label_2->label_color = COLOR_service_set_and_run;
+		//if (desktop->check_box_key->x == 0 && app_attributes.modal_process == 0) desktop->check_box_key->x = 10;
+		checkbox_autorun->is_mouse_pressed = true;
+	}
+	if (v == 4) {
+		edit_autorun_id->text_color = COLOR_service_set_and_run_and_client_connected;
 		//desktop->autorun_label_1->label_color = COLOR_service_set_and_run;
 		//desktop->autorun_label_2->label_color = COLOR_service_set_and_run;
 		//if (desktop->check_box_key->x == 0 && app_attributes.modal_process == 0) desktop->check_box_key->x = 10;
@@ -1391,3 +1453,53 @@ void DESKTOP::check_service_is_set_run_pass() {
 	}
 	gui->invalidate();
 }
+
+int DESKTOP::get_service_VISIATOR_status() { 
+/* получим статус службы 
+	0-не установлена
+	1-установлена но не запущена
+	2-запущена но не готова принимать клиентские подключения
+	3-запущена и готова принимать клиентские подключения
+	4-запущена и клиент подключен
+*/
+	if (last_update_service_info + 5000 > GetTickCount()) {
+		if (service_info.is_client_connected == 0 &&
+			service_info.is_ready_to_client_connect == 0) {
+			return 2;
+		}
+		if (service_info.is_client_connected == 0 &&
+			service_info.is_ready_to_client_connect == 1) {
+			return 3;
+		}
+		if (service_info.is_client_connected == 1 ) {
+			return 4;
+		}
+	}
+
+
+	int v;
+	v = SERVICE___CHECK_STATUS(strServiceName);
+	if (v < 0) { // нет прав?
+		return 0;
+	}
+	if (v == SERVICE_RUNNING) { 
+		return 2; 
+	}
+	if (v == SERVICE_STOPPED) { return 1; }
+	if (v == SERVICE_START_PENDING) { return 1; }
+	if (v == SERVICE_STOP_PENDING) { return 1; }
+	if (v == SERVICE_CONTINUE_PENDING) { return 1; }
+	if (v == SERVICE_PAUSE_PENDING) { return 1; }
+	if (v == SERVICE_PAUSED) { return 1; }
+
+	return 0;
+	/*
+	SERVICE_STOPPED	Служба является не работающей.
+	SERVICE_START_PENDING	Служба является запущенной.
+	SERVICE_STOP_PENDING	Служба является остановленной.
+	SERVICE_RUNNING	Служба является работающей.
+	SERVICE_CONTINUE_PENDING	Служба продолжает ожидать.
+	SERVICE_PAUSE_PENDING	Приостановленная служба является ожидающей.
+	SERVICE_PAUSED	Служба является приостановленной.
+	*/
+};
