@@ -599,8 +599,8 @@ void SERVICE::start_PIPE_MASTER_THREAD() {
 // end
 
 void SERVICE::reconnect_master_pipe() {
-
-	// 2021 09 Disconnect_Named_Pipe(pipe_master, "reconnect_master_pipe");
+	sudp("SERVICE::reconnect_master_pipe()");
+	Disconnect_Named_Pipe(pipe_MASTER, "reconnect_master_pipe");
 	MASTER_is_agent_connected = false;
 
 }
@@ -1877,11 +1877,194 @@ bool SERVICE::interaction_with_agent_GET_CLIPBOARD(MASTER_AGENT_PACKET_HEADER *p
 	return true;
 }
 */
-bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, ENCODED_SCREEN_8bit_header *scr_head_buf, SCREEN_LIGHT_one_byte *screen_light) {
 
-	//sudp("SERVICE::interaction_with_agent_GET_SCREEN");
+bool SERVICE::interaction_with_agent_GET_SCREEN_12bit(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, ENCODED_SCREEN_12bit_header *scr_head_buf, SCREEN_LIGHT_12bit *screen_light_12bit) {
 
-	if (screen_light == NULL) return false;
+	sudp("SERVICE::interaction_with_agent_GET_SCREEN_12bit");
+
+	if (screen_light_12bit == nullptr) {
+		sudp("screen_light_12bit == nullptr");
+		return false;
+	};
+
+
+
+
+	interaction_with_agent_GET_SCREEN_counter++;
+
+	interaction_with_agent_GET_SCREEN_status = 1;
+
+	char ss[500];
+	bool x;
+	DWORD w, r, d1, d2;
+	d1 = GetTickCount();
+	//----------------------------------------------------------------------------------
+
+	//send_udp("interaction_with_agent_2() begin");
+
+	if (MASTER_is_agent_connected == false) {
+		sudp("interaction_with_agent_2() end (1) MASTER_is_agent_connected == false 12");
+
+		interaction_with_agent_GET_SCREEN_status = 2;
+		return false;
+	}
+
+
+
+	lock_interaction_with_AGENT(); // там внутри   interaction_with_agent_IN_USE = true;
+
+	//send_udp("======> => => => => => => => interaction_with_agent_2() (10) begin");
+
+	interaction_with_agent_TIMEOUT = GetTickCount();
+
+	//******************************************************************************
+	// write 128 (1) посылаем запрос (заголовок)
+
+	//zero(packet_send, sizeof_MASTER_AGENT_PACKET_HEADER);
+	packet_send->packet_size = sizeof_MASTER_AGENT_PACKET_HEADER;
+	packet_send->packet_type = packet_type_REQUEST_SCREEN_12bit;
+
+	interaction_with_agent_GET_SCREEN_status = 100;
+	sudp("write_pipe pipe_MASTER 128 packet_type_REQUEST_SCREEN_12bit");
+	x = write_pipe(pipe_MASTER, packet_send, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_MASTER_pipe_TIMEOUT);
+	if (x != true) {
+		sudp("======> => => => => => => => interaction_with_agent_2() (1--+) end ");
+		interaction_with_agent_TIMEOUT = 0;
+		interaction_with_agent_IN_USE = false;
+
+		//MASTER_is_agent_connected = false;
+		reconnect_master_pipe();
+		interaction_with_agent_GET_SCREEN_status = 102;
+		return false;
+	}
+
+	//-----------------------------------------------------------------------------
+	// read 128 (2) получаем ответ (заголовок)
+
+	interaction_with_agent_GET_SCREEN_status = 200;
+	sudp("read_pipe pipe_MASTER 128 ...");
+	x = read_pipe(pipe_MASTER, packet_recv, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_MASTER_pipe_TIMEOUT, "i3");
+	if (x != true) {
+		sudp("======> => => => => => => => interaction_with_agent_2() (2---) end ");
+		interaction_with_agent_TIMEOUT = 0;
+		interaction_with_agent_IN_USE = false;
+		interaction_with_agent_GET_SCREEN_status = 202;
+		return false;
+	}
+	else {
+		sudp("read_pipe ok 1");
+	}
+
+	bool flag = false;
+
+	if (flag == false && packet_recv->packet_size == sizeof_MASTER_AGENT_PACKET_HEADER && packet_recv->packet_type == packet_type_RESPONCE_SCREEN_12bit) {
+		flag = true;
+	}
+
+	if (flag == false) {
+		sudp("======> => => => => => => => interaction_with_agent_2() (не распознанный пакет) end ");
+		interaction_with_agent_TIMEOUT = 0;
+		interaction_with_agent_IN_USE = false;
+		return false;
+	}
+
+	//-----------------------------------------------------------------------------
+	// read 128 (3) получаем шапку скрина
+	interaction_with_agent_GET_SCREEN_status = 300;
+
+	sudp("read_pipe pipe_MASTER 84 ...");
+
+	x = read_pipe(pipe_MASTER, (char *)scr_head_buf, sizeof_ENCODED_SCREEN_8bit_header, &r, &read_MASTER_pipe_TIMEOUT, "i4");
+	if (x != true) {
+		sudp("======> => => => => => => => interaction_with_agent_2() (2----) end ");
+		interaction_with_agent_TIMEOUT = 0;
+		interaction_with_agent_IN_USE = false;
+		interaction_with_agent_GET_SCREEN_status = 301;
+		return false;
+	}
+	else {
+		sudp("read_pipe ok 2");
+	}
+
+	if (scr_head_buf->w <= 0 || scr_head_buf->w > 5500 ||
+		scr_head_buf->h <= 0 || scr_head_buf->h > 5500) {
+		sudp("======> => => => => => => => receive screen size is bad 12");
+		interaction_with_agent_TIMEOUT = 0;
+		interaction_with_agent_IN_USE = false;
+		return false;
+	}
+
+	total_control->SERVICE_interaction_with_agent_GET_SCREEN_w = screen_light_12bit->header.w;
+	total_control->SERVICE_interaction_with_agent_GET_SCREEN_h = screen_light_12bit->header.h;
+	total_control->SERVICE_interaction_with_agent_GET_SCREEN_cursor = screen_light_12bit->header.mouse_cursor_type_id;
+
+	screen_light_12bit->set_new_size_(scr_head_buf->w, scr_head_buf->h);
+
+	/*if (screen_light_12bit->header.w != scr_head_buf->w ||
+		screen_light_12bit->header.h != scr_head_buf->h) {
+		if (screen_light_12bit->buf != nullptr) delete[] screen_light_12bit->buf;
+		//screen_light->buf_one_byte = NULL;
+
+		screen_light_12bit->header.w = scr_head_buf->w;
+		screen_light_12bit->header.h = scr_head_buf->h;
+
+		screen_light_12bit->buf_one_byte_size = screen_light_12bit->header.w * screen_light_12bit->header.h;
+		screen_light_12bit->buf = new _one_byte_NEW(screen_light_12bit->buf_one_byte_size);
+	}*/
+
+
+
+	screen_light_12bit->header.keyboard_location = scr_head_buf->keyboard_location;
+	screen_light_12bit->header.itis_user_move_mouse = scr_head_buf->itis_user_move_mouse;
+	screen_light_12bit->header.mouse_cursor_type_id = scr_head_buf->mouse_cursor_type_id;
+	screen_light_12bit->header.mouse_x = scr_head_buf->mouse_x;
+	screen_light_12bit->header.mouse_y = scr_head_buf->mouse_y;
+
+
+
+	//-----------------------------------------------------------------------------
+	// read 2000000 (4) получаем тело скрина
+
+	interaction_with_agent_GET_SCREEN_status = 400;
+
+	sprintf_s(ss, 450, "read_pipe pipe_MASTER len=%d ", screen_light_12bit->buf_len);
+	sudp(ss);
+
+	x = read_pipe(pipe_MASTER, screen_light_12bit->buf, screen_light_12bit->buf_len , &r, &read_MASTER_pipe_TIMEOUT, "i5");
+	if (x != true) {
+		sudp("======> => => => => => => => interaction_with_agent_2() (3) end ");
+		interaction_with_agent_TIMEOUT = 0;
+		interaction_with_agent_IN_USE = false;
+		interaction_with_agent_GET_SCREEN_status = 401;
+		return false;
+	}
+	else {
+		sudp("read_pipe ok 5df");
+	}
+
+	interaction_with_agent_TIMEOUT = 0;
+
+	
+	sudp("======> => => => => => => => interaction_with_agent_2() (10) end 12bit");
+	interaction_with_agent_IN_USE = false;
+	d2 = GetTickCount();
+
+	//sprintf_ s(ss, 90, "IA = %d ", d2 - d1);
+	//send_udp(ss);
+
+	interaction_with_agent_GET_SCREEN_status = 500;
+
+	return true;
+};
+
+bool SERVICE::interaction_with_agent_GET_SCREEN_8bit(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, ENCODED_SCREEN_8bit_header *scr_head_buf, SCREEN_LIGHT_one_byte *screen_light) {
+
+	sudp("SERVICE::interaction_with_agent_GET_SCREEN");
+
+	if (screen_light == nullptr) {
+		sudp("screen_light == nullptr");
+		return false;
+	};
 
 	 
 
@@ -1924,7 +2107,7 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 
 	x = write_pipe(pipe_MASTER, packet_send, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_MASTER_pipe_TIMEOUT);
 	if (x != true) {
-		//send_udp("======> => => => => => => => interaction_with_agent_2() (1--+) end ");
+		sudp("======> => => => => => => => interaction_with_agent_2() (1--+) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
 		
@@ -1941,7 +2124,7 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 
 	x = read_pipe(pipe_MASTER, packet_recv, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_MASTER_pipe_TIMEOUT, "i3");
 	if (x != true) {
-		//send_udp("======> => => => => => => => interaction_with_agent_2() (2---) end ");
+		sudp("======> => => => => => => => interaction_with_agent_2() (2---) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
 		interaction_with_agent_GET_SCREEN_status = 202;
@@ -1955,7 +2138,7 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 	}
 
 	if (flag == false) {
-		//send_udp("======> => => => => => => => interaction_with_agent_2() (не распознанный пакет) end ");
+		sudp("======> => => => => => => => interaction_with_agent_2() (не распознанный пакет) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
 		return false;
@@ -1966,7 +2149,7 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 	interaction_with_agent_GET_SCREEN_status = 300;
 	x = read_pipe(pipe_MASTER, (char *)scr_head_buf, sizeof_ENCODED_SCREEN_8bit_header, &r, &read_MASTER_pipe_TIMEOUT, "i4");
 	if (x != true) {
-		//send_udp("======> => => => => => => => interaction_with_agent_2() (2----) end ");
+		sudp("======> => => => => => => => interaction_with_agent_2() (2----) end ");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
 		interaction_with_agent_GET_SCREEN_status = 301;
@@ -1975,15 +2158,15 @@ bool SERVICE::interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *pack
 
 	if (scr_head_buf->w <= 0 || scr_head_buf->w > 5500 ||
 		scr_head_buf->h <= 0 || scr_head_buf->h > 5500) {
-		//send_udp("======> => => => => => => => receive screen size is bad ");
+		sudp("======> => => => => => => => receive screen size is bad 2");
 		interaction_with_agent_TIMEOUT = 0;
 		interaction_with_agent_IN_USE = false;
 		return false;
 	}
 
-	//total_control.SERVICE_interaction_with_agent_GET_SCREEN_w = screen_light->header.w;
-	//total_control.SERVICE_interaction_with_agent_GET_SCREEN_h = screen_light->header.h;
-	//total_control.SERVICE_interaction_with_agent_GET_SCREEN_cursor = screen_light->header.mouse_cursor_type_id;
+	total_control->SERVICE_interaction_with_agent_GET_SCREEN_w = screen_light->header.w;
+	total_control->SERVICE_interaction_with_agent_GET_SCREEN_h = screen_light->header.h;
+	total_control->SERVICE_interaction_with_agent_GET_SCREEN_cursor = screen_light->header.mouse_cursor_type_id;
 
 	if (screen_light->header.w != scr_head_buf->w ||
 		screen_light->header.h != scr_head_buf->h) {
@@ -2893,7 +3076,7 @@ void SERVICE::EXECUTE_main_MASTER_AGENT_reconnect() {
 			if (MASTER_is_agent_connected == true) {
 
 				total_control->SERVICE_PIPE_MASTER_THREAD_EXECUTE_status = 6;
-
+				sudp("MASTER_is_agent_connected = false 1ddd");
 				enter_crit(29);
 				MASTER_is_agent_connected = false;
 				leave_crit(29);

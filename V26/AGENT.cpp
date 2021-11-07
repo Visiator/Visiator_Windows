@@ -192,9 +192,10 @@ void AGENT::EXECUTE_read_write() {
 
 	while (GLOBAL_STOP == false) {
 
+		//sudp("read_pipe pipe_AGENT 128 (0) ...");
 		x = read_pipe(pipe_AGENT, r_buf_1, sizeof_MASTER_AGENT_PACKET_HEADER, &r, &read_pipe_TIMEOUT, "i01");
 		if (x == false) {
-			// send_udp("PIPE_SLAVE_EXECUTE_2() (1) x == false  GLOBAL_STOP = true;");
+			sudp("PIPE_SLAVE_EXECUTE_2() (1) x == false  GLOBAL_STOP = true;");
 
 			delete[] r_buf_1; //delete_ w_buf_2; delete_ w_buf_3; if (w_buf_4 != NULL) delete_ w_buf_4;
 
@@ -203,6 +204,9 @@ void AGENT::EXECUTE_read_write() {
 			set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
 
 			return;
+		}
+		else {
+			//sudp("ok w33");
 		}
 
 		///
@@ -213,13 +217,24 @@ void AGENT::EXECUTE_read_write() {
 
 		if (flag == false && packet_recv->packet_size == 128 && packet_recv->packet_type == packet_type_REQUEST_SCREEN_one_byte) {
 			flag = true;
-			//send_udp("DETECT packet_type_REQUEST_SCREEN_one_byte");
+			sudp("DETECT packet_type_REQUEST_SCREEN_one_byte");
 
 			last_detect_MASTER = GetTickCount();
 
 			//total_control.AGENT_PIPE_SLAVE_EXECUTE_2_screen++;
 
 			PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_one_byte();
+
+		}
+		if (flag == false && packet_recv->packet_size == 128 && packet_recv->packet_type == packet_type_REQUEST_SCREEN_12bit) {
+			flag = true;
+			sudp("DETECT packet_type_REQUEST_SCREEN_12bit");
+
+			last_detect_MASTER = GetTickCount();
+
+			//total_control.AGENT_PIPE_SLAVE_EXECUTE_2_screen++;
+
+			PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_12bit();
 
 		}
 		if (flag == false && packet_recv->packet_size == 128 && packet_recv->packet_type == packet_type_REQUEST_STOP_AGENT) {
@@ -270,7 +285,135 @@ void AGENT::EXECUTE_read_write() {
 	EXECUTE_read_write_is_run = false;
 }
 
+void AGENT::PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_12bit() {
+
+	char ss[500];
+
+	sudp("AGENT::PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_12bit() ");
+
+	bool x;
+	DWORD w;
+
+	MASTER_AGENT_PACKET_HEADER packet_send;
+	//SCREEN_LIGHT_one_byte screen_header;
+	
+	if (screen_12bit_tmp == nullptr) screen_12bit_tmp = new SCREEN_LIGHT_12bit();
+
+	//***********************************************************************************************
+	// write 128 (2)
+	zero_128_s(&packet_send);
+	//zero_void(&packet_send, sizeof_MASTER_AGENT_PACKET_HEADER);
+	packet_send.packet_size = sizeof_MASTER_AGENT_PACKET_HEADER;
+	packet_send.packet_type = packet_type_RESPONCE_SCREEN_12bit;
+
+	sudp("write_pipe pipe_AGENT 128 (packet_type_RESPONCE_SCREEN_12bit) ...");
+
+	x = write_pipe(pipe_AGENT, &packet_send, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_SLAVE_pipe_TIMEOUT);
+	if (x == false) {
+		sudp("PIPE_SLAVE_EXECUTE_2() (2-) x == false  GLOBAL_STOP = true;");
+		//delete[] w_buf_2; 
+		//delete[] w_buf_3; //if (w_buf_4 != NULL) delete[] w_buf_4;
+		EXECUTE_read_write_is_run = false;
+		set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
+		return;
+	}
+	else {
+		sudp("write_pipe ok 1 dddf");
+	}
+
+	//***********************************************************************************************
+	// write 128 (3)
+	clean_ENCODED_SCREEN_8bit_header(&screen_12bit_tmp->header);  // <====
+
+	//zero(&screen_header.header, sizeof_ENCODED_SCREEN_8bit_header);
+	bool result;
+	result = get_screenshot(nullptr, screen_12bit_tmp);   // <====
+	if (result == false) {
+		screen_12bit_tmp->emulate_dark_blue();
+
+		CHECK_DESKTOP();
+
+	}
+
+	if (result == true) {
+
+		
+		sprintf_s(ss, 450, "get_screenshot()=true %d %d", screen_12bit_tmp->w , screen_12bit_tmp->h );
+		sudp(ss);
+		
+
+	} 
+	screen_12bit_tmp->header.w = screen_12bit_tmp->w;
+	screen_12bit_tmp->header.h = screen_12bit_tmp->h;
+
+
+	/*screen_12bit_tmp->header.keyboard_location = screen_12bit_tmp->keyboard_location;
+	screen_12bit_tmp->header.itis_user_move_mouse = screen_12bit_tmp->itis_user_move_mouse;
+	screen_12bit_tmp->header.mouse_cursor_type_id = screen_12bit_tmp->mouse_cursor_type_id;
+	screen_12bit_tmp->header.mouse_x = screen_12bit_tmp->mouse_x;
+	screen_12bit_tmp->header.mouse_y = screen_12bit_tmp->mouse_y;*/
+
+	int i1, i2, i3;
+	i1 = screen_12bit_tmp->header.mouse_x;
+	i2 = screen_12bit_tmp->header.mouse_y;
+	i3 = screen_12bit_tmp->header.itis_user_move_mouse;
+
+	sprintf_s(ss, 450, "screen_12bit hhh %d %d %d", i1, i2, i3);
+	sudp(ss);
+
+	sudp("write_pipe pipe_AGENT 84 sizeof_ENCODED_SCREEN_8bit_header (12bit)...");
+
+	x = write_pipe(pipe_AGENT, &screen_12bit_tmp->header, sizeof_ENCODED_SCREEN_8bit_header, &w, &write_SLAVE_pipe_TIMEOUT);
+	if (x == false) {
+		//send_udp("PIPE_SLAVE_EXECUTE_2() (2--) x == false  GLOBAL_STOP = true;");
+
+		//screen_12bit_tmp->clean_();
+
+
+		EXECUTE_read_write_is_run = false;
+		set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
+		return;
+	}
+	else {
+		sudp("write_pipe ok 2 vfdd");
+	}
+
+	//***********************************************************************************************
+		// write 2000 (4)
+
+	//w_buf_4 = neww char[2000000];
+
+	if (screen_12bit_tmp->buf_len > 0) {
+
+		sprintf_s(ss, 450, "write_pipe buf_len=%d ", screen_12bit_tmp->buf_len);
+		sudp(ss);
+
+		x = write_pipe(pipe_AGENT, screen_12bit_tmp->buf, screen_12bit_tmp->buf_len, &w, &write_SLAVE_pipe_TIMEOUT);
+		if (x == false) {
+			sudp("PIPE_SLAVE_EXECUTE_2() (3) x == false  GLOBAL_STOP = true;");
+
+			//screen_12bit_tmp->clean_();
+
+
+			EXECUTE_read_write_is_run = false;
+
+			set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
+
+			return;
+		}
+
+	}
+	else {
+		sudp("screen_12bit_tmp->buf_len == 0");
+	}
+
+	//screen_12bit_tmp->clean_();
+	sudp("finish");
+};
+
 void AGENT::PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_one_byte() {
+
+	sudp("AGENT::PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_one_byte()");
 
 	bool x;
 	DWORD w;
@@ -285,7 +428,7 @@ void AGENT::PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_one_byte() {
 	//zero_void(&packet_send, sizeof_MASTER_AGENT_PACKET_HEADER);
 	packet_send.packet_size = sizeof_MASTER_AGENT_PACKET_HEADER;
 	packet_send.packet_type = packet_type_RESPONCE_SCREEN_one_byte;
-
+	sudp("write_pipe packet_type_RESPONCE_SCREEN_one_byte");
 	x = write_pipe(pipe_AGENT, &packet_send, sizeof_MASTER_AGENT_PACKET_HEADER, &w, &write_SLAVE_pipe_TIMEOUT);
 	if (x == false) {
 		//send_udp("PIPE_SLAVE_EXECUTE_2() (2-) x == false  GLOBAL_STOP = true;");

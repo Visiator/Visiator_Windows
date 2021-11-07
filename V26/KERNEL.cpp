@@ -290,6 +290,19 @@ DWORD KERNEL::my_spawnl_2(DWORD pid, wchar_t *cmd, wchar_t *paramerts) {
 };
 
 DWORD KERNEL::my_spawnl(DWORD pid, wchar_t *cmd, wchar_t *paramerts) {
+	
+	if (my_strcmp(paramerts, L"indicator") == 0) {
+		sudp("my_spawnl indicator");
+	}
+	else {
+		if (my_strcmp(paramerts, L"agent") == 0) {
+			sudp("my_spawnl agent");
+		}
+		else {
+			sudp("my_spawnl 1");
+		}
+	}
+
 	if (pid == 0 || cmd == NULL || paramerts == NULL || cmd[0] == 0) return 0;
 
 	wchar_t prm[1500];
@@ -353,10 +366,11 @@ DWORD KERNEL::my_spawnl(DWORD pid, wchar_t *cmd, wchar_t *paramerts) {
 		&startup_info,
 		&proc_info);
 	if (rr == FALSE) {
-		//send_udp("CreateProcessAsUser err");
+		sudp("CreateProcessAsUser err");
 
 		return 0;
 	}
+	
 	pp = proc_info.dwProcessId;
 
 	CloseHandle(proc_info.hThread);
@@ -364,7 +378,10 @@ DWORD KERNEL::my_spawnl(DWORD pid, wchar_t *cmd, wchar_t *paramerts) {
 
 	CloseHandle(hToken);
 
-	//send_udp( "CreateProcessAsUser OK ", pp);
+	char ss[500];
+	sprintf_s(ss, 450, "CreateProcessAsUser OK %d", pp);
+
+	sudp( ss );
 
 	return pp;
 }

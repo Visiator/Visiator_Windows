@@ -29,6 +29,10 @@
 #define sizeof_MASTER_AGENT_PACKET_HEADER 128
 #define sizeof_ENCODED_SCREEN_8bit_header 84
 
+#define packet_type_REQUEST_SCREEN_12bit 111
+#define packet_type_RESPONCE_SCREEN_12bit 112
+
+
 struct MASTER_AGENT_PACKET_HEADER
 {
 	unsigned int packet_size;
@@ -199,7 +203,9 @@ public:
 	// 2020 bool interaction_with_agent_GET_CLIPBOARD(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, unsigned char **buf, unsigned int *buf_size);
 	
 
-	bool interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, ENCODED_SCREEN_8bit_header *scr_head_buf, SCREEN_LIGHT_one_byte *screen_light);
+	bool interaction_with_agent_GET_SCREEN_8bit(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, ENCODED_SCREEN_8bit_header *scr_head_buf, SCREEN_LIGHT_one_byte *screen_light);
+	bool interaction_with_agent_GET_SCREEN_12bit(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv, ENCODED_SCREEN_12bit_header *scr_head_buf, SCREEN_LIGHT_12bit *screen_light_12bit);
+
 	//bool interaction_with_agent_GET_SCREEN(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_8bit_header *scr_head_buf, SCREEN_LIGHT_one_byte *screen_light);
 	bool interaction_with_agent_SEND_EVENT(MASTER_AGENT_PACKET_HEADER *packet_send, MASTER_AGENT_PACKET_HEADER *packet_recv);
 

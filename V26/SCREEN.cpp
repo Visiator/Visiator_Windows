@@ -127,6 +127,11 @@ void SCREEN_LIGHT_one_byte::unlock() {
 
 void SCREEN_LIGHT_one_byte::get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffer, int g_nWidth, int g_nHeight, int g_nColorMode) {
 
+	char ss[500];
+	for (int i = 0; i < 500; i++) ss[i] = 0;
+	sprintf_s(ss, 450, "get_screen_from_BitBlt_buffer8 %d %d ", g_nWidth, g_nHeight);
+	sudp(ss);
+
 	unsigned char *ee;
 	unsigned int *z, *zz, zzz;
 	int jj, y, x; // fe
@@ -166,6 +171,8 @@ void SCREEN_LIGHT_one_byte::get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffe
 
 		unsigned int g16, b16, r16;
 
+		
+
 		for (y = 0; y < g_nHeight; y++)
 		{
 			/*
@@ -184,6 +191,7 @@ void SCREEN_LIGHT_one_byte::get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffe
 			{
 				//f800 07e0 001f
 
+				
 
 				zzz = *zz16 & 0xffff;
 
@@ -1254,8 +1262,10 @@ void SCREEN_LIGHT_12bit::emulate_red() {
 
 	unsigned char *q;
 
+	q = buf;
+
 	for (int j = 0; j < 250; j++) {
-		q = buf + j * 250;
+		
 		for (int i = 0; i < 250; i+=2) {
 			*q++ = 0x00;
 			*q++ = 0xf0;
@@ -1263,8 +1273,29 @@ void SCREEN_LIGHT_12bit::emulate_red() {
 		}
 	}
 
-	buf_len = 250 / 2 * 250 * 3;
+	
 
+	// 1 - 7 - красный
+	// 8 16 - зеленый
+	// 32 - темно синий
+}
+
+void SCREEN_LIGHT_12bit::emulate_dark_blue() {
+
+	set_new_size_(250, 250);
+
+	unsigned char *q;
+	q = buf;
+	for (int j = 0; j < 250; j++) {
+		
+		for (int i = 0; i < 250; i += 2) {
+			*q++ = 0x00;
+			*q++ = 0xf0;
+			*q++ = 0x0f;
+		}
+	}
+
+	
 	// 1 - 7 - красный
 	// 8 16 - зеленый
 	// 32 - темно синий
@@ -1272,6 +1303,19 @@ void SCREEN_LIGHT_12bit::emulate_red() {
 
 void SCREEN_LIGHT_12bit::clean_() {
 	old_screen_id = -1;
+
+	if (buf != nullptr) delete[] buf;
+	buf = nullptr;
+	buf_max_size_ = 0;
+	buf_len = 0;
+	w = 0;
+	h = 0;
+	header.w = 0;
+	header.h = 0;
+	clean_ENCODED_SCREEN_8bit_header(&header);
+
+
+
 }
 
 void SCREEN_LIGHT_12bit::set_new_size_(int w_, int h_) {
@@ -1281,11 +1325,16 @@ void SCREEN_LIGHT_12bit::set_new_size_(int w_, int h_) {
 	if (buf != nullptr) delete[] buf;
 	w = w_;
 	h = h_;
-	buf_max_size_ = w * h * 3;
+	buf_max_size_ = (w/2) * h * 3;
 	buf = new unsigned char[buf_max_size_];
-	buf_len = w * h * 3;
+	buf_len = (w/2) * h * 3;
 
-	//send_udp("set_new_size_() - - - - - - -");
+	header.w = w;
+	header.h = h;
+	
+	char ss[500];
+	sprintf_s(ss, 450, "SCREEN_LIGHT_12bit::set_new_size_ %d %d buf_len = %d ", w, h, buf_len);
+	sudp(ss);
 }
 
 
@@ -1485,13 +1534,27 @@ void encode_color_12bit_0(unsigned int zzz1, unsigned int zzz2, unsigned char *e
 
 	unsigned int r0, r1, r2, r3, r4, r5;
 	
-	r0 = (zzz1 & 0xff0000); r0 = (r0 >> 16); r0 /= 16;
-	r1 = zzz1 & 0xff00;   	r1 = r1 >> 8;    r1 /= 16;
-	r2 = zzz1 & 0xff;                        r2 /= 16;
+	if (zzz1 == 0xfffffe) {
+		r0 = 0xf;
+		r1 = 0xf;
+		r2 = 0xe;
+	}
+	else {
+		r0 = (zzz1 & 0xff0000); r0 = (r0 >> 16); r0 /= 16;
+		r1 = zzz1 & 0xff00;   	r1 = r1 >> 8;    r1 /= 16;
+		r2 = zzz1 & 0xff;                        r2 /= 16;
+	};
 
-	r3 = zzz2 & 0xff0000; r3 = r3 >> 16; r3 /= 16;
-	r4 = zzz2 & 0xff00;   r4 = r4 >> 8;  r4 /= 16;
-	r5 = zzz2 & 0xff;                    r5 /= 16;
+	if (zzz2 == 0xfffffe) {
+		r3 = 0xf;
+		r4 = 0xf;
+		r5 = 0xe;
+	}
+	else {
+		r3 = zzz2 & 0xff0000; r3 = r3 >> 16; r3 /= 16;
+		r4 = zzz2 & 0xff00;   r4 = r4 >> 8;  r4 /= 16;
+		r5 = zzz2 & 0xff;                    r5 /= 16;
+	};
 
 	ee[0] = ((r0 << 4) | r1);
 	ee[1] = ((r2 << 4) | r3);
@@ -1499,18 +1562,156 @@ void encode_color_12bit_0(unsigned int zzz1, unsigned int zzz2, unsigned char *e
 
 }
 
+unsigned int convert_16_to_32(unsigned short v) {
+
+	if (v == 0xfffe) return 0xfffffe;
+
+	/*
+	if (v == 0x7c00) {
+		return 0xff0000;
+	}
+	if (v == 0x03e0) {
+		return 0xff00;
+	}
+	if (v == 0x1f) {
+		return 0xff;
+	}
+
+	return 0xffffff;
+	*/
+	unsigned int zzz, b16, g16, r16;
+
+	zzz = v & 0xffff;
+
+	b16 = 0;
+	g16 = 0;
+	r16 = 0;
+
+	b16 = zzz & 0x001f;
+	g16 = zzz & 0x03e0;
+	r16 = zzz & 0x7c00;
+
+	g16 = g16 >> 5;
+	r16 = r16 >> 10;
+
+	b16 = encode_color_matrix_5_in_8[b16];
+	g16 = encode_color_matrix_5_in_8[g16];
+	r16 = encode_color_matrix_5_in_8[r16];
+
+
+	g16 = g16 << 8;
+	r16 = r16 << 16;
+
+
+
+
+
+	//zzz = r16 | b16 | g16;
+
+	return r16 | b16 | g16;
+}
+
 void SCREEN_LIGHT_12bit::get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffer, int g_nWidth, int g_nHeight, int g_nColorMode) {
+	if (this == nullptr) sudp("this == nullptr");
+	char ss[500];
+	for (int i = 0; i < 500; i++) ss[i] = 0;
+	sprintf_s(ss, 450, "get_screen_from_BitBlt_buffer12 %d %d %d ", g_nWidth, g_nHeight, g_nColorMode);
+	sudp(ss);
+
 	
-	unsigned int *q, *o;
-	
+	unsigned int *o;
 	unsigned char *ee;
+	
 	unsigned int *z, *zz, zzz1, zzz2, val;
 	int jj, y, x, wh; // fe
 
-	ee = (unsigned char *)buf;
+	
+	buf_len = 0;
+	if (g_nColorMode == 16) {
+		
+		unsigned short *q16;
 
+		if (g_nWidth != old_w || g_nHeight != old_h) {
+			old_screen_id = -1;
+			old_w = g_nWidth;
+			old_h = g_nHeight;
+
+			if (old__buf != nullptr) delete[] old__buf;
+			old__buf_size = old_w * old_h;
+			old__buf = new unsigned int[old__buf_size];
+		}
+
+		//////////////////===================================================================
+
+		q16 = (unsigned short *)BitBlt_raw_buffer;
+		o = old__buf;
+
+
+		//send__udp("ENCODE - - - - raw_screen->w = ", raw_screen->w );
+
+		wh = g_nWidth * g_nHeight;
+		//cc1 = 0;
+		//cc2 = 0;
+		//cc3 = 0;
+		if (old_screen_id > 0) {
+			for (int i = 0; i < wh; i++) {
+				val = convert_16_to_32( *q16 );
+				//if (val == 0xfe) cc3++;
+				if (*o == val) {
+					*q16 = 0xfffe;
+					//cc1++;
+				}
+				else {
+					*o = val;
+					//cc2++;
+				}
+				q16++;
+				o++;
+			}
+		}
+		else {
+			for (int i = 0; i < wh; i++) {
+				*o = convert_16_to_32(*q16);
+				q16++;
+				o++;
+			}
+		}
+
+		/////////======================================================================
+
+		unsigned short *z16, *zz16;
+
+		z16 = (unsigned short *)BitBlt_raw_buffer;
+
+		jj = 0;
+		
+		ee = (unsigned char *)buf;
+		buf_len = 0;
+
+		for (y = 0; y < g_nHeight; y++)
+		{
+
+			zz16 = &(z16[(g_nHeight - 1 - y)*g_nWidth]);
+
+			for (x = 0; x < g_nWidth; x += 2)
+			{
+				zzz1 = convert_16_to_32(*zz16) & 0xffffff; zz16++;
+				zzz2 = convert_16_to_32(*zz16) & 0xffffff; zz16++;
+
+				encode_color_12bit_0(zzz1, zzz2, ee);
+
+				ee += 3;
+				buf_len += 3;
+			};
+		};
+
+		return;
+	};
+
+	ee = (unsigned char *)buf;
 	buf_len = 0;
 	if (g_nColorMode == 32) {
+		unsigned int *q;
 
 		if (g_nWidth != old_w || g_nHeight != old_h) {
 			old_screen_id = -1;
@@ -1580,7 +1781,7 @@ void SCREEN_LIGHT_12bit::get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffer, 
 				buf_len += 3;
 			};
 		};
-
+		return;
 	};
 }
 
@@ -1695,29 +1896,30 @@ bool decode_screen_12bit_first(unsigned char *buf, int buf_size, SCREEN_LIGHT *r
 			r5 = *d & 0x0f;
 			d++;
 
-			r0 *= 16; r0 = r0 | 0x0f;
-			r1 *= 16; r1 = r1 | 0x0f;
-			r2 *= 16; r2 = r2 | 0x0f;
-			r3 *= 16; r3 = r3 | 0x0f;
-			r4 *= 16; r4 = r4 | 0x0f;
-			r5 *= 16; r5 = r5 | 0x0f;
+			r0 *= 16; r0 = r0 & 0xff;
+			r1 *= 16; r1 = r1 & 0xff;
+			r2 *= 16; r2 = r2 & 0xff;
+			r3 *= 16; r3 = r3 & 0xff;
+			r4 *= 16; r4 = r4 & 0xff;
+			r5 *= 16; r5 = r5 & 0xff;
 
 			z1 = (r0 << 16) | (r1 << 8) | r2;
 			z2 = (r3 << 16) | (r4 << 8) | r5;
 
-			if (z1 == 0xffffEf) {
+			if (z1 == 0xf0f0E0) {
 				q++;
 			}
 			else {
 				*q++ = z1;
 			};
 
-			if (z2 == 0xffffEf) {
+			if (z2 == 0xf0f0E0) {
 				q++;
 			}
 			else {
 				*q++ = z2;
 			};
+			
 		}
 	}
 	
@@ -2474,10 +2676,11 @@ void SCREEN_LIGHT_encoded_12bit::encode_screen_12bit(SCREEN_LIGHT_12bit *screen_
 
 	//d1 = GetTickCount();
 
-	if (encoded_buffer_max_size < screen_12bit->buf_len * 2) {
-		encoded_buffer_max_size = screen_12bit->buf_len * 2;
+	if (encoded_buffer_max_size < screen_12bit->buf_len * 2 + 300000) {
+		encoded_buffer_max_size = screen_12bit->buf_len * 2 + 300000;
 		if (encoded_buffer != nullptr) delete[] encoded_buffer;
 		encoded_buffer = new unsigned char[encoded_buffer_max_size];
+		sudp("new unsigned char");
 	}
 
 	lzo_uint size;
@@ -2522,18 +2725,18 @@ void SCREEN_LIGHT_encoded_12bit::encode_screen_12bit(SCREEN_LIGHT_12bit *screen_
 	header->body_size = size;
 	header->header_size = sizeof(ENCODED_SCREEN_12bit_header);
 
-	header->mouse_x = screen_12bit->mouse_x;
-	header->mouse_y = screen_12bit->mouse_y;
-	header->mouse_cursor_type_id = screen_12bit->mouse_cursor_type_id;
+	header->mouse_x = screen_12bit->header.mouse_x;
+	header->mouse_y = screen_12bit->header.mouse_y;
+	header->mouse_cursor_type_id = screen_12bit->header.mouse_cursor_type_id;
 
-	if (screen_12bit->mouse_x == last_set_mouse_x && screen_12bit->mouse_y == last_set_mouse_y) {
+	if (screen_12bit->header.mouse_x == last_set_mouse_x && screen_12bit->header.mouse_y == last_set_mouse_y) {
 		header->itis_user_move_mouse = 100;
 	}
 	else {
 		header->itis_user_move_mouse = 200;
 	}
 
-	header->keyboard_location = screen_12bit->keyboard_location;
+	header->keyboard_location = screen_12bit->header.keyboard_location;
 
 	screen_12bit->old_screen_id = screen_12bit->screen_id;
 }

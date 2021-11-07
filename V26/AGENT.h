@@ -13,6 +13,7 @@ class AGENT
 public:
 	HANDLE pipe_handle_read_info_ = 0; DWORD pipe_handle_read_info_TIMEOUT = 0;
 	bool is_run_MAIN_THREAD = false;
+	SCREEN_LIGHT_12bit *screen_12bit_tmp = nullptr;
 
 	DWORD last_detect_MASTER = 0;
 
@@ -34,6 +35,7 @@ public:
 	bool EXECUTE_read_write_is_run = false;
 
 	void PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_one_byte();
+	void PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_12bit();
 	void PIPE_SLAVE_EXECUTE_2_____FINAL_STOP_AGENT();
 	void PIPE_SLAVE_EXECUTE_2_____FINAL_REQUEST_EVENT(MASTER_AGENT_PACKET_HEADER_event *event);
 	void PIPE_SLAVE_EXECUTE_2_____FINAL_PING();

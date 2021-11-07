@@ -15,18 +15,6 @@ extern APPLICATION_ATTRIBUTES app_attributes;
 extern bool GLOBAL_STOP;
 extern VIEWER  *viewer;
 
-#define MY_MENU_CTRL_ALT_DEL 123345
-#define MY_MENU_LNG 123346
-#define MY_MENU_STRETCH 123347
-#define MY_MENU_NORMAL 123348
-#define MY_MENU_FULLSCREEN 123349
-#define MY_MENU_GET_CLIPBOARD 123350
-#define MY_MENU_SET_CLIPBOARD 123351
-#define MY_MENU_SEND_F1 123352
-#define MY_MENU_SYNC_CLIPBOARD 123353
-#define MY_MENU_TRANSFER_FILE 123354
-#define MY_MENU_SCREEN_FORMAT_8BIT 123355
-#define MY_MENU_SCREEN_FORMAT_12BIT 123356
 
 
 LRESULT CALLBACK MainWinProcViewer(HWND hw, UINT msg, WPARAM wp, LPARAM lp);
@@ -196,7 +184,7 @@ void VIEWER::RUN_VIEWER(uint8_t *str_partner_id_, uint8_t *pass_encrypted_length
 	h_system_menu = GetSystemMenu(app_attributes.viewer_window_hwnd, FALSE);
 
 	AppendMenu(h_system_menu, MF_SEPARATOR, 0, L"");
-	AppendMenu(h_system_menu, MF_STRING | MF_CHECKED, MY_MENU_SCREEN_FORMAT_8BIT, L"Screen format - 8bit");
+	AppendMenu(h_system_menu, MF_STRING, MY_MENU_SCREEN_FORMAT_8BIT, L"Screen format - 8bit");
 	AppendMenu(h_system_menu, MF_STRING, MY_MENU_SCREEN_FORMAT_12BIT, L"Screen format - 12bit");
 	AppendMenu(h_system_menu, MF_SEPARATOR, 0, L"");
 	AppendMenu(h_system_menu, MF_STRING, MY_MENU_GET_CLIPBOARD, L"Get clipboard");
@@ -915,34 +903,34 @@ LRESULT VIEWER::WM_SYSCOMMAND_(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
 
 
 	if ((int)wp == MY_MENU_CTRL_ALT_DEL) {
-		viewer->send_CtrlAltDel();
+		send_CtrlAltDel();
 	}
 
 	if ((int)wp == MY_MENU_LNG) {
-		viewer->send_Change_LNG();
+		send_Change_LNG();
 	}
 
 	if ((int)wp == MY_MENU_FULLSCREEN) {
-		viewer->change_view_mode(2);
+		change_view_mode(2);
 	}
 	if ((int)wp == MY_MENU_SEND_F1) {
-		viewer->char_keydown(0x100, 0x70, 0x3b0001); // press F1
-		viewer->char_keyup(0x101, 0x70, 0x3b0001); // unpress F1
+		char_keydown(0x100, 0x70, 0x3b0001); // press F1
+		char_keyup(0x101, 0x70, 0x3b0001); // unpress F1
 	}
 
 
 	if ((int)wp == MY_MENU_STRETCH) {
-		viewer->change_view_mode(VIEW_MODE_STRETCH);
+		change_view_mode(VIEW_MODE_STRETCH);
 	}
 	if ((int)wp == MY_MENU_TRANSFER_FILE) {
-		viewer->transfer_dialog_use();
+		transfer_dialog_use();
 	}
 
 	if ((int)wp == MY_MENU_SCREEN_FORMAT_12BIT) {
-		viewer->change_screen_format(MY_MENU_SCREEN_FORMAT_8BIT);
+		change_screen_format(MY_MENU_SCREEN_FORMAT_8BIT);
 	}
 	if ((int)wp == MY_MENU_SCREEN_FORMAT_8BIT) {
-		viewer->change_screen_format(MY_MENU_SCREEN_FORMAT_12BIT);
+		change_screen_format(MY_MENU_SCREEN_FORMAT_12BIT);
 	}
 
 	/*if ((int)wp == MY_MENU_NORMAL) {
@@ -1930,13 +1918,16 @@ void VIEWER::start_ASYNC_LOAD_EXECUTE() {
 
 void VIEWER::change_screen_format(int new_format) {
 	if (new_format == MY_MENU_SCREEN_FORMAT_12BIT) {
-		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_8BIT, MF_STRING | MF_CHECKED, MY_MENU_SCREEN_FORMAT_8BIT, L"Screen format - 8bit");
-		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_12BIT, MF_STRING, MY_MENU_SCREEN_FORMAT_12BIT, L"Screen format - 12bit");
-	}
-	else {
 		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_8BIT, MF_STRING, MY_MENU_SCREEN_FORMAT_8BIT, L"Screen format - 8bit");
 		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_12BIT, MF_STRING | MF_CHECKED, MY_MENU_SCREEN_FORMAT_12BIT, L"Screen format - 12bit");
+		
+		if (net_client_session != nullptr) net_client_session->set_need_SCREEN_FORMAT(PACKET_TYPE_request_start_screenflow_ver22);
+	}
+	else {
+		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_8BIT, MF_STRING | MF_CHECKED, MY_MENU_SCREEN_FORMAT_8BIT, L"Screen format - 8bit");
+		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_12BIT, MF_STRING, MY_MENU_SCREEN_FORMAT_12BIT, L"Screen format - 12bit");
 
+		if (net_client_session != nullptr) net_client_session->set_need_SCREEN_FORMAT(PACKET_TYPE_request_start_screenflow_ver11);
 	};
 	
 
@@ -1952,4 +1943,10 @@ void VIEWER::set_SERVER_VER(int new_SERVER_VER) {
 		ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_12BIT, MF_STRING | MF_DISABLED, MY_MENU_SCREEN_FORMAT_12BIT, L"Screen format - 12bit");
 	}
 
+}
+
+void VIEWER::disable_12bit() {
+	if (net_client_session != nullptr) net_client_session->set_need_SCREEN_FORMAT(PACKET_TYPE_request_start_screenflow_ver11);
+	ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_8BIT, MF_STRING | MF_DISABLED | MF_GRAYED | MF_CHECKED, MY_MENU_SCREEN_FORMAT_8BIT, L"Screen format - 8bit");
+	ModifyMenu(h_system_menu, MY_MENU_SCREEN_FORMAT_12BIT, MF_STRING | MF_DISABLED | MF_GRAYED, MY_MENU_SCREEN_FORMAT_12BIT, L"Screen format - 12bit");
 }

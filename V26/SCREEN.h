@@ -97,43 +97,6 @@ struct  ENCODED_SCREEN_12bit_header
 #define PAL12_len_maxcount 4096
 
 
-
-class SCREEN_LIGHT_12bit {
-public:
-
-	//ENCODED_SCREEN_12bit_header *header = nullptr;
-
-	unsigned short w = 0, h = 0;
-	unsigned short mouse_x;
-	unsigned short mouse_y;
-	unsigned int   mouse_cursor_type_id;
-	unsigned int   keyboard_location;
-
-	unsigned char *buf = nullptr;
-	int buf_max_size_ = 0;
-	int buf_len = 0;
-		
-	int screen_id = 0;
-	int old_screen_id = 0;
-	int old_w = 0, old_h = 0;
-	unsigned int *old__buf = nullptr;
-	unsigned int old__buf_size = 0;
-
-	void clean_();
-
-	void set_new_size_(int w_, int h_);
-	void encode();
-	void load_from_BMP_buffer(BYTE *buf, SCREEN_LIGHT_12bit *b12);
-
-	void get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffer, int g_nWidth, int g_nHeight, int g_nColorMode);
-
-	void emulate_red();
-
-	SCREEN_LIGHT_12bit();
-	~SCREEN_LIGHT_12bit();
-};
-
-
 struct  ENCODED_SCREEN_8bit_header
 {
 	unsigned int reserv01;
@@ -163,6 +126,44 @@ struct  ENCODED_SCREEN_8bit_header
 	unsigned int   itis_user_move_mouse;
 
 };
+
+class SCREEN_LIGHT_12bit {
+public:
+	ENCODED_SCREEN_8bit_header header;
+	//ENCODED_SCREEN_12bit_header *header = nullptr;
+
+	unsigned short w = 0, h = 0;
+	unsigned short mouse_x;
+	unsigned short mouse_y;
+	unsigned int   mouse_cursor_type_id;
+	unsigned int   keyboard_location;
+
+	unsigned char *buf = nullptr;
+	int buf_max_size_ = 0;
+	int buf_len = 0;
+		
+	int screen_id = 0;
+	int old_screen_id = 0;
+	int old_w = 0, old_h = 0;
+	unsigned int *old__buf = nullptr;
+	unsigned int old__buf_size = 0;
+
+	void clean_();
+
+	void set_new_size_(int w_, int h_);
+	void encode();
+	void load_from_BMP_buffer(BYTE *buf, SCREEN_LIGHT_12bit *b12);
+
+	void get_screen_from_BitBlt_buffer(void *BitBlt_raw_buffer, int g_nWidth, int g_nHeight, int g_nColorMode);
+
+	void emulate_red();
+	void emulate_dark_blue();
+
+	SCREEN_LIGHT_12bit();
+	~SCREEN_LIGHT_12bit();
+};
+
+
 
 
 class SCREEN_LIGHT_one_byte

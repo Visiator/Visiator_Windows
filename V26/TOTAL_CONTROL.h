@@ -12,6 +12,10 @@ public:
 	unsigned int SERVICE_PIPE_MASTER_THREAD_EXECUTE_2 = 0;
 	unsigned int SERVICE_last_agent_active = 0;
 	unsigned int SERVICE_PIPE_WRITE_INFO_THREAD_EXECUTE = 0;
+	unsigned int SERVICE_interaction_with_agent_GET_SCREEN_w = 0;
+	unsigned int SERVICE_interaction_with_agent_GET_SCREEN_h = 0;
+	unsigned int SERVICE_interaction_with_agent_GET_SCREEN_cursor = 0;
+
 
 	unsigned int AGENT_PIPE_READ_SERVICE_INFO_EXECUTE_master_detect_ok = 0;
 	unsigned int AGENT_PIPE_READ_SERVICE_INFO_EXECUTE_master_detect_fail = 0;

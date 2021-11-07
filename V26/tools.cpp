@@ -34,6 +34,7 @@ void fatal_error(const char *s) {
 		fclose(f);
 	}
 
+	sudp((char *)s);
 }
 void fatal_error(char *s) {
 	fatal_error((const char *)s);
@@ -3605,11 +3606,22 @@ int BitBlt_fail = 0;
 BITMAPINFO *bitmap_1 = nullptr;
 
 bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12bit) {
+	
+	sudp("get_screenshot");
 
 	if (screen == nullptr && screen_12bit == nullptr) {
 		fatal_error("get_screenshot() screen == NULL");
+		sudp("get_screenshot return1");
 		return false;
 	}
+
+	if (screen != nullptr) {
+		sudp("get_screenshot screen");
+	}
+	if (screen_12bit != nullptr) {
+		sudp("get_screenshot screen_12bit");
+	}
+
 	// screen_id
 	DWORD dt1, dt2, dt3, oo; // , dt100
 
@@ -3678,6 +3690,12 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 
 	};
 	hbitmap = ::CreateDIBSection(hdc2, bitmap_1, DIB_RGB_COLORS, (void **)&BitBlt_raw_buffer, NULL, 0x0); // DeleteObject(hbitmap);
+	if (hbitmap == NULL) {
+		sudp("hbitmap == NULL");
+	}
+	else {
+		sudp("hbitmap != NULL");
+	}
 	hold_bitmap = ::SelectObject(hdc2, hbitmap);
 
 	if (screen != nullptr) {
@@ -3694,34 +3712,47 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 
 	dt2 = GetTickCount();
 
-	if (BitBlt(hdc2, 0, 0, g_nWidth, g_nHeight, g_hdcScreen, 0, 0, SRCCOPY | 0x40000000))
-	{
+	int i1, i2, i3;
+	char ss[500];
+	sprintf_s(ss, 450, "BitBlt... %d %d g_nColorMode=%d", g_nWidth, g_nHeight, g_nColorMode);
+	sudp(ss);
 
+	if (BitBlt(hdc2, 0, 0, g_nWidth, g_nHeight, g_hdcScreen, 0, 0, SRCCOPY | 0x40000000)) {
+		sudp("BitBlt OK! ");
 		BitBlt_fail = 0;
 		oo = 1;
+		
 	}
 	else {
-		char ss[200];
+		
 		DWORD err;
 		err = GetLastError();
 
 		if (err == ERROR_ACCESS_DENIED) {
-			//send_udp("ERROR_ACCESS_DENIED");
+			sudp("ERROR_ACCESS_DENIED");
 		}
 		else {
 
-			//sprintf__s_D(ss, 90, "ERR = %d ", err);
-			//send_udp(ss);
+			sprintf_s(ss, 90, "ERR = %d ", err);
+			sudp(ss);
 		};
 
 		BitBlt_fail++;
 		if (BitBlt_fail > 15 && app_attributes.is_agent == true) set_GLOBAL_STOP_true(); // GLOBAL_STOP = true;
-		if(screen != nullptr) screen->set_new_size_(0, 0);
-		if (screen_12bit != nullptr) screen_12bit->set_new_size_(0, 0);
-		// 2019 10 TODO ! fill_color_onebyte_buf(2);
+		if (screen != nullptr) screen->emulate_dark_blue();
+		if (screen_12bit != nullptr) screen_12bit->emulate_dark_blue();
+		// 2019 10 TODO ! 		fill_color_onebyte_buf(2);
 
 		//int err = GetLastError();
-		//send_udp("~ ~ ~ ~ ~ ~ ~ ~ BitBlt ERROR! ");
+		sudp("BitBlt ERROR! ");
+
+
+		::SelectObject(hdc2, hold_bitmap);
+		DeleteObject(hbitmap);
+
+		ReleaseDC(NULL, g_hdcScreen);
+		::DeleteDC(hdc2);
+
 		return false;
 	}
 
@@ -3730,7 +3761,7 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 	if (screen != nullptr)       screen->get_screen_from_BitBlt_buffer(BitBlt_raw_buffer, g_nWidth, g_nHeight, g_nColorMode);
 	if (screen_12bit != nullptr) screen_12bit->get_screen_from_BitBlt_buffer(BitBlt_raw_buffer, g_nWidth, g_nHeight, g_nColorMode);
 
-		
+	sudp("+1");
 
 	
 
@@ -3749,8 +3780,13 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 	//sprintf_ s(ss, 290, "%d - %d - %d = %d ", dt2-dt1, dt3-dt2, dt100-dt3, dt100 - dt1);
 	//send_udp(ss);
 
-	if(screen != nullptr) screen->header.keyboard_location = get_KeyboardLocation();
-	if (screen_12bit != nullptr) screen_12bit->keyboard_location = get_KeyboardLocation();
+	if (screen != nullptr) {
+		screen->header.keyboard_location = get_KeyboardLocation();
+	};
+	if (screen_12bit != nullptr) {
+		screen_12bit->keyboard_location = get_KeyboardLocation();
+		screen_12bit->header.keyboard_location = screen_12bit->keyboard_location;
+	};
 	//POINT p;
 	//GetCursorPos(&p);
 
@@ -3775,6 +3811,13 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 			screen_12bit->mouse_x = (unsigned short)cursor_info.ptScreenPos.x;
 			screen_12bit->mouse_y = (unsigned short)cursor_info.ptScreenPos.y;
 			screen_12bit->mouse_cursor_type_id = decode_mouse_cursor_type((unsigned long long)cursor_info.hCursor);
+
+			screen_12bit->header.mouse_x = screen_12bit->mouse_x;
+			screen_12bit->header.mouse_y = screen_12bit->mouse_y;
+			screen_12bit->header.mouse_cursor_type_id = screen_12bit->mouse_cursor_type_id;
+
+			/*sprintf_s(ss, 450, "screen_12bit mxy %d %d %d", i1, i2, i3);
+			sudp( ss );*/
 		}
 		
 
@@ -3792,6 +3835,10 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 			screen_12bit->mouse_x = -1;
 			screen_12bit->mouse_y = -1;
 			screen_12bit->mouse_cursor_type_id = -1;
+
+			screen_12bit->header.mouse_x = -1;
+			screen_12bit->header.mouse_y = -1;
+			screen_12bit->header.mouse_cursor_type_id = -1;
 		}
 	}
 
@@ -4736,12 +4783,18 @@ void generate_easy_pass(unsigned char *psw, wchar_t *psw_w) {
 	while (v4 >= 10) {
 		v4 = get_sol() & 0xF;
 	}
+
+	v1 = 1;
+	v2 = 1;
+	v3 = 1;
+	v4 = 1;
+
 	psw[0] = v1 + '0';
 	psw[1] = v2 + '0';
 	psw[2] = v3 + '0';
 	psw[3] = v4 + '0';
 	psw[4] = 0;
-
+	
 	psw_w[0] = v1 + L'0';
 	psw_w[1] = v2 + L'0';
 	psw_w[2] = v3 + L'0';
@@ -5129,7 +5182,7 @@ void RUN_INDICATOR_AS_CONSOLE() {
 		//send_udp2(ss);
 	}
 	else {
-		//send_udp2("RUN_INDICATOR_AS_CONSOLE pid == 0 error");
+		sudp("RUN_INDICATOR_AS_CONSOLE pid == 0 error");
 	}
 
 }

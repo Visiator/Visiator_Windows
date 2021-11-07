@@ -119,6 +119,9 @@ void TOTAL_CONTROL::send_udp_SERVICE() {
 			add(ss, "SERVICE_PIPE_MASTER_THREAD_EXECUTE_2", SERVICE_PIPE_MASTER_THREAD_EXECUTE_2);
 			add(ss, "SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status", SERVICE_PIPE_INDICATOR_THREAD_EXECUTE_status);
 			add(ss, "SERVICE_last_agent_active", SERVICE_last_agent_active);
+			add(ss, "SERVICE_interaction_with_agent_GET_SCREEN_w", SERVICE_interaction_with_agent_GET_SCREEN_w);
+			add(ss, "SERVICE_interaction_with_agent_GET_SCREEN_h", SERVICE_interaction_with_agent_GET_SCREEN_h);
+			add(ss, "SERVICE_interaction_with_agent_GET_SCREEN_cursor", SERVICE_interaction_with_agent_GET_SCREEN_cursor);
 
 			if (service->net_server_session_pool == nullptr) {
 				add(ss, "service->net_server_session_pool == nullptr");

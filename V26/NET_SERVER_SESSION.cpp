@@ -496,7 +496,7 @@ void NET_SERVER_SESSION::NetSession_Main_Loop(SOCKET sos) {
 		
 
 		if (need_start_screenflow == true) {
-
+			//sudp("need_start_screenflow == true");
 
 			if (responce_screen_in_queue == 0) {
 
@@ -817,9 +817,9 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 	crc = (unsigned int *)&(buf[4]);
 	type = (unsigned int *)&(buf[8]);
 
-	//char ss[500];
-	//sprintf_ s(ss, 450, "analiz_command() sz=%d crc=%d type=%d ", (int)sz, (int)crc, (int)type);
-	//send_udp(ss);
+	/*char ss[500];
+	sprintf_s(ss, 450, "analiz_command() sz=%d crc=%d type=%d ", (int)sz, (int)crc, (int)type);
+	sudp(ss);*/
 
 	if (*crc != 0) {
 		/*c1 = CRC32_short((void *)&(buf[8]), (8 + 16));
@@ -996,7 +996,7 @@ void NET_SERVER_SESSION::analiz_command(unsigned char *buf) {
 		}
 		*/
 
-		//send_udp2("SRV recv PACKET_TYPE_request_start_screenflow ", *reserv4);
+		//sudp("SRV recv PACKET_TYPE_request_start_screenflow ");
 
 		//commit_from_client_LAST_SCREEN_ID = *reserv3;
 		need_start_screenflow_FORMAT_VER = *type;
@@ -1181,7 +1181,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGE
 			}
 		}
 		else {
-			if (service->interaction_with_agent_GET_SCREEN(w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
+			if (service->interaction_with_agent_GET_SCREEN_8bit(w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
 				screen_one_byte_->emulate_red();
 			}
 		};
@@ -1273,6 +1273,10 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGE
 
 void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AGENT_PACKET_HEADER *w_buf, MASTER_AGENT_PACKET_HEADER *r_buf, ENCODED_SCREEN_12bit_header *scr_head_buf) {
 
+	/*char ss[550];
+	sprintf_s(ss, 450, "SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first");
+	sudp(ss);*/
+
 	if (screen_12bit == nullptr) screen_12bit = new SCREEN_LIGHT_12bit();
 
 	if (jj < 3) {
@@ -1286,20 +1290,23 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AG
 
 				screen_12bit->emulate_red();
 			}
+			//screen_12bit->emulate_red();
 		}
 		else {
-			/*
-			if (service->interaction_with_agent_GET_SCREEN(w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
-				screen_one_byte_->emulate_red();
+			
+			if (service->interaction_with_agent_GET_SCREEN_12bit(w_buf, r_buf, scr_head_buf, screen_12bit) == false) {
+				screen_12bit->emulate_red();
 			}
-			*/
+			
 		};
 	};
 	screen_12bit->screen_id++;
 
 	if (screen_encoded_12bit == NULL) screen_encoded_12bit = new SCREEN_LIGHT_encoded_12bit();
-
+	
+	sudp("encode_screen_12bit...");
 	screen_encoded_12bit->encode_screen_12bit(screen_12bit, last_set_mouse_x, last_set_mouse_y);
+	sudp("encode_screen_12bit ok");
 
 	unsigned char *_buf;
 	unsigned int _buf_len, *sz, *crc, *sol, *type, zz;
@@ -1366,7 +1373,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_second(MASTER_AG
 			}
 		}
 		else {
-			if (service->interaction_with_agent_GET_SCREEN(w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
+			if (service->interaction_with_agent_GET_SCREEN_8bit(w_buf, r_buf, scr_head_buf, screen_one_byte_) == false) {
 				screen_one_byte_->emulate_red();
 			}
 		};

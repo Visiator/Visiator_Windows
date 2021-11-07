@@ -161,6 +161,8 @@ public:
 	bool need_send_delete_cancel = false;
 	void delete_files_list_from_partner(unsigned char *buf, unsigned int buf_len);
 
+	int need_SCREEN_FORMAT_ = 0;
+	void set_need_SCREEN_FORMAT(int need_SCREEN_FORMAT_);
 
 	NET_CLIENT_SESSION();
 	~NET_CLIENT_SESSION();

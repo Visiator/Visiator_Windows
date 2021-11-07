@@ -381,10 +381,17 @@ int  NET_CLIENT_SESSION::Connect_to_server( unsigned long long partner_id, unsig
 
 					connection_to_partner_established = true;
 					if (SERVER_VER > 4000) {
-						need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver22;
+						//need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver22;
+						if(viewer != nullptr) viewer->change_screen_format(MY_MENU_SCREEN_FORMAT_12BIT);
+						set_need_SCREEN_FORMAT(PACKET_TYPE_request_start_screenflow_ver22);
 					}
 					else {
-						need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver11;
+						//need_start_screenflow_from_server_FORMAT_VER = PACKET_TYPE_request_start_screenflow_ver11;
+						if (viewer != nullptr) {
+							viewer->disable_12bit();
+							viewer->change_screen_format(MY_MENU_SCREEN_FORMAT_8BIT);
+						};
+						set_need_SCREEN_FORMAT(PACKET_TYPE_request_start_screenflow_ver11);
 					}
 
 					if (parent_func__connect != NULL) parent_func__connect();
@@ -1677,6 +1684,10 @@ bool NET_CLIENT_SESSION::need_request_FilesList(wchar_t *folder_name) {
 	my_strcpy_s(need_request_files_list_DIR, 5000, folder_name);
 	need_request_files_list = true;
 	return true;
+}
+
+void NET_CLIENT_SESSION::set_need_SCREEN_FORMAT(int need_SCREEN_FORMAT_) {
+	need_start_screenflow_from_server_FORMAT_VER = need_SCREEN_FORMAT_;
 }
 
 void NET_CLIENT_SESSION::delete_files_list_from_partner(unsigned char *buf, unsigned int buf_len) {

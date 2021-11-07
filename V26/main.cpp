@@ -36,7 +36,7 @@ INDICATOR *indicator = NULL;
 CLIPBOARD clipboard;
 
 int SIGABRT_id = 0;
-
+void test_bbb();
 void test_b12();
 
 void WinMain_finish();
@@ -49,7 +49,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	
 	if (init_net() == false) { return -1; }
 
-	
+	//init_encode_color_matrix_all();
 
 	app_attributes.get_all_parametrs(hInstance);
 	
@@ -63,6 +63,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	total_control = new TOTAL_CONTROL();
 	total_control->start_EXECUTE();
+
+	test_bbb();
 
 	/*
 	thread_list = new ALL_THREAD_LIST();
@@ -387,4 +389,22 @@ void test_b12() {
 
 };
 
+SCREEN_LIGHT_12bit *screen_12bit = nullptr;
+SCREEN_LIGHT_encoded_12bit *screen_encoded_12bit = nullptr;
 
+void test_bbb() {
+	return;
+	if (screen_12bit == nullptr) screen_12bit = new SCREEN_LIGHT_12bit();
+	if (screen_encoded_12bit == nullptr) screen_encoded_12bit = new SCREEN_LIGHT_encoded_12bit();
+
+	for (int i = 0; i < 500; i++) {
+
+		screen_12bit->emulate_red();
+
+		screen_encoded_12bit->encode_screen_12bit(screen_12bit, 10, 11);
+
+	};
+
+	// if (get_screenshot(nullptr, screen_12bit) == false) {
+
+}
