@@ -213,6 +213,7 @@ class NET_SERVER_SESSION
 {
 public:
 	HIGHLEVEL_COMMAND_QUEUE out_queue_command;
+	MULTIDISPLAY multidisplay;
 
 	unsigned long long PUBLIC_ID = 0, PRIVATE_ID = 0;
 	unsigned char PASS_ENCODED[32];

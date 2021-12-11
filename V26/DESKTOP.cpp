@@ -376,13 +376,18 @@ void DESKTOP::calc_start_size(int &x, int &y, int &w, int &h) {
 	display_h = GetSystemMetrics(SM_CYSCREEN);
 
 	x = display_w / 2 - w / 2;
-	y = display_h / 2 - h / 2 - h;
+	y = display_h / 2 - h / 2 - h/2;
 
 
 }
 
 
 void DESKTOP::RUN() {
+
+	if (lock_mutex(&mutex, L"Global\\vdesk") == false) {
+		sudp("mutex lock is fail");
+		return;
+	}
 
 	app_attributes.is_desktop = true;
 
@@ -415,7 +420,7 @@ void DESKTOP::RUN() {
 
 	int x, y, w, h;
 
-	int scr_w, scr_h;
+	int scr_w, scr_h; 
 
 	get_screen_size(&scr_w, &scr_h);
 
@@ -424,12 +429,14 @@ void DESKTOP::RUN() {
 	x = 400; y = 50; w = 200; h = 600;
 	calc_start_size(x, y, w, h);
 
-	load_onetime_screenposition_desktop(&x, &y);
+	//load_onetime_screenposition_desktop(&x, &y);
 
 	if (x < 0) x = 0;
 	if (y < 0) y = 0;
 	if (x + 100 > scr_w) x = scr_w - 100;
 	if (y + 100 > scr_h) y = scr_h - 100;
+
+	
 
 	app_attributes.desktop_window_hwnd = CreateWindow(L"VISIATOR DESKTOP", L"VISIATOR", WS_POPUP, x, y, w, h, NULL, NULL, app_attributes.hInstance, NULL);
 	//app_attributes.desktop_window_hwnd = CreateWindowEx( 0, L"VISIATOR VIEWER", L"VISIATOR", WS_OVERLAPPEDWINDOW, x, y, w, h, NULL, NULL, app_attributes.hInstance, NULL);

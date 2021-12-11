@@ -77,8 +77,8 @@ public:
 	NOTIFY_ICON notify_icon;
 	bool clipboard_is_changed = false;
 
-	HANDLE mutex;
-	bool lock_mutex(wchar_t *mutex_name);
+	HANDLE mutex = 0;
+	
 
 	DWORD last_read_service_info_INDICATOR = 0;
 

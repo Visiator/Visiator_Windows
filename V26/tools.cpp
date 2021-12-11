@@ -141,6 +141,7 @@ SOCKET udp_socket_log2 = 0;
 struct	sockaddr_in udp_socket_log2_adr2;
 
 void sudp(char *p) {
+	/*
 	if (p == nullptr) return;
 
 
@@ -193,13 +194,10 @@ void sudp(char *p) {
 	int i;
 	i = 0;
 	while (upp[i] != 0 && i < 900-1) i++;
-	//sendto(udp_socket_log, upp, i, 0, (struct sockaddr *)&udp_socket_log_adr1, sizeof(udp_socket_log_adr1));
 
 	sendto(udp_socket_log2, upp, i+1, 0, (struct sockaddr *)&udp_socket_log2_adr2, sizeof(udp_socket_log2_adr2));
 
-	//sendto(udp_socket_log, upp, i, 0, (struct sockaddr *)&udp_socket_log_adr3, sizeof(udp_socket_log_adr3));
-	//Sleep(1);
-
+	*/
 }
 
 
@@ -3605,8 +3603,14 @@ bool read_pipe(HANDLE pipe, void *buf, int need_read_size, DWORD *read_size, DWO
 int BitBlt_fail = 0;
 BITMAPINFO *bitmap_1 = nullptr;
 
-bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12bit) {
+bool get_screenshot(MULTIDISPLAY *multidisplay, SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12bit) {
 	
+	
+
+	int _x, _y, _w, _h;
+
+	multidisplay->calc_MultiDisplaySize();
+
 	sudp("get_screenshot");
 
 	if (screen == nullptr && screen_12bit == nullptr) {
@@ -3655,8 +3659,8 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 
 	//g_nWidth = GetDeviceCaps(g_hdcScreen, HORZRES);
 	//g_nHeight = GetDeviceCaps(g_hdcScreen, VERTRES);
-	g_nWidth = GetDeviceCaps(g_hdcScreen, DESKTOPHORZRES);
-	g_nHeight = GetDeviceCaps(g_hdcScreen, DESKTOPVERTRES);
+	g_nWidth = multidisplay->max_w;// GetDeviceCaps(g_hdcScreen, DESKTOPHORZRES) + 1280;
+	g_nHeight = multidisplay->max_h;// GetDeviceCaps(g_hdcScreen, DESKTOPVERTRES);
 
 	g_nColorMode = GetDeviceCaps(g_hdcScreen, BITSPIXEL);
 	g_nPlanes = GetDeviceCaps(g_hdcScreen, PLANES);
@@ -3667,12 +3671,12 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 	}
 
 	bitmap_1->bmiHeader.biSize = sizeof(bitmap_1->bmiHeader);
-	bitmap_1->bmiHeader.biWidth = g_nWidth;
+	bitmap_1->bmiHeader.biWidth = (g_nWidth);
 	bitmap_1->bmiHeader.biHeight = g_nHeight;
 	bitmap_1->bmiHeader.biPlanes = 1;
 	bitmap_1->bmiHeader.biBitCount = (WORD)g_nColorMode;
 	bitmap_1->bmiHeader.biCompression = BI_RGB;
-	bitmap_1->bmiHeader.biSizeImage = g_nWidth * 4 * g_nHeight;
+	bitmap_1->bmiHeader.biSizeImage = (g_nWidth) * 4 * g_nHeight;
 	bitmap_1->bmiHeader.biClrUsed = 0;
 	bitmap_1->bmiHeader.biClrImportant = 0;
 
@@ -3712,12 +3716,15 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 
 	dt2 = GetTickCount();
 
+
+	
+
 	int i1, i2, i3;
 	char ss[500];
 	sprintf_s(ss, 450, "BitBlt... %d %d g_nColorMode=%d", g_nWidth, g_nHeight, g_nColorMode);
 	sudp(ss);
 
-	if (BitBlt(hdc2, 0, 0, g_nWidth, g_nHeight, g_hdcScreen, 0, 0, SRCCOPY | 0x40000000)) {
+	if (BitBlt( hdc2, 0, 0, multidisplay->max_w, multidisplay->max_h, g_hdcScreen, multidisplay->min_x, multidisplay->min_y, SRCCOPY | 0x40000000)) {
 		sudp("BitBlt OK! ");
 		BitBlt_fail = 0;
 		oo = 1;
@@ -3802,14 +3809,14 @@ bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12
 	if (GetCursorInfo(&cursor_info) == TRUE) {
 
 		if (screen != nullptr) {
-			screen->header.mouse_x = (unsigned short)cursor_info.ptScreenPos.x;
-			screen->header.mouse_y = (unsigned short)cursor_info.ptScreenPos.y;
+			screen->header.mouse_x = (unsigned short)cursor_info.ptScreenPos.x - multidisplay->min_x;
+			screen->header.mouse_y = (unsigned short)cursor_info.ptScreenPos.y - multidisplay->min_y;
 			screen->header.mouse_cursor_type_id = decode_mouse_cursor_type((unsigned long long)cursor_info.hCursor);
 		}
 
 		if (screen_12bit != nullptr) {
-			screen_12bit->mouse_x = (unsigned short)cursor_info.ptScreenPos.x;
-			screen_12bit->mouse_y = (unsigned short)cursor_info.ptScreenPos.y;
+			screen_12bit->mouse_x = (unsigned short)cursor_info.ptScreenPos.x - multidisplay->min_x;
+			screen_12bit->mouse_y = (unsigned short)cursor_info.ptScreenPos.y - multidisplay->min_y;
 			screen_12bit->mouse_cursor_type_id = decode_mouse_cursor_type((unsigned long long)cursor_info.hCursor);
 
 			screen_12bit->header.mouse_x = screen_12bit->mouse_x;
@@ -3958,7 +3965,7 @@ bool CHECK_DESKTOP() {
 }
 
 KEY_PRESSED key_pressed;
-bool exec_event_in_to_session(int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam) {
+bool exec_event_in_to_session(MULTIDISPLAY *multidisplay, int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam) {
 
 
 	//char ss[500];
@@ -3993,7 +4000,7 @@ bool exec_event_in_to_session(int session_no, unsigned int event_type, int globa
 		{
 			//send_udp("LM down ", wparam, lparam);
 
-			SetCursorPos((int)wparam, (int)lparam);
+			SetCursorPos((int)wparam + multidisplay->min_x, (int)lparam + multidisplay->min_y);
 			mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN, (DWORD)wparam, (DWORD)lparam, 0, 0); // нажали
 			key_pressed.mouse_l_press();
 		}
@@ -4004,7 +4011,7 @@ bool exec_event_in_to_session(int session_no, unsigned int event_type, int globa
 			lparam >= 0 && lparam <= 3500)
 		{
 			//send_udp("LM up ", wparam, lparam);
-			SetCursorPos((int)wparam, (int)lparam);
+			SetCursorPos((int)wparam + multidisplay->min_x, (int)lparam + multidisplay->min_y);
 			mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP, (DWORD)wparam, (DWORD)lparam, 0, 0); // нажали
 			key_pressed.mouse_l_unpress();
 		}
@@ -4014,7 +4021,7 @@ bool exec_event_in_to_session(int session_no, unsigned int event_type, int globa
 		if (wparam >= 0 && wparam <= 3500 &&
 			lparam >= 0 && lparam <= 3500)
 		{
-			SetCursorPos((int)wparam, (int)lparam);
+			SetCursorPos((int)wparam + multidisplay->min_x, (int)lparam + multidisplay->min_y);
 			mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTDOWN, (DWORD)wparam, (DWORD)lparam, 0, 0); // нажали
 			key_pressed.mouse_r_press();
 		}
@@ -4024,7 +4031,7 @@ bool exec_event_in_to_session(int session_no, unsigned int event_type, int globa
 		if (wparam >= 0 && wparam <= 3500 &&
 			lparam >= 0 && lparam <= 3500)
 		{
-			SetCursorPos((int)wparam, (int)lparam);
+			SetCursorPos((int)wparam + multidisplay->min_x, (int)lparam + multidisplay->min_y);
 			mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTUP, (DWORD)wparam, (DWORD)lparam, 0, 0); // нажали
 			key_pressed.mouse_r_unpress();
 		}
@@ -4059,7 +4066,7 @@ bool exec_event_in_to_session(int session_no, unsigned int event_type, int globa
 		if (wparam >= 0 && wparam <= 3500 &&
 			lparam >= 0 && lparam <= 3500)
 		{
-			set_mouse_cursor_from_local_console((unsigned int)wparam, (unsigned int)lparam);
+			set_mouse_cursor_from_local_console((unsigned int)wparam + multidisplay->min_x, (unsigned int)lparam + multidisplay->min_y);
 		}
 		return true;
 	}
@@ -4784,11 +4791,6 @@ void generate_easy_pass(unsigned char *psw, wchar_t *psw_w) {
 		v4 = get_sol() & 0xF;
 	}
 
-	v1 = 1;
-	v2 = 1;
-	v3 = 1;
-	v4 = 1;
-
 	psw[0] = v1 + '0';
 	psw[1] = v2 + '0';
 	psw[2] = v3 + '0';
@@ -5430,6 +5432,7 @@ bool is_bad_symbol_folder_name(wchar_t v) {
 
 	return false;
 }
+
 bool is_bad_symbol_file_name(wchar_t v) {
 	if (v == '/') return true;
 	if (v == '\\') return true;
@@ -5444,3 +5447,23 @@ bool is_bad_symbol_file_name(wchar_t v) {
 
 	return false;
 }
+
+bool lock_mutex(HANDLE *mutex, wchar_t *mutex_name) {
+
+
+	*mutex = CreateMutex(NULL, FALSE, mutex_name);
+	DWORD result;
+	result = WaitForSingleObject(*mutex, 0);
+	if (result == WAIT_OBJECT_0)
+	{
+		return true;
+	}
+
+
+	CloseHandle(*mutex);
+
+	return false;
+
+}
+
+

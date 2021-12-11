@@ -2740,3 +2740,84 @@ void SCREEN_LIGHT_encoded_12bit::encode_screen_12bit(SCREEN_LIGHT_12bit *screen_
 
 	screen_12bit->old_screen_id = screen_12bit->screen_id;
 }
+
+void MULTIDISPLAY::calc_MultiDisplaySize()
+{
+	BOOL            FoundSecondaryDisp = FALSE;
+	DWORD           DispNum = 0;
+	DISPLAY_DEVICE  DisplayDevice;
+	LONG            Result;
+	//TCHAR           szTemp[200];
+	int             i = 0;
+	DEVMODE   defaultMode;
+
+	// initialize DisplayDevice
+	ZeroMemory(&DisplayDevice, sizeof(DisplayDevice));
+	DisplayDevice.cb = sizeof(DisplayDevice);
+
+	int max_ww = -1000, min_xx = 10000, max_hh = -10000, min_yy = 10000;
+
+	// get all display devices
+	while (EnumDisplayDevices(NULL, DispNum, &DisplayDevice, 0))
+	{
+		ZeroMemory(&defaultMode, sizeof(DEVMODE));
+		defaultMode.dmSize = sizeof(DEVMODE);
+		if (!EnumDisplaySettings(DisplayDevice.DeviceName, ENUM_REGISTRY_SETTINGS, &defaultMode)) {
+			OutputDebugString(L"Store default failed\n");
+		};
+
+		if (DisplayDevice.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP == DISPLAY_DEVICE_ATTACHED_TO_DESKTOP) {
+			if (max_ww < ((int)defaultMode.dmPosition.x + (int)defaultMode.dmPelsWidth)) {
+				max_ww = (int)defaultMode.dmPosition.x + (int)defaultMode.dmPelsWidth;
+			};
+			if (min_xx > (int)defaultMode.dmPosition.x) {
+				min_xx = (int)defaultMode.dmPosition.x;
+			};
+
+			if (max_hh < ((int)defaultMode.dmPosition.y + (int)defaultMode.dmPelsHeight)) {
+				max_hh = (int)defaultMode.dmPosition.y + (int)defaultMode.dmPelsHeight;
+			};
+			if (min_yy > (int)defaultMode.dmPosition.y) {
+				min_yy = (int)defaultMode.dmPosition.y;
+			};
+		}
+
+		if ((DisplayDevice.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP) &&
+			!(DisplayDevice.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE))
+		{
+			DEVMODE    DevMode;
+			ZeroMemory(&DevMode, sizeof(DevMode));
+			DevMode.dmSize = sizeof(DevMode);
+
+			DevMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL | DM_POSITION
+				| DM_DISPLAYFREQUENCY | DM_DISPLAYFLAGS;
+			/*
+			Result = ChangeDisplaySettingsEx(DisplayDevice.DeviceName,
+				&DevMode,
+				NULL,
+				CDS_UPDATEREGISTRY,
+				NULL);
+			*/
+			//The code below shows how to re-attach the secondary displays to the desktop
+
+			//ChangeDisplaySettingsEx((LPSTR)DisplayDevice.DeviceName,
+			//                       &defaultMode,
+			//                       NULL,
+			//                       CDS_UPDATEREGISTRY,
+			//                       NULL);
+
+		}
+
+		// Reinit DisplayDevice just to be extra clean
+
+		ZeroMemory(&DisplayDevice, sizeof(DisplayDevice));
+		DisplayDevice.cb = sizeof(DisplayDevice);
+		DispNum++;
+	} // end while for all display devices
+
+	min_x = min_xx;
+	max_w = max_ww - min_xx;
+	min_y = min_yy;
+	max_h = max_hh - min_yy;
+
+}

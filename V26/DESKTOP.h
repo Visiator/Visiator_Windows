@@ -26,6 +26,8 @@ public:
 	SERVICE_INFO service_info;
 	int get_service_VISIATOR_status();
 
+	HANDLE mutex = 0;
+
 	NET_SERVER_SESSION_POOL *net_server_session_pool = nullptr;
 	GUI *gui = nullptr;
 	GUI_Element *btn_close = nullptr

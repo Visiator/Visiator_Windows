@@ -258,6 +258,12 @@
     <Image Include="inc\checkbox_set.bmp" />
     <Image Include="inc\eye.bmp" />
     <Image Include="inc\eye_active.bmp" />
+    <Image Include="inc\file_ico.bmp" />
+    <Image Include="inc\folder_ico.bmp" />
+    <Image Include="inc\Icon_active.ico" />
+    <Image Include="inc\Icon_disable.ico" />
+    <Image Include="inc\Icon_ready.ico" />
+    <Image Include="inc\Icon_stop.ico" />
     <Image Include="inc\krest_black.bmp" />
     <Image Include="inc\krest_blue.bmp" />
     <Image Include="inc\krest_white.bmp" />

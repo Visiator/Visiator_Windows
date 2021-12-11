@@ -330,6 +330,24 @@
     <Image Include="..\..\..\$$$\visiator16.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="inc\folder_ico.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\file_ico.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\Icon_disable.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\Icon_ready.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\Icon_active.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="inc\Icon_stop.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="inc\font\font_roboto_150.rawaaaa" />

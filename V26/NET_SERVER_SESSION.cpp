@@ -1144,7 +1144,7 @@ void NET_SERVER_SESSION::send_event_in_to_session(int session_no, unsigned int e
 	}
 	else {
 		if (app_attributes.is_desktop) {
-			exec_event_in_to_session(session_no, event_type, global_type, msg, wparam, lparam); // 2
+			exec_event_in_to_session(&multidisplay, session_no, event_type, global_type, msg, wparam, lparam); // 2
 		}
 	}
 	if (msg == 5555) {
@@ -1175,7 +1175,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_first(MASTER_AGE
 
 			init_encode_color_matrix_all();
 
-			if (get_screenshot(screen_one_byte_, nullptr) == false) {
+			if (get_screenshot(&multidisplay, screen_one_byte_, nullptr) == false) {
 
 				screen_one_byte_->emulate_red();
 			}
@@ -1286,7 +1286,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_12bit_first(MASTER_AG
 	else {
 		if (app_attributes.is_desktop == true) {
 
-			if (get_screenshot(nullptr, screen_12bit) == false) {
+			if (get_screenshot(&multidisplay, nullptr, screen_12bit) == false) {
 
 				screen_12bit->emulate_red();
 			}
@@ -1367,7 +1367,7 @@ void NET_SERVER_SESSION::SEND_SCREEN_FROM_SERVER_TO_CLIENT_8bit_second(MASTER_AG
 
 			init_encode_color_matrix_all();
 
-			if (get_screenshot(screen_one_byte_, nullptr) == false) {
+			if (get_screenshot(&multidisplay, screen_one_byte_, nullptr) == false) {
 
 				screen_one_byte_->emulate_red();
 			}

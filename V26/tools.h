@@ -342,9 +342,9 @@ char *decode_pipe_error(DWORD err);
 bool write_pipe(HANDLE pipe, void *buf, int need_write_size, DWORD *write_size, DWORD *write_pipe_TIMEOUT);
 bool read_pipe(HANDLE pipe, void *buf, int need_read_size, DWORD *read_size, DWORD *read_pipe_TIMEOUT, char *info);
 
-bool get_screenshot(SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12bit);
+bool get_screenshot(MULTIDISPLAY *multidisplay, SCREEN_LIGHT_one_byte *screen, SCREEN_LIGHT_12bit *screen_12bit);
 bool CHECK_DESKTOP();
-bool exec_event_in_to_session(int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam);
+bool exec_event_in_to_session(MULTIDISPLAY *multidisplay, int session_no, unsigned int event_type, int global_type, unsigned long long msg, unsigned long long wparam, unsigned long long lparam);
 
 void set_mouse_cursor_from_local_console(unsigned int mx, unsigned my);
 void key_unpress_into_local_console(int global_type, WORD vk, WORD scan);
@@ -379,3 +379,5 @@ void RUN_VIEWER_EPASS(wchar_t *exe_file_name, wchar_t *ID, wchar_t *PASS, unsign
 
 bool is_bad_symbol_folder_name(wchar_t v);
 bool is_bad_symbol_file_name(wchar_t v);
+bool lock_mutex(HANDLE *mutex, wchar_t *mutex_name);
+

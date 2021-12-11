@@ -15,6 +15,8 @@ public:
 	bool is_run_MAIN_THREAD = false;
 	SCREEN_LIGHT_12bit *screen_12bit_tmp = nullptr;
 
+	MULTIDISPLAY multidisplay;
+
 	DWORD last_detect_MASTER = 0;
 
 	HANDLE pipe_AGENT = 0;

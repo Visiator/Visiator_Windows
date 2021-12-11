@@ -24,7 +24,11 @@ class GUI_Element;
 int  ServiceUnInstallLocal(GUI_Element *e);
 void SERVICE_DEINSTALL();
 
-
+class MULTIDISPLAY {
+public:
+	int min_x = 0, max_w = 0, min_y = 0, max_h = 0;
+	void calc_MultiDisplaySize();
+};
 
 class CHESS_SHADOW {
 public:

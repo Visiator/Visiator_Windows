@@ -59,6 +59,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	
 	load_fonts();
 
+	
+
 	//test_b12();
 
 	total_control = new TOTAL_CONTROL();
@@ -389,10 +391,14 @@ void test_b12() {
 
 };
 
+
 SCREEN_LIGHT_12bit *screen_12bit = nullptr;
 SCREEN_LIGHT_encoded_12bit *screen_encoded_12bit = nullptr;
 
 void test_bbb() {
+
+	
+
 	return;
 	if (screen_12bit == nullptr) screen_12bit = new SCREEN_LIGHT_12bit();
 	if (screen_encoded_12bit == nullptr) screen_encoded_12bit = new SCREEN_LIGHT_encoded_12bit();
@@ -408,3 +414,4 @@ void test_bbb() {
 	// if (get_screenshot(nullptr, screen_12bit) == false) {
 
 }
+

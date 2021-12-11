@@ -163,28 +163,11 @@ LRESULT CALLBACK WndProc_INDICATOR(HWND window, UINT message, WPARAM wParam, LPA
 	}
 	return 0;
 }
-bool INDICATOR::lock_mutex (wchar_t *mutex_name) {
-
-
-mutex = CreateMutex(NULL, FALSE, mutex_name);
-DWORD result;
-result = WaitForSingleObject(mutex, 0);
-if (result == WAIT_OBJECT_0)
-{
-	return true;
-}
-
-
-CloseHandle(mutex);
-
-return false;
-
-}
 void INDICATOR::RUN(HINSTANCE instance) {
 
 	app_attributes.is_indicator = true;
 
-	if (lock_mutex(L"Global\\vim") == false) {
+	if (lock_mutex(&mutex, L"Global\\vim") == false) {
 		sudp("mutex lock is fail");
 		return;
 	}

@@ -259,7 +259,7 @@ void AGENT::EXECUTE_read_write() {
 
 			PIPE_SLAVE_EXECUTE_2_____FINAL_REQUEST_EVENT(ev);
 
-			exec_event_in_to_session(ev->session_no, ev->event_type, ev->global_type, ev->msg, ev->wparam, ev->lparam); // 1
+			exec_event_in_to_session(&multidisplay, ev->session_no, ev->event_type, ev->global_type, ev->msg, ev->wparam, ev->lparam); // 1
 		}
 
 		if (flag == false && packet_recv->packet_size == 128 && packet_recv->packet_type == packet_type_PING_MASTER_to_AGENT) {
@@ -327,7 +327,7 @@ void AGENT::PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_12bit() {
 
 	//zero(&screen_header.header, sizeof_ENCODED_SCREEN_8bit_header);
 	bool result;
-	result = get_screenshot(nullptr, screen_12bit_tmp);   // <====
+	result = get_screenshot(&multidisplay, nullptr, screen_12bit_tmp);   // <====
 	if (result == false) {
 		screen_12bit_tmp->emulate_dark_blue();
 
@@ -445,7 +445,7 @@ void AGENT::PIPE_SLAVE_EXECUTE_2_____FINAL_SCREEN_one_byte() {
 
 	//zero(&screen_header.header, sizeof_ENCODED_SCREEN_8bit_header);
 	bool result;
-	result = get_screenshot(&screen_header, nullptr);
+	result = get_screenshot(&multidisplay, &screen_header, nullptr);
 	if (result == false) {
 		screen_header.emulate_dark_blue();
 
